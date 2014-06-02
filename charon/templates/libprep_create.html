@@ -1,0 +1,86 @@
+{# Libprep create page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Create Libprep
+(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+{% end %}
+
+{% block title %}
+{% module Icon('create', label=True) %}
+{% module Icon('libprep', label=True) %}
+(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+{% end %}
+
+{% block content %}
+
+<form action="{{ reverse_url('libprep_create', project['projectid'], sample['sampleid']) }}"
+      method="POST">
+  {% module xsrf_form_html() %}
+
+  <fieldset>
+
+    <legend>Create a new libprep</legend>
+
+    <table class="fields">
+
+      <tr>
+	<th>Project</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td>
+	  <a href="{{ reverse_url('project', project['projectid']) }}">
+	    {{ project['projectid'] }}
+	  </a>
+	</td>
+	<td class="description">
+	  The identifier for the project to which the libprep belongs.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Sample</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td>
+	  <a href="{{ reverse_url('sample', project['projectid'], sample['projectid']) }}">
+	    {{ sample['sampleid'] }}
+	  </a>
+	</td>
+	<td class="description">
+	  The identifier for the sample of the libprep.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Identifier</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td><input type="text" name="libprepid"></td>
+	<td class="description">
+	  The unique libprep identifier.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Status</th>
+	<td></td>
+	<td><input type="text" name="status"></td>
+	<td class="description">
+	  Status of the libprep.
+	</td>
+      </tr>
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('create') %}
+	</td>
+      </tr>
+
+    </table>
+
+  </fieldset>
+
+</form>
+
+{% end %}

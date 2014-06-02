@@ -1,0 +1,108 @@
+{# Libprep page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Libprep {{ libprep['libprepid'] }}
+(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+{% end %}
+
+{% block title %}
+{% module Icon('libprep', label=True) %} {{ libprep['libprepid'] }}
+(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('libprep_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+  {% module Submit('edit') %}
+</form>
+<form action="{{ reverse_url('seqrun_create', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+  {% module Submit('create', title='Create seqrun') %}
+</form>
+{% end %}
+
+{% block api %}
+<div>
+  <a href="{{ reverse_url('api_libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_logs', libprep['_id']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_logs', '_id') }}
+  </a>
+</div>
+{% end %}
+
+{% block content %}
+
+<table class="fields">
+
+  <tr>
+    <th>Project</th>
+    <td>
+      <a href="{{ reverse_url('project', libprep['projectid']) }}">
+	{{ libprep['projectid'] }}
+      </a>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Sample</th>
+    <td>
+      <a href="{{ reverse_url('sample', libprep['projectid'], libprep['sampleid']) }}">
+	{{ libprep['sampleid'] }}
+      </a>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Identifier</th>
+    <td>{{ libprep['libprepid'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Status</th>
+    <td>{{ libprep.get('status') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Seqruns</th>
+    <td>
+      <table class="list">
+	<tr class="list">
+	  <th>Number</th>
+	  <th>Status</th>
+	</tr>
+	{% for seqrun in libprep['seqruns'] %}
+	<tr>
+	  <td>{{ seqrun['pos'] + 1 }}</td>
+	  <td>{{ seqrun.get('status') or '-' }}</td>
+	</tr>
+	{% end %}
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Created</th>
+    <td class="localtime">{{ libprep['created'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Modified</th>
+    <td class="localtime">{{ libprep['modified'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Event log</th>
+    <td>
+      {% include 'log.html' %}
+    </td>
+  </tr>
+
+</table>
+
+{% end %}

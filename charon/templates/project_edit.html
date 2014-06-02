@@ -1,0 +1,93 @@
+{# Project edit page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Edit Project {{ project['projectid'] }}
+{% end %}
+
+{% block title %}
+{% module Icon('edit', label=True) %}
+{% module Icon('project') %}
+Project {{ project['projectid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('project', project['projectid']) }}">
+  {% module Submit('cancel') %}
+</form>
+{% end %}
+
+{% block content %}
+
+<form action="{{ reverse_url('project_edit', project['projectid']) }}"
+      method="POST">
+  {% module xsrf_form_html() %}
+
+  <fieldset>
+
+    <legend>Edit the project information</legend>
+
+    <table class="fields">
+
+      <tr>
+	<th>Identifier</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td>{{ project['projectid'] }}</td>
+	<td class="description">
+	  The unique name of the project.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Name</th>
+	<td></td>
+	<td>
+	  <input type="text" name="name"
+		 value="{{ project.get('name') or '' }}">
+	</td>
+	<td class="description">
+	  The name of the project, e.g. P.Kraulis_14_01.
+	  Optional; must be unique if given.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Status</th>
+	<td></td>
+	<td>
+	  <input type="text" name="status"
+		 value="{{ project.get('status') or '' }}">
+	</td>
+	<td class="description">
+	  The status of the project.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Best-practice analysis</th>
+	<td></td>
+	<td>
+	  <input type="text" name="best_practice_analysis"
+		 value="{{ project.get('best_practice_analysis') or '' }}">
+	</td>
+	<td class="description">
+	  Status of the Best-Practice Analysis.
+	</td>
+      </tr>
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('save') %}
+	</td>
+      </tr>
+
+    </table>
+
+  </fieldset>
+
+</form>
+
+{% end %}

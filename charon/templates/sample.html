@@ -1,0 +1,155 @@
+{# Sample page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
+{% end %}
+
+{% block title %}
+{% module Icon('sample', label=True) %} {{ sample['sampleid'] }}
+(project {{ sample['projectid'] }})
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('sample_edit', sample['projectid'], sample['sampleid']) }}">
+  {% module Submit('edit') %}
+</form>
+<form action="{{ reverse_url('libprep_create', sample['projectid'], sample['sampleid']) }}">
+  {% module Submit('create', title='Create libprep') %}
+</form>
+{% end %}
+
+{% block api %}
+<div>
+  <a href="{{ reverse_url('api_sample', sample['projectid'], sample['sampleid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_sample', sample['projectid'], sample['sampleid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_libpreps', sample['projectid'], sample['sampleid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_libpreps', sample['projectid'], sample['sampleid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_logs', sample['_id']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_logs', '_id') }}
+  </a>
+</div>
+{% end %}
+
+{% block content %}
+
+<table class="fields">
+
+  <tr>
+    <th>Project</th>
+    <td>
+      <a href="{{ reverse_url('project', sample['projectid']) }}">
+	{{ sample['projectid'] }}
+      </a>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Identifier</th>
+    <td>{{ sample['sampleid'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Status</th>
+    <td>{{ sample.get('status') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Received</th>
+    <td class="localtime">{{ sample.get('received') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>QC</th>
+    <td>{{ sample.get('qc') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Genotyping status</th>
+    <td>{{ sample.get('genotyping_status') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Genotyping concordance</th>
+    <td>{{ sample.get('genotyping_concordance') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Requires more sequencing</th>
+    <td>{{ sample.get('requires_more_sequencing') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Sequenced</th>
+    <td class="localtime">{{ sample.get('sequenced') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Primary analysis done</th>
+    <td class="localtime">{{ sample.get('primary_analysis_done') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Secondary analysis done</th>
+    <td class="localtime">{{ sample.get('secondary_analysis_done') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Delivered</th>
+    <td class="localtime">{{ sample.get('delivered') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Libpreps</th>
+    <td>
+      <table class="list">
+	<tr class="list">
+	  <th>Identifier</th>
+	  <th>Status</th>
+	  <th>Modified</th>
+	</tr>
+	{% for libprep in libpreps %}
+	<tr>
+	  <td>
+	    <a href="{{ reverse_url('libprep', project['projectid'], sample['sampleid'], libprep['libprepid']) }}">
+	      {{ libprep['libprepid'] }}
+	      </a>
+	  </td>
+	  <td>{{ libprep.get('status') or '-' }}</td>
+	  <td class="localtime">{{ libprep['modified'] }}</td>
+	</tr>
+	{% end %}
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Created</th>
+    <td class="localtime">{{ sample['created'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Modified</th>
+    <td class="localtime">{{ sample['modified'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Event log</th>
+    <td>
+      {% include 'log.html' %}
+    </td>
+  </tr>
+
+</table>
+
+{% end %}

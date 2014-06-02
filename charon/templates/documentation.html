@@ -1,0 +1,34 @@
+{# Documentation page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Documentation
+{% end %}
+
+{% block title %}
+Documentation
+{% end %}
+
+{% block content %}
+
+{% for host in hosts %}
+<table class="documentation">
+  <caption>Host {{ host[0] }}</caption>
+  {% for urlspec in host[1] %}
+  <tr>
+    <th colspan="2">{{ urlspec['pattern'] }}</th>
+  </tr>
+  {% for method in urlspec['methods'] %}
+  <tr>
+    <td>{{ method[0].upper() }}</td>
+    <td>
+      {{ method[1] }}
+    </td>
+  </tr>
+  {% end %}
+  {% end %}
+</table>
+{% end %}
+
+{% end %}

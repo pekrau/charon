@@ -1,0 +1,8 @@
+# Charon: Example settings.
+TORNADO_DEBUG: True
+LOGGING_DEBUG: True
+DB_SERVER: 'http://localhost:5984/'
+COOKIE_SECRET: 'some secret key!#%&%&'
+# Authentication server.
+USERMAN_URL: 'http://localhost:8880/api/v1/user'
+USERMAN_API_KEY: 'this should be a secret API key'

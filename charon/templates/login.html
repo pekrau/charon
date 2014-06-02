@@ -1,0 +1,16 @@
+{# Home page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}Login{% end %}
+{% block title %}Login{% end %}
+
+{% block content %}
+
+{% if current_user %}
+  {% include 'logout_form.html' %}
+{% else %}
+  {% include 'login_form.html' %}
+{% end %}
+
+{% end %}

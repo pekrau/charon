@@ -1,0 +1,4 @@
+<form action="{{ reverse_url('logout') }}" method="POST">
+  {% module xsrf_form_html() %}
+  {% module Submit('logout') %}
+</form>

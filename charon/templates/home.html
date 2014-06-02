@@ -1,0 +1,20 @@
+{# Home page. #}
+
+{% extends "base.html" %}
+
+{% block api %}
+<div>
+  <a href="{{ reverse_url('api_home') }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_home') }}
+  </a>
+</div>
+{% end %}
+
+{% block content %}
+
+{% if not current_user %}
+{% include 'login_form.html' %}
+{% end %}
+
+{% end %}

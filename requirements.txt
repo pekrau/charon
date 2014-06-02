@@ -1,0 +1,4 @@
+tornado>=3.2
+couchdb>=0.8
+pyyaml>=3.10
+requests>=2.2

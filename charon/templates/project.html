@@ -1,0 +1,110 @@
+{# Project page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Project {{ project['projectid'] }}
+{% end %}
+
+{% block title %}
+{% module Icon('project') %}
+Project {{ project['projectid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('project_edit', project['projectid']) }}">
+  {% module Submit('edit') %}
+</form>
+<form action="{{ reverse_url('sample_create', project['projectid']) }}">
+  {% module Submit('create', title='Create sample') %}
+</form>
+{% end %}
+
+{% block api %}
+<div>
+  <a href="{{ reverse_url('api_project', project['projectid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_project', project['projectid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_samples', project['projectid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_samples', project['projectid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_logs', project['_id']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_logs', '_id') }}
+  </a>
+</div>
+{% end %}
+
+{% block content %}
+
+<table class="fields">
+  <tr>
+    <th>Identifier</th>
+    <td>{{ project['projectid'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Name</th>
+    <td>{{ project['name'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Status</th>
+    <td>{{ project.get('status') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Best-practice analysis</th>
+    <td>{{ project.get('best_practice_analysis') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Samples</th>
+    <td>
+      <table class="list">
+	<tr class="list">
+	  <th>Identifier</th>
+	  <th>Status</th>
+	  <th>Modified</th>
+	</tr>
+	{% for sample in samples %}
+	<tr>
+	  <td>
+	    <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
+	      {{ sample['sampleid'] }}
+	      </a>
+	  </td>
+	  <td>{{ sample.get('status') or '-' }}</td>
+	  <td class="localtime">{{ sample['modified'] }}</td>
+	</tr>
+	{% end %}
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Created</th>
+    <td class="localtime">{{ project['created'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Modified</th>
+    <td class="localtime">{{ project['modified'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Event log</th>
+    <td>
+      {% include 'log.html' %}
+    </td>
+  </tr>
+
+</table>
+
+{% end %}

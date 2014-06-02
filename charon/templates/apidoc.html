@@ -1,0 +1,38 @@
+{# API Documentation page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+API Documentation
+{% end %}
+
+{% block title %}
+API Documentation
+{% end %}
+
+{% block content %}
+
+{% for host in hosts %}
+
+{% if host[0] == '.*' %}
+<h2>Default host</h2>
+{% else %}
+<h2>Host {{ host[0] }}</h2>
+{% end %}
+
+{% for urlspec in host[1] %}
+<h3>{{ urlspec['pattern'] }}</h3>
+<p class="code">{{ urlspec['text'] }}</p>
+<table class="fields">
+  {% for method in urlspec['methods'] %}
+  <tr>
+    <th>{{ method[0].upper() }}</th>
+    <td class="code">{{ method[1] }}</td>
+  </tr>
+  {% end %}
+</table>
+{% end %}
+
+{% end %}
+
+{% end %}

@@ -1,0 +1,48 @@
+{# Projects page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Projects
+{% end %}
+
+{% block title %}
+{% module Icon('project', title='Projects', label=True) %}
+{% end %}
+
+{% block api %}
+<a href="{{ reverse_url('api_projects') }}">
+  {% module Icon('json') %}
+  {{ reverse_url('api_projects') }}
+</a>
+{% end %}
+
+{% block content %}
+
+<table class="list">
+
+  <tr>
+    <th>Identifier</th>
+    <th>Name</th>
+    <th>Status</th>
+    <th>Created</th>
+    <th>Modified</th>
+  </tr>
+
+  {% for project in projects %}
+  <tr>
+    <td>
+      <a href="{{ reverse_url('project', project['projectid']) }}">
+	{{ project['projectid'] }}
+      </a>
+    </td>
+    <td>{{ project['name'] }}</td>
+    <td>{{ project.get('status') or '-' }}</td>
+    <td class="localtime">{{ project['created'] }}</td>
+    <td class="localtime">{{ project['modified'] }}</td>
+  </tr>
+  {% end %}
+
+</table>
+
+{% end %}
