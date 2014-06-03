@@ -1,6 +1,7 @@
 " Charon: Login interface. "
 
 import logging
+import json
 
 import tornado.web
 import couchdb
@@ -30,17 +31,17 @@ class Login(RequestHandler):
         email = self.get_argument('email', '')
         password = self.get_argument('password', '')
         if email and password:
-            params = dict(user=email,
-                          password=password,
-                          service='Charon')
+            data = dict(user=email,
+                        password=password,
+                        service='Charon')
             headers = {'X-Userman-API-key': settings['USERMAN_API_KEY']}
-            response = requests.get(settings['USERMAN_URL'],
-                                    params=params,
-                                    headers=headers)
+            response = requests.post(settings['USERMAN_URL'],
+                                     data=json.dumps(data),
+                                     headers=headers)
             if response.status_code == requests.codes.ok:
                 try:
                     user = self.get_user(email)
-                except KeyError:
+                except tornado.web.HTTPError:
                     user = response.json()
                 else:
                     user.update(response.json())

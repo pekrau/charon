@@ -83,7 +83,7 @@ class ApiProject(ApiRequestHandler):
 
     def put(self, projectid):
         """Update the project fields with the given data.
-        Return HTTP 204 "No Content".
+        Return HTTP 204 "No Content" when successful.
         Return HTTP 400 if input data is invalid.
         Return HTTP 404 if no such project.
         Return HTTP 409 if there is a document revision update conflict."""

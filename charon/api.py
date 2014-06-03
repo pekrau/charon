@@ -1,4 +1,4 @@
-" Charon: API handlers. "
+" Charon: base API request handlers. "
 
 import logging
 
@@ -12,17 +12,15 @@ from .requesthandler import RequestHandler
 
 
 class ApiRequestHandler(RequestHandler):
-    """Check API key if not logged in.
-    Redefine error method to output JSON body."""
+    "Check API key unless logged in."
 
     def prepare(self):
         super(ApiRequestHandler, self).prepare()
         self.check_api_access()
 
-    def error(self, status_code, reason):
-        self.send_error(status_code, reason=reason)
-
     def check_api_access(self):
+        """Check the API key given in the header.
+        Return HTTP 401 if invalid or missing key."""
         if self.get_current_user(): return
         try:
             apikey = self.request.headers['X-Charon-API-key']
@@ -40,28 +38,25 @@ class ApiRequestHandler(RequestHandler):
                 else:
                     if user.get('status') == constants.ACTIVE:
                         self._user = user
-                        logging.debug("API key accepted for user '%s'",
-                                      user['email'])
+                        logging.debug("API key accept user '%s'", user['email'])
                     else:
                         self.send_error(401, reason='user not active')
 
-    def write_error(self, status_code, **kwargs):
-        self.set_header('Content-Type', 'application/json')
-        self.write(kwargs)
-
 
 class ApiDoc(ApiRequestHandler):
-    "Return a database document as is."
+    "Access a database document as is."
 
     def get(self, id):
+        "Return a database document as is."
         try:
             self.write(self.db[id])
         except couchdb.http.ResourceNotFound:
-            self.send_error(404)
+            self.send_error(404, reason='no such item')
 
 
 class ApiLogs(ApiRequestHandler):
-    "Return all log event documents for a given document."
+    "Access log event documents for a given document."
 
     def get(self, id):
+        "Return all log event documents for a given document."
         self.write(dict(logs=self.get_logs(id)))

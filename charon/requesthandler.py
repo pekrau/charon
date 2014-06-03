@@ -60,7 +60,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def get_user(self, email):
         """Get the user identified by the email address.
-        Raise KeyError if no such user."""
+        Raise HTTP 404 if no such user."""
         try:
             return self._users[email]
         except KeyError:
@@ -68,7 +68,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def get_project(self, projectid):
         """Get the project by the projectid.
-        Raise KeyError if no such project."""
+        Raise HTTP 404 if no such project."""
         try:
             return self._projects[projectid]
         except KeyError:
@@ -83,7 +83,7 @@ class RequestHandler(tornado.web.RequestHandler):
 
     def get_sample(self, projectid, sampleid):
         """Get the sample by the projectid and sampleid.
-        Raise KeyError if no such sample."""
+        Raise HTTP 404 if no such sample."""
         key = (projectid, sampleid)
         try:
             return self._samples[key]
@@ -98,6 +98,8 @@ class RequestHandler(tornado.web.RequestHandler):
                 self.db.view('sample/sampleid')[startkey:endkey]]
 
     def get_libprep(self, projectid, sampleid, libprepid):
+        """Get the libprep by the projectid, sampleid and libprepid.
+        Raise HTTP 404 if no such libprep."""
         key = (projectid, sampleid, libprepid)
         try:
             return self._libpreps[key]
@@ -111,6 +113,9 @@ class RequestHandler(tornado.web.RequestHandler):
                 self.db.view('libprep/libprepid')[startkey:endkey]]
 
     def get_and_cache(self, viewname, key, cache):
+        """Get the item by the view name and the key.
+        Try to get it from the cache, else from the database.
+        Raise HTTP 404 if no such item."""
         view = self.db.view(viewname, include_docs=True)
         rows = list(view[key])
         if len(rows) == 1:
