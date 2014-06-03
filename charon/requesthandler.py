@@ -24,10 +24,6 @@ class RequestHandler(tornado.web.RequestHandler):
         self._samples = weakref.WeakValueDictionary()
         self._libpreps = weakref.WeakValueDictionary()
 
-    def http_error(self, status_code, reason):
-        "Output an HTTP error message."
-        raise tornado.web.HTTPError(status_code, reason=str(reason))
-
     def get_template_namespace(self):
         "Set the variables accessible within the template."
         result = super(RequestHandler, self).get_template_namespace()
@@ -123,7 +119,7 @@ class RequestHandler(tornado.web.RequestHandler):
             self._cache[item['_id']] = item
             return item
         else:
-            self.http_error(404, 'no such item')
+            raise tornado.web.HTTPError(404, reason='no such item')
 
     def get_logs(self, id):
         "Return the log documents for the given doc id."

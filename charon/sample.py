@@ -92,20 +92,22 @@ class ApiSample(ApiRequestHandler):
 
     def put(self, projectid, sampleid):
         """Update the sample fields with the given JSON data.
-        Return HTTP 204 "No Content"."""
+        Return HTTP 204 "No Content".
+        Return HTTP 400 if there is some problem with the input data.
+        Return HTTP 409 if there is a document revision conflict."""
         sample = self.get_sample(projectid, sampleid)
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with SampleSaver(doc=sample, rqh=self) as saver:
                     saver.update(data=data)
             except ValueError, msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
 
@@ -126,33 +128,39 @@ class SampleCreate(RequestHandler):
                 saver.update()
                 sample = saver.doc
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('sample', projectid, sample['sampleid'])
             self.redirect(url)
 
 
 class ApiSampleCreate(ApiRequestHandler):
-    "Create a sample given its data and return the URL as Location in header."
+    "Create a sample within a project."
 
     def post(self, projectid):
+        """Create a sample within a project.
+        JSON data:
+          XXX
+        Return HTTP 201, the sample URL as Location, and the sample data.
+        Return HTTP 400 if something is wrong with the values.
+        Return HTTP 409 if there is a document revision conflict."""
         project = self.get_project(projectid)
         if not project: return
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with SampleSaver(rqh=self, project=project) as saver:
                     saver.update(data=data)
                     sample = saver.doc
             except (KeyError, ValueError), msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 logging.debug("created sample %s", sample['sampleid'])
                 url = self.reverse_url('api_sample',
@@ -179,17 +187,18 @@ class SampleEdit(RequestHandler):
             with SampleSaver(doc=sample, rqh=self) as saver:
                 saver.update()
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('sample', projectid, sampleid)
             self.redirect(url)
 
 
 class ApiSamples(ApiRequestHandler):
-    "Return a list of all samples."
+    "Access to all samples in a project."
 
     def get(self, projectid):
+        "Return a list of all samples."
         samples = self.get_samples(projectid)
         self.write(dict(samples=samples))

@@ -26,12 +26,12 @@ class ApiSeqrun(ApiRequestHandler):
             if pos <= 0: raise ValueError
             seqrun = libprep['seqruns'][pos - 1]
         except (TypeError, ValueError, IndexError):
-            self.http_error(404, 'no such item')
+            self.send_error(404, reason='no such item')
         else:
             self.write(seqrun)
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
-        "Update the seqrun data."
+        "Update the seqrun data. XXX to be implemented"
         raise NotImplementedError
 
 
@@ -58,9 +58,9 @@ class SeqrunCreate(RequestHandler):
                 seqrun = dict(status=self.get_argument('status', None))
                 saver['seqruns'] = libprep['seqruns'] + [seqrun]
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         url = self.reverse_url('libprep', projectid, sampleid, libprepid)
         self.redirect(url)
 
@@ -69,11 +69,20 @@ class ApiSeqrunCreate(ApiRequestHandler):
     "Create a seqrun within a libprep."
 
     def post(self, projectid, sampleid, libprepid):
+        """Create a seqrun within a libprep.
+        JSON data:
+          status (required)
+          alignment_status (optional)
+          alignment_coverage (optional) in percent, float (max 100)
+          pos (computed) number of seqrun within libprep
+        Redirect to libprep URL.
+        Return HTTP 400 if something is wrong with the values.
+        Return HTTP 409 if there is a document revision conflict."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with LibprepSaver(doc=libprep, rqh=self) as saver:
@@ -83,9 +92,9 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                   pos=len(libprep['seqruns']))
                     saver['seqruns'] = libprep['seqruns'] + [seqrun]
             except ValueError, msg:
-                self.http_error(400, msg)
+                raise tornado.web.HTTPError(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                raise tornado.web.HTTPError(409, reason=str(msg))
             else:
                 logging.debug("created seqrun %i %s",
                               len(libprep['seqruns']),
@@ -123,10 +132,9 @@ class SeqrunEdit(RequestHandler):
             with LibprepSaver(doc=libprep, rqh=self) as saver:
                 saver.update()
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('libprep', projectid, sampleid, libprepid)
             self.redirect(url)
-

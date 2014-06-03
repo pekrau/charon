@@ -89,15 +89,15 @@ class ApiLibprep(ApiRequestHandler):
             libprep = self.get_libprep(projectid, sampleid, libprepid)
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with LibprepSaver(doc=libprep, rqh=self) as saver:
                     saver.update(data=data)
             except ValueError, msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
 
@@ -120,9 +120,9 @@ class LibprepCreate(RequestHandler):
                 saver.update()
                 libprep = saver.doc
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('libprep',
                                    projectid,
@@ -142,16 +142,16 @@ class ApiLibprepCreate(ApiRequestHandler):
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with LibprepSaver(rqh=self, sample=sample) as saver:
                     saver.update(data=data)
                     libprep = saver.doc
             except (KeyError, ValueError), msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 logging.debug("created libprep %s", libprep['libprepid'])
                 url = self.reverse_url('api_libprep',
@@ -179,17 +179,18 @@ class LibprepEdit(RequestHandler):
             with LibprepSaver(doc=libprep, rqh=self) as saver:
                 saver.update()
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('libprep', projectid, sampleid, libprepid)
             self.redirect(url)
 
 
 class ApiLibpreps(ApiRequestHandler):
-    "Return a list of all libpreps for the given sample."
+    "Access to all libpreps for a sample."
 
     def get(self, projectid, sampleid):
+        "Return a list of all libpreps for the given sample."
         libpreps = self.get_libpreps(projectid, sampleid)
         self.write(dict(libpreps=libpreps))

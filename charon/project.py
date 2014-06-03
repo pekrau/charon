@@ -92,15 +92,15 @@ class ApiProject(ApiRequestHandler):
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with ProjectSaver(doc=project, rqh=self) as saver:
                     saver.update(data=data)
             except ValueError, msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
 
@@ -134,9 +134,9 @@ class ProjectCreate(RequestHandler):
                 saver.update()
                 project = saver.doc
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             url = self.reverse_url('project', project['projectid'])
             self.redirect(url)
@@ -152,16 +152,16 @@ class ApiProjectCreate(ApiRequestHandler):
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
-            self.http_error(400, msg)
+            self.send_error(400, reason=str(msg))
         else:
             try:
                 with ProjectSaver(rqh=self) as saver:
                     saver.update(data=data)
                     project = saver.doc
             except (KeyError, ValueError), msg:
-                self.http_error(400, msg)
+                self.send_error(400, reason=str(msg))
             except IOError, msg:
-                self.http_error(409, msg)
+                self.send_error(409, reason=str(msg))
             else:
                 logging.debug("created project %s", project['projectid'])
                 url = self.reverse_url('api_project', project['projectid'])
@@ -188,9 +188,9 @@ class ProjectEdit(RequestHandler):
             with ProjectSaver(doc=project, rqh=self) as saver:
                 saver.update()
         except ValueError, msg:
-            self.http_error(400, msg)
+            raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
-            self.http_error(409, msg)
+            raise tornado.web.HTTPError(409, reason=str(msg))
         else:
             self.redirect(self.reverse_url('project', project['projectid']))
 
@@ -205,8 +205,9 @@ class Projects(RequestHandler):
 
 
 class ApiProjects(ApiRequestHandler):
-    "Return a list of all projects."
+    "Access to all projects."
 
     def get(self):
+        "Return a list of all projects."
         projects = self.get_projects()
         self.write(dict(projects=projects))

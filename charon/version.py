@@ -31,7 +31,8 @@ class Version(VersionMixin, RequestHandler):
 
 
 class ApiVersion(VersionMixin, ApiRequestHandler):
-    "Return software component versions."
+    "Access to software component versions"
 
     def get(self):
+        "Return software component versions."
         self.write(dict(self.get_versions()))
