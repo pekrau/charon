@@ -7,6 +7,7 @@ top of Tornado and CouchDB.
 To do
 -----
 
+-  http\_error -> tornado.web.HTTPError(reason=str(msg))
 -  API documentation
 -  add docstrings to all API handlers and methods
 -  describe input parameters
