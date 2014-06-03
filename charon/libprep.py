@@ -75,16 +75,20 @@ class Libprep(RequestHandler):
 
 
 class ApiLibprep(ApiRequestHandler):
-    "Return the libprep data, or edit the libprep."
+    "Access a libprep."
 
     def get(self, projectid, sampleid, libprepid):
+        """Return the libprep data as JSON.
+        Return HTTP 404 if no such libprep, sample or project."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
         self.write(libprep)
 
     def put(self, projectid, sampleid, libprepid):
-        """Update the libprep fields with the given data.
-        Return HTTP 204 "No Content"."""
+        """Update the libprep with the given JSON data.
+        Return HTTP 204 "No Content".
+        Return HTTP 400 if the input data is invalid.
+        Return HTTP 409 if there is a document revision conflict."""
         try:
             libprep = self.get_libprep(projectid, sampleid, libprepid)
             data = json.loads(self.request.body)
@@ -132,9 +136,16 @@ class LibprepCreate(RequestHandler):
 
 
 class ApiLibprepCreate(ApiRequestHandler):
-    "Create a libprep given its data and return the URL as Location in header."
+    "Create a libprep within a sample."
 
     def post(self, projectid, sampleid):
+        """Create a libprep within a sample.
+        JSON data:
+          XXX
+        Return HTTP 201, libprep URL in header "Location", and libprep data.
+        Return HTTP 400 if something is wrong with the input data.
+        Return HTTP 404 if there is no such project or sample.
+        Return HTTP 409 if there is a document revision conflict."""
         project = self.get_project(projectid)
         if not project: return
         sample = self.get_sample(projectid, sampleid)
@@ -191,6 +202,6 @@ class ApiLibpreps(ApiRequestHandler):
     "Access to all libpreps for a sample."
 
     def get(self, projectid, sampleid):
-        "Return a list of all libpreps for the given sample."
+        "Return a list of all libpreps for the given sample and project."
         libpreps = self.get_libpreps(projectid, sampleid)
         self.write(dict(libpreps=libpreps))

@@ -59,7 +59,7 @@ class Project(RequestHandler):
 
 
 class ApiProject(ApiRequestHandler):
-    "Return the project data, or edit it, or delete the project."
+    "Access a project."
 
     def get(self, projectid):
         """Return the project data as JSON.
@@ -82,9 +82,9 @@ class ApiProject(ApiRequestHandler):
         self.write(project)
 
     def put(self, projectid):
-        """Update the project fields with the given data.
+        """Update the project with the given JSON data.
         Return HTTP 204 "No Content" when successful.
-        Return HTTP 400 if input data is invalid.
+        Return HTTP 400 if the input data is invalid.
         Return HTTP 404 if no such project.
         Return HTTP 409 if there is a document revision update conflict."""
         project = self.get_project(projectid)
@@ -105,9 +105,9 @@ class ApiProject(ApiRequestHandler):
                 self.set_status(204)
 
     def delete(self, projectid):
-        """Delete the project and all of its dependent entities.
-        Returns HTTP 204 "No Content".
-        For test purposes only!"""
+        """NOTE: This is for unit test purposes only!
+        Delete the project and all of its dependent entities.
+        Returns HTTP 204 "No Content"."""
         project = self.get_project(projectid)
         if not project: return
         utils.delete_project(self.db, project)
@@ -143,12 +143,13 @@ class ProjectCreate(RequestHandler):
 
 
 class ApiProjectCreate(ApiRequestHandler):
-    "Create a new project from the given data."
+    "Create a new project."
 
     def post(self):
-        """Create a project from the given JSON data.
-        Return HTTP 201 and URL of the project in header "Location".
-        Return HTTP 400 if something is wrong with the data."""
+        """Create a project.
+        Return HTTP 201, project URL in header "Location", and project data.
+        Return HTTP 400 if something is wrong with the input data.
+        Return HTTP 409 if there is a document revision conflict."""
         try:
             data = json.loads(self.request.body)
         except Exception, msg:

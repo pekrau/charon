@@ -43,7 +43,7 @@ class ApiRequestHandler(RequestHandler):
                         self.send_error(401, reason='user not active')
 
 
-class ApiDoc(ApiRequestHandler):
+class ApiDocument(ApiRequestHandler):
     "Access a database document as is."
 
     def get(self, id):

@@ -15,10 +15,11 @@ from .libprep import LibprepSaver
 
 
 class ApiSeqrun(ApiRequestHandler):
-    "Access and update a seqrun in a libprep."
+    "Access a seqrun in a libprep."
 
     def get(self, projectid, sampleid, libprepid, seqrunid):
-        "Return the seqrun data."
+        """Return the seqrun data.
+        Return HTTP 404 if there is no such seqrun, libprep, sample or project."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
         try:
@@ -75,8 +76,9 @@ class ApiSeqrunCreate(ApiRequestHandler):
           alignment_status (optional)
           alignment_coverage (optional) in percent, float (max 100)
           pos (computed) number of seqrun within libprep
-        Redirect to libprep URL.
+        Return 204 "No content" and (note!) libprep URL in header.
         Return HTTP 400 if something is wrong with the values.
+        Return HTTP 404 if there is no such project, sample or libprep.
         Return HTTP 409 if there is a document revision conflict."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:

@@ -82,18 +82,19 @@ class Sample(RequestHandler):
 
 
 class ApiSample(ApiRequestHandler):
-    "Return the sample data, or edit the sample."
+    "Access a sample."
 
     def get(self, projectid, sampleid):
-        "Return the sample data as JSON."
+        """Return the sample data as JSON.
+        Return HTTP 404 if no such sample or project."""
         sample = self.get_sample(projectid, sampleid)
         if not sample: return
         self.write(sample)
 
     def put(self, projectid, sampleid):
-        """Update the sample fields with the given JSON data.
+        """Update the sample with the given JSON data.
         Return HTTP 204 "No Content".
-        Return HTTP 400 if there is some problem with the input data.
+        Return HTTP 400 if the input data is invalid.
         Return HTTP 409 if there is a document revision conflict."""
         sample = self.get_sample(projectid, sampleid)
         try:
@@ -143,8 +144,9 @@ class ApiSampleCreate(ApiRequestHandler):
         """Create a sample within a project.
         JSON data:
           XXX
-        Return HTTP 201, the sample URL as Location, and the sample data.
-        Return HTTP 400 if something is wrong with the values.
+        Return HTTP 201, sample URL in header "Location", and sample data.
+        Return HTTP 400 if something is wrong with the input data.
+        Return HTTP 404 if there is no such project.
         Return HTTP 409 if there is a document revision conflict."""
         project = self.get_project(projectid)
         if not project: return
