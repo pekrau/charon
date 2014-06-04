@@ -2,6 +2,7 @@
 
 import logging
 import json
+import urllib
 
 import tornado.web
 import couchdb
@@ -31,13 +32,11 @@ class Login(RequestHandler):
         email = self.get_argument('email', '')
         password = self.get_argument('password', '')
         if email and password:
-            data = dict(user=email,
-                        password=password,
-                        service='Charon')
+            data = json.dumps(dict(password=password,
+                                   service='Charon'))
             headers = {'X-Userman-API-key': settings['USERMAN_API_KEY']}
-            response = requests.post(settings['USERMAN_URL'],
-                                     data=json.dumps(data),
-                                     headers=headers)
+            url = settings['USERMAN_URL'] + '/' + urllib.quote(email)
+            response = requests.post(url, data=data, headers=headers)
             if response.status_code == requests.codes.ok:
                 try:
                     user = self.get_user(email)

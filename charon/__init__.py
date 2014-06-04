@@ -3,6 +3,9 @@
 import socket
 import yaml
 
+import constants
+__version__ = constants.VERSION
+
 
 settings = dict(HOSTNAME=socket.gethostname().split('.')[0],
                 TORNADO_DEBUG=True,
