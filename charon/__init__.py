@@ -1,10 +1,9 @@
 " Charon: Database for IGN projects and samples, with RESTful interface. "
 
+__version__ = '14.6'
+
 import socket
 import yaml
-
-import constants
-__version__ = constants.VERSION
 
 
 settings = dict(HOSTNAME=socket.gethostname().split('.')[0],

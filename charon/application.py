@@ -6,6 +6,7 @@ import tornado
 import tornado.web
 import couchdb
 
+import charon
 from charon import settings
 from charon import constants
 from charon import utils
@@ -13,7 +14,6 @@ from charon import uimodules
 from charon.requesthandler import RequestHandler
 
 from charon.login import *
-from charon.version import *
 from charon.project import *
 from charon.sample import *
 from charon.libprep import *
@@ -56,6 +56,32 @@ class ApiHome(ApiRequestHandler):
                               title='all projects'),
                 ))
         self.write(data)
+
+
+class VersionMixin(object):
+
+    def get_versions(self):
+        return [('Charon', charon.__version__),
+                ('tornado', tornado.version),
+                ('CouchDB server', settings['DB_SERVER_VERSION']),
+                ('CouchDB module', couchdb.__version__)]
+
+
+class Version(VersionMixin, RequestHandler):
+    "Page displaying the software component versions."
+
+    @tornado.web.authenticated
+    def get(self):
+        "Return version information for all software in the system."
+        self.render('version.html', versions=self.get_versions())
+
+
+class ApiVersion(VersionMixin, ApiRequestHandler):
+    "Access to software component versions"
+
+    def get(self):
+        "Return software component versions."
+        self.write(dict(self.get_versions()))
 
 
 class ApiDoc(RequestHandler):

@@ -7,6 +7,7 @@ import weakref
 import tornado.web
 import couchdb
 
+import charon
 from . import settings
 from . import constants
 from . import utils
@@ -27,6 +28,7 @@ class RequestHandler(tornado.web.RequestHandler):
     def get_template_namespace(self):
         "Set the variables accessible within the template."
         result = super(RequestHandler, self).get_template_namespace()
+        result['version'] = charon.__version__
         result['settings'] = settings
         result['constants'] = constants
         result['current_user'] = self.get_current_user()
