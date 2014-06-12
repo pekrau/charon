@@ -186,7 +186,7 @@ application = tornado.web.Application(
 
 if __name__ == "__main__":
     import tornado.ioloop
-    port = utils.get_port(settings['BASE_URL'])
+    port = settings.get('PORT', utils.get_port(settings['BASE_URL']))
     application.listen(port)
     logging.info("Charon web server on port %s", port)
     tornado.ioloop.IOLoop.instance().start()
