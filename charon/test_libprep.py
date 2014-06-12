@@ -47,7 +47,7 @@ def test_libprep_modify():
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
     assert libprep['status'] == 'new'
-    libprep_url = HOST_URL + response.headers['location']
+    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     data = dict(status='old')
     response = requests.put(libprep_url,
                             data=json.dumps(data),
@@ -122,7 +122,7 @@ def test_libprep_seqruns():
                              data=json.dumps(data),
                              headers=apikey)
     assert response.status_code == 204, response
-    libprep_url = HOST_URL + response.headers['location']
+    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     response = requests.get(libprep_url, headers=apikey)
     assert response.status_code == 200, response
     data = response.json()

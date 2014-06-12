@@ -9,7 +9,6 @@ import yaml
 settings = dict(HOSTNAME=socket.gethostname().split('.')[0],
                 TORNADO_DEBUG=True,
                 LOGGING_DEBUG=False,
-                URL_PORT=8881,
                 BASE_URL='http://localhost:8881/',
                 DB_SERVER='http://localhost:5984/',
                 DB_DATABASE='charon',
