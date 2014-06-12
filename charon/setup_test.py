@@ -10,7 +10,7 @@ HOST_URL = 'http://localhost:8881'
 BASE_URL = HOST_URL + '/api/v1'
 
 # This key is associated with a user account, and must be current.
-apikey = {'X-Charon-API-key': '45b14d3709e0449c904b820aca41e36c'}
+apikey = {'X-Charon-API-key': '29e948d0ad5b41a6921976dd333167d7'}
 
 def url(*segments):
     "Synthesize absolute URL from path segments."

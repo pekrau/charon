@@ -29,32 +29,34 @@ class Login(RequestHandler):
 
     def post(self):
         self.check_xsrf_cookie()
-        email = self.get_argument('email', '')
-        password = self.get_argument('password', '')
-        if email and password:
-            data = json.dumps(dict(password=password,
+        try:
+            email = self.get_argument('email')
+            url = "{0}/{1}".format(settings['USERMAN_URL'],
+                                   urllib.quote(email))
+            data = json.dumps(dict(password=self.get_argument('password'),
                                    service='Charon'))
             headers = {'X-Userman-API-key': settings['USERMAN_API_KEY']}
-            url = settings['USERMAN_URL'] + '/' + urllib.quote(email)
             response = requests.post(url, data=data, headers=headers)
-            if response.status_code == requests.codes.ok:
-                try:
-                    user = self.get_user(email)
-                except tornado.web.HTTPError:
-                    user = response.json()
-                else:
-                    user.update(response.json())
-                with UserSaver(doc=user, rqh=self) as saver:
-                    pass        # Changes already made.
-                self.set_secure_cookie(constants.USER_COOKIE_NAME, email)
-                url = self.get_argument('next', None)
-                if not url:
-                    url = self.reverse_url('home')
-                self.redirect(url)
-                return
-        self.render('login.html',
-                    error='invalid user or password',
-                    next=self.get_argument('next', None))
+            if response.status_code != requests.codes.ok:
+                raise ValueError(str(response.reason))
+            try:
+                user = self.get_user(email)
+            except tornado.web.HTTPError:
+                user = response.json()
+            else:
+                user.update(response.json())
+            with UserSaver(doc=user, rqh=self) as saver:
+                pass        # Changes already made.
+            self.set_secure_cookie(constants.USER_COOKIE_NAME, email)
+            url = self.get_argument('next', None)
+            if not url:
+                url = self.reverse_url('home')
+            self.redirect(url)
+        except (tornado.web.MissingArgumentError, ValueError), msg:
+            logging.debug("login error: %s", msg)
+            self.render('login.html',
+                        error=str(msg),
+                        next=self.get_argument('next', None))
 
 
 class Logout(RequestHandler):
