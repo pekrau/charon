@@ -48,9 +48,9 @@
       <div class="menu1">
 	<div><a href="{{ reverse_url('project_create') }}">Create</div>
       </div>
-      <div><a href="{{ reverse_url('version') }}">Version</a></div>
-      <div><a href="{{ reverse_url('apidoc') }}">API Doc</a></div>
       {% end %}
+      <div><a href="{{ reverse_url('version') }}">Version</a></div>
+      <div><a href="{{ reverse_url('apidoc') }}">API docs</a></div>
       {% end %}
     </nav>
 
@@ -61,7 +61,9 @@
       </div>
       <br>
       <div>
+	{% if current_user %}
 	{% block api %}
+	{% end %}
 	{% end %}
       </div>
     </aside>
