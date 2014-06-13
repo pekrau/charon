@@ -6,6 +6,9 @@ import requests
 from nose import with_setup
 
 from charon import settings
+from charon import utils
+
+utils.load_settings()
 
 BASE_URL = settings['BASE_URL']
 API_URL = BASE_URL + 'api/v1'
