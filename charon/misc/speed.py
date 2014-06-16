@@ -48,7 +48,7 @@ class Timer(object):
         self.start_wall = time.time()
 
     def __str__(self):
-        return "[%.2f, %s]" % (self.wall, self.cpu)
+        return "wall: %.2f, cpu: %s" % (self.wall, self.cpu)
 
     @property
     def cpu(self):
