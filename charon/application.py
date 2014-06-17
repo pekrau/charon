@@ -25,7 +25,13 @@ class Home(RequestHandler):
     "Home page: Form to login or link to create new account. Links to pages."
 
     def get(self):
-        self.render('home.html', next=self.get_argument('next', ''))
+        samples_row = self.db.view('sample/count').rows[0]
+        libpreps_row = self.db.view('libprep/count').rows[0]
+        self.render('home.html',
+                    projects_count=len(list(self.db.view('project/name'))),
+                    samples_count=samples_row.value,
+                    libpreps_count=libpreps_row.value,
+                    next=self.get_argument('next', ''))
 
 
 class ApiHome(ApiRequestHandler):

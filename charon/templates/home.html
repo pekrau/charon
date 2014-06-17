@@ -13,7 +13,26 @@
 
 {% block content %}
 
-{% if not current_user %}
+{% if current_user %}
+<table class="list">
+  <tr>
+    <th>Items</th>
+    <th>Total count</th>
+  </tr>
+  <tr>
+    <td>Projects</td>
+    <td>{{ projects_count }}</td>
+  </tr>
+  <tr>
+    <td>Samples</td>
+    <td>{{ samples_count }}</td>
+  </tr>
+  <tr>
+    <td>Libpreps</td>
+    <td>{{ libpreps_count }}</td>
+  </tr>
+</table>
+{% else %}
 {% include 'login_form.html' %}
 {% end %}
 
