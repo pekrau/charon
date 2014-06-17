@@ -20,3 +20,5 @@ apikey = {'X-Charon-API-key': settings['TEST_API_KEY']}
 def url(*segments):
     "Synthesize absolute URL from path segments."
     return API_URL + '/' + '/'.join([str(s) for s in segments])
+
+session = requests.Session()
