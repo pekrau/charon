@@ -4,3 +4,4 @@
 dist
 charon.egg-info
 charon/dump.tar*
+charon/*.log
