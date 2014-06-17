@@ -52,6 +52,14 @@ class Project(RequestHandler):
         "Display the project information."
         project = self.get_project(projectid)
         samples = self.get_samples(projectid)
+        view = self.db.view('libprep/count')
+        for sample in samples:
+            try:
+                row = view[[projectid, sample['sampleid']]].rows[0]
+            except IndexError:
+                sample['libpreps_count'] = 0
+            else:
+                sample['libpreps_count'] = row.value
         self.render('project.html',
                     project=project,
                     samples=samples,
