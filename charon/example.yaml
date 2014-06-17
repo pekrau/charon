@@ -2,9 +2,10 @@
 BASE_URL: 'http://localhost:8881/'
 DB_SERVER: 'http://localhost:5984/'
 COOKIE_SECRET: 'some secret key!#%&%&'
-# Debugging levels.
+# Logging and debug.
 TORNADO_DEBUG: True
 LOGGING_DEBUG: True
+LOGGING_FILENAME: 'charon.log'
 # Unit tests.
 TEST_API_KEY: '29e948d0ad5b41a6921976dd333167d7'
 # Authentication server.

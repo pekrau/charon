@@ -7,4 +7,5 @@ settings = dict(BASE_URL='http://localhost:8881/',
                 DB_DATABASE='charon',
                 TORNADO_DEBUG=True,
                 LOGGING_DEBUG=True,
+                LOGGING_FORMAT='%(levelname)s [%(asctime)s] %(message)s',
                 )
