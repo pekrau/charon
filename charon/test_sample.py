@@ -1,6 +1,6 @@
 " Charon: nosetests /api/v1/sample "
 
-from charon.setup_test import *
+from charon.init_test import *
 
 PROJECTID = 'P0'
 SAMPLEID = 'S1'
@@ -39,7 +39,7 @@ def test_sample_modify():
     assert sample['projectid'] == PROJECTID
     assert sample['sampleid'] == SAMPLEID
     assert sample['status'] == 'new'
-    sample_url = BASE_URL.rstrip('/') + response.headers['location']
+    sample_url = settings['BASE_URL'].rstrip('/') + response.headers['location']
     data = dict(status='old')
     response = session.put(sample_url,
                            data=json.dumps(data),

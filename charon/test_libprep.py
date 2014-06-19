@@ -1,6 +1,6 @@
 " Charon: nosetests /api/v1/libprep "
 
-from charon.setup_test import *
+from charon.init_test import *
 
 PROJECTID = 'P0'
 SAMPLEID = 'S1'
@@ -47,7 +47,7 @@ def test_libprep_modify():
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
     assert libprep['status'] == 'new'
-    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
+    libprep_url = settings['BASE_URL'].rstrip('/') + response.headers['location']
     data = dict(status='old')
     response = session.put(libprep_url,
                            data=json.dumps(data),
@@ -122,7 +122,7 @@ def test_libprep_seqruns():
                             data=json.dumps(data),
                             headers=apikey)
     assert response.status_code == 204, response
-    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
+    libprep_url = settings['BASE_URL'].rstrip('/') + response.headers['location']
     response = session.get(libprep_url, headers=apikey)
     assert response.status_code == 200, response
     data = response.json()

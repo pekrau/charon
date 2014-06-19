@@ -1,6 +1,6 @@
 " Charon: nosetests /api/v1/version "
 
-from charon.setup_test import *
+from charon.init_test import *
 
 
 def test_version():

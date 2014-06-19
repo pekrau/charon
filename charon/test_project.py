@@ -1,6 +1,6 @@
 " Charon: nosetests /api/v1/project "
 
-from charon.setup_test import *
+from charon.init_test import *
 
 PROJECTID = 'P0'
 
