@@ -31,11 +31,11 @@ class Login(RequestHandler):
         self.check_xsrf_cookie()
         try:
             email = self.get_argument('email')
-            url = "{0}/{1}".format(settings['USERMAN_URL'],
+            url = "{0}/{1}".format(settings['AUTH']['AUTH_HREF'],
                                    urllib.quote(email))
             data = json.dumps(dict(password=self.get_argument('password'),
                                    service='Charon'))
-            headers = {'X-Userman-API-key': settings['USERMAN_API_KEY']}
+            headers = {'X-Userman-API-key': settings['AUTH']['API_KEY']}
             response = requests.post(url, data=data, headers=headers)
             if response.status_code != requests.codes.ok:
                 raise ValueError(str(response.reason))
@@ -45,7 +45,7 @@ class Login(RequestHandler):
                 user = response.json()
             else:
                 user.update(response.json())
-            with UserSaver(doc=user, rqh=self) as saver:
+            with UserSaver(doc=user, rqh=self):
                 pass        # Changes already made.
             self.set_secure_cookie(constants.USER_COOKIE_NAME, email)
             url = self.get_argument('next', None)

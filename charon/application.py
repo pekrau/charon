@@ -118,7 +118,7 @@ class Dummy(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
-        pass
+        logging.debug("dummy, %s, %s", args, kwargs)
 
 
 URL = tornado.web.url
@@ -166,6 +166,7 @@ handlers = \
      URL(r'/api/v1/version', ApiVersion, name='api_version'),
      URL(r'/api/v1/doc/([a-f0-9]{32})', ApiDocument, name='api_doc'),
      URL(r'/api/v1/logs/([a-f0-9]{32})', ApiLogs, name='api_logs'),
+     URL(r'/api/v1/notify', ApiNotify, name='api_notify'),
      ]
 
 

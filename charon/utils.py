@@ -59,13 +59,20 @@ def load_settings(filepath=None):
     logging.info("settings from file %s", filepath)
     # Check settings
     for key in ['BASE_URL', 'DB_SERVER', 'DB_DATABASE',
-                'COOKIE_SECRET', 'USERMAN_URL', 'USERMAN_API_KEY']:
+                'COOKIE_SECRET', 'AUTH']:
         if key not in settings:
-            raise KeyError("no '{0}' key in settings".format(key))
+            raise KeyError("no settings['{0}'] item".format(key))
         if not settings[key]:
-            raise ValueError("setting '{0}' has invalid value".format(key))
+            raise ValueError("settings['{0}'] has invalid value".format(key))
+    # Only Userman is available currently
+    key = 'SERVICE'
+    if settings['AUTH'].get(key) != 'Userman':
+        raise ValueError("settings['{0}'] has invalid value".format(key))
+    for key in ['HREF', 'USER_HREF', 'AUTH_HREF', 'API_KEY']:
+        if key not in settings['AUTH']:
+            raise KeyError("no settings['AUTH']['{0}'] item".format(key))
     if len(settings['COOKIE_SECRET']) < 10:
-        raise ValueError('setting COOKIE_SECRET too short')
+        raise ValueError("settings['COOKIE_SECRET'] too short")
     # Settings computable from others
     settings['DB_SERVER_VERSION'] = couchdb.Server(settings['DB_SERVER']).version()
     if 'PORT' not in settings:

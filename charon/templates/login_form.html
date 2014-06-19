@@ -41,3 +41,14 @@
   </fieldset>
 
 </form>
+
+{% if not current_user %}
+
+<h3>
+  {% module Icon('action') %}
+  <a href="{{ settings['USERMAN_URL'] }}">
+    Handle user account: create, reset, activate or edit.
+  </a>
+</h3>
+
+{% end %}
