@@ -23,20 +23,42 @@ class ApiSeqrun(ApiRequestHandler):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
         try:
-            pos = int(seqrunid)
-            if pos <= 0: raise ValueError
-            seqrun = libprep['seqruns'][pos - 1]
+            pos = int(seqrunid) - 1
+            if pos < 0: raise ValueError
+            seqrun = libprep['seqruns'][pos]
         except (TypeError, ValueError, IndexError):
-            self.send_error(404, reason='no such item')
+            self.send_error(404, reason='no such seqrun')
         else:
             self.write(seqrun)
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
         """Update the seqrun data.
-        XXX to be implemented
-        Return HTTP 404 if no such seqrun, libprep, sample or project."""
-        raise NotImplementedError
-
+        Return HTTP 404 if no such seqrun, libprep, sample or project.
+        Return HTTP 400 if any problem with a value."""
+        project = self.get_project(projectid)
+        sample = self.get_sample(projectid, sampleid)
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        try:
+            pos = int(seqrunid) - 1
+            if pos < 0: raise ValueError
+            seqrun = libprep['seqruns'][pos]
+        except (ValueError, TypeError, IndexError):
+            self.send_error(404, reason='no such seqrun')
+        else:
+            try:
+                data = json.loads(self.request.body)
+                if not isinstance(data.get('coverage', 0.0), (float, int)):
+                    raise ValueError('invalid coverage type')
+            except Exception, msg:
+                self.send_error(400, reason=str(msg))
+            else:
+                seqrun.update(data)
+                with LibprepSave(doc=libprep, rqh=self) as saver:
+                    seqruns = libprep['seqruns']
+                    seqruns[pos] = seqrun
+                    saver['seqruns'] = seqruns
+                self.write(seqrun)
+                
 
 class SeqrunCreate(RequestHandler):
     "Create a seqrun within a libprep."
@@ -59,8 +81,8 @@ class SeqrunCreate(RequestHandler):
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
                 seqrun = dict(status=self.get_argument('status', None),
-                              alignment_status=self.get_argument
-                              ('alignment_status', None))
+                              status=self.get_argument('flowcellid', None),
+                              alignment_status=self.get_argument('alignment_status', None))
                 try:
                     coverage = float(self.get_argument('alignment_coverage', 0.0))
                 except (ValueError, TypeError):

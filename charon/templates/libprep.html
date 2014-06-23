@@ -75,6 +75,7 @@ Libprep {{ libprep['libprepid'] }}
 	<tr class="list">
 	  <th>Number</th>
 	  <th>Status</th>
+	  <th>Flowcell ID</th>
 	  <th>Alignment status</th>
 	  <th>Alignment coverage</th>
 	</tr>
@@ -82,6 +83,7 @@ Libprep {{ libprep['libprepid'] }}
 	<tr>
 	  <td>{{ pos + 1 }}</td>
 	  <td>{{ seqrun.get('status') or '-' }}</td>
+	  <td>{{ seqrun.get('flowcellid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
 	  <td class="number">
 	    {{ seqrun.get('alignment_coverage') or '0.0' }}
