@@ -144,7 +144,7 @@ class ApiLibprepCreate(ApiRequestHandler):
           XXX
         Return HTTP 201, libprep URL in header "Location", and libprep data.
         Return HTTP 400 if something is wrong with the input data.
-        Return HTTP 404 if there is no such project or sample.
+        Return HTTP 404 if no such project or sample.
         Return HTTP 409 if there is a document revision conflict."""
         project = self.get_project(projectid)
         if not project: return

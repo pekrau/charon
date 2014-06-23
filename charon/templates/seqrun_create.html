@@ -42,7 +42,7 @@ Create Seqrun
 	<th>Sample</th>
 	<td>{% module Icon('mandatory') %}</td>
 	<td>
-	  <a href="{{ reverse_url('sample', project['projectid'], sample['projectid']) }}">
+	  <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
 	    {{ sample['sampleid'] }}
 	  </a>
 	</td>
@@ -55,7 +55,7 @@ Create Seqrun
 	<th>Libprep</th>
 	<td>{% module Icon('mandatory') %}</td>
 	<td>
-	  <a href="{{ reverse_url('libprep', project['projectid'], sample['projectid'], libprep['libprepid']) }}">
+	  <a href="{{ reverse_url('libprep', project['projectid'], sample['sampleid'], libprep['libprepid']) }}">
 	    {{ libprep['libprepid'] }}
 	  </a>
 	</td>
@@ -85,7 +85,8 @@ Create Seqrun
       <tr>
 	<th>Alignment coverage</th>
 	<td></td>
-	<td><input type="text" name="alignment_coverage"></td>
+	<td><input type="number" min="0" step="0.01"
+		   name="alignment_coverage"></td>
 	<td class="description">
 	  Coverage of the alignment for the seqrun.
 	</td>

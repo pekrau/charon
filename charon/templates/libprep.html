@@ -75,11 +75,17 @@ Libprep {{ libprep['libprepid'] }}
 	<tr class="list">
 	  <th>Number</th>
 	  <th>Status</th>
+	  <th>Alignment status</th>
+	  <th>Alignment coverage</th>
 	</tr>
-	{% for seqrun in libprep['seqruns'] %}
+	{% for pos, seqrun in enumerate(libprep['seqruns']) %}
 	<tr>
-	  <td>{{ seqrun['pos'] + 1 }}</td>
+	  <td>{{ pos + 1 }}</td>
 	  <td>{{ seqrun.get('status') or '-' }}</td>
+	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
+	  <td class="number">
+	    {{ seqrun.get('alignment_coverage') or '0.0' }}
+	  </td>
 	</tr>
 	{% end %}
       </table>

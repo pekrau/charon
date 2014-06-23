@@ -19,7 +19,7 @@ class ApiSeqrun(ApiRequestHandler):
 
     def get(self, projectid, sampleid, libprepid, seqrunid):
         """Return the seqrun data.
-        Return HTTP 404 if there is no such seqrun, libprep, sample or project."""
+        Return HTTP 404 if no such seqrun, libprep, sample or project."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
         try:
@@ -32,7 +32,9 @@ class ApiSeqrun(ApiRequestHandler):
             self.write(seqrun)
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
-        "Update the seqrun data. XXX to be implemented"
+        """Update the seqrun data.
+        XXX to be implemented
+        Return HTTP 404 if no such seqrun, libprep, sample or project."""
         raise NotImplementedError
 
 
@@ -56,7 +58,14 @@ class SeqrunCreate(RequestHandler):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
-                seqrun = dict(status=self.get_argument('status', None))
+                seqrun = dict(status=self.get_argument('status', None),
+                              alignment_status=self.get_argument
+                              ('alignment_status', None))
+                try:
+                    coverage = float(self.get_argument('alignment_coverage', 0.0))
+                except (ValueError, TypeError):
+                    coverage = 0.0
+                seqrun['alignment_coverage'] = coverage
                 saver['seqruns'] = libprep['seqruns'] + [seqrun]
         except ValueError, msg:
             raise tornado.web.HTTPError(400, reason=str(msg))
@@ -78,7 +87,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
           pos (computed) number of seqrun within libprep
         Return 204 "No content" and (note!) libprep URL in header.
         Return HTTP 400 if something is wrong with the values.
-        Return HTTP 404 if there is no such project, sample or libprep.
+        Return HTTP 404 if no such project, sample or libprep.
         Return HTTP 409 if there is a document revision conflict."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
