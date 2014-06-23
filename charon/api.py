@@ -11,28 +11,28 @@ from . import constants
 from . import settings
 from . import utils
 from .requesthandler import RequestHandler
-from .login import UserSaver
+from .user import UserSaver
 
 
 class ApiRequestHandler(RequestHandler):
-    "Check API key unless logged in."
+    "Check API token unless logged in."
 
     def prepare(self):
         super(ApiRequestHandler, self).prepare()
         self.check_api_access()
 
     def check_api_access(self):
-        """Check the API key given in the header.
+        """Check the API token given in the header.
         Return HTTP 401 if invalid or missing key."""
         if self.get_current_user(): return
         try:
-            apikey = self.request.headers['X-Charon-API-key']
+            api_token = self.request.headers['X-Charon-API-token']
         except KeyError:
-            self.send_error(401, reason='API key missing')
+            self.send_error(401, reason='API token missing')
         else:
-            rows = list(self.db.view('user/apikey')[apikey])
+            rows = list(self.db.view('user/api_token')[api_token])
             if len(rows) != 1:
-                self.send_error(401, reason='invalid API key')
+                self.send_error(401, reason='invalid API token')
             else:
                 try:
                     user = self.get_user(rows[0].value)
@@ -41,7 +41,7 @@ class ApiRequestHandler(RequestHandler):
                 else:
                     if user.get('status') == constants.ACTIVE:
                         self._user = user
-                        logging.debug("API key accept user '%s'", user['email'])
+                        logging.debug("API token user '%s'", user['email'])
                     else:
                         self.send_error(401, reason='user not active')
 
@@ -68,15 +68,14 @@ class ApiLogs(ApiRequestHandler):
 class ApiNotify(ApiRequestHandler):
     """Notify this web service of an event in some other system.
     This web service is free to ignore the event.
-    No API key is required for this call."""
+    No API token is required for this call."""
 
     def check_api_access(self):
         pass
 
     def post(self):
         """Handle 'user' event; fetch new data.
-        This assumes that Userman is the authentication server.
-        """
+        Userman is the authentication server."""
         logging.debug('API notify')
         try:
             data = json.loads(self.request.body)
@@ -94,7 +93,7 @@ class ApiNotify(ApiRequestHandler):
             self.set_status(202)
             self.finish()
             try:
-                headers = {'X-Userman-API-key': settings['AUTH']['API_KEY']}
+                headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
                 data = dict(service='Charon')
                 response = requests.post(href, headers=headers,
                                          data=json.dumps(data))

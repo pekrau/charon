@@ -68,7 +68,7 @@ def load_settings(filepath=None):
     key = 'SERVICE'
     if settings['AUTH'].get(key) != 'Userman':
         raise ValueError("settings['{0}'] has invalid value".format(key))
-    for key in ['HREF', 'USER_HREF', 'AUTH_HREF', 'API_KEY']:
+    for key in ['HREF', 'USER_HREF', 'AUTH_HREF', 'API_TOKEN']:
         if key not in settings['AUTH']:
             raise KeyError("no settings['AUTH']['{0}'] item".format(key))
     if len(settings['COOKIE_SECRET']) < 10:

@@ -11,10 +11,10 @@ from charon import utils
 
 utils.load_settings(filepath=os.getenv('SETTINGS'))
 
-# This key is associated with a user account, and must be current.
-apikey = {'X-Charon-API-key': settings['TEST_API_KEY']}
+# This token is associated with a user account, and must be current.
+api_token = {'X-Charon-API-token': settings['TEST_API_TOKEN']}
 
-# Speed improvement: reuse open connection, rather than create new every time
+# Optimize speed: reuse open connection, rather than create new every time
 session = requests.Session()
 
 def url(*segments):

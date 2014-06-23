@@ -30,9 +30,10 @@
 	<div>
 	  {% if current_user %}
 	  Logged in as
-	  {% module Icon('user') %}
-	  {{ current_user['email'] }}
-	  {% include 'logout_form.html' %}
+	  <a href="{{ reverse_url('user', current_user['email']) }}">
+	    {% module Icon('user') %}
+	    {{ current_user['email'] }}
+	  </a>
 	  {% end %}
 	</div>
 	{% end %}

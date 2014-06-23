@@ -9,11 +9,11 @@ SAMPLEID = 'S1'
 def my_setup():
     "Create the project to work with samples."
     data = dict(projectid=PROJECTID)
-    session.post(url('project'), data=json.dumps(data), headers=apikey)
+    session.post(url('project'), data=json.dumps(data), headers=api_token)
 
 def my_teardown():
     "Delete the project and all its dependents."
-    session.delete(url('project', PROJECTID), headers=apikey)
+    session.delete(url('project', PROJECTID), headers=api_token)
 
 @with_setup(my_setup, my_teardown)
 def test_sample_create():
@@ -21,7 +21,7 @@ def test_sample_create():
     data = dict(sampleid=SAMPLEID)
     response = session.post(url('sample', PROJECTID),
                             data=json.dumps(data),
-                            headers=apikey)
+                            headers=api_token)
     assert response.status_code == 201, response
     sample = response.json()
     assert sample['projectid'] == PROJECTID
@@ -33,7 +33,7 @@ def test_sample_modify():
     data = dict(sampleid=SAMPLEID, status='new')
     response = session.post(url('sample', PROJECTID),
                             data=json.dumps(data),
-                            headers=apikey)
+                            headers=api_token)
     assert response.status_code == 201
     sample = response.json()
     assert sample['projectid'] == PROJECTID
@@ -43,9 +43,9 @@ def test_sample_modify():
     data = dict(status='old')
     response = session.put(sample_url,
                            data=json.dumps(data),
-                           headers=apikey)
+                           headers=api_token)
     assert response.status_code == 204, response
-    response = session.get(sample_url, headers=apikey)
+    response = session.get(sample_url, headers=api_token)
     assert response.status_code == 200, response
     sample = response.json()
     assert sample['status'] == 'old'
@@ -54,7 +54,7 @@ def test_sample_modify():
 def test_no_such_sample():
     "Access a non-existing sample."
     response = session.get(url('sample', PROJECTID, 'no such sample'),
-                           headers=apikey)
+                           headers=api_token)
     assert response.status_code == 404
 
 @with_setup(my_setup, my_teardown)
@@ -63,7 +63,7 @@ def test_sample_create_collision():
     data = dict(sampleid=SAMPLEID)
     response = session.post(url('sample', PROJECTID),
                             data=json.dumps(data),
-                            headers=apikey)
+                            headers=api_token)
     assert response.status_code == 201, response
     sample = response.json()
     assert sample['projectid'] == PROJECTID
@@ -71,5 +71,5 @@ def test_sample_create_collision():
     data = dict(sampleid=SAMPLEID)
     response = session.post(url('sample', PROJECTID),
                             data=json.dumps(data),
-                            headers=apikey)
+                            headers=api_token)
     assert response.status_code == 400, response

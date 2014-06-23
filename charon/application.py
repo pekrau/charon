@@ -13,7 +13,7 @@ from charon import utils
 from charon import uimodules
 from charon.requesthandler import RequestHandler
 
-from charon.login import *
+from charon.user import *
 from charon.project import *
 from charon.sample import *
 from charon.libprep import *
@@ -25,21 +25,27 @@ class Home(RequestHandler):
     "Home page: Form to login or link to create new account. Links to pages."
 
     def get(self):
-        samples_row = self.db.view('sample/count').rows[0]
-        libpreps_row = self.db.view('libprep/count').rows[0]
+        try:
+            samples_count = self.db.view('sample/count').rows[0].value
+        except IndexError:
+            samples_count = 0
+        try:
+            libpreps_count = self.db.view('libprep/count').rows[0].value
+        except IndexError:
+            libpreps_count = 0
         self.render('home.html',
                     projects_count=len(list(self.db.view('project/name'))),
-                    samples_count=samples_row.value,
-                    libpreps_count=libpreps_row.value,
+                    samples_count=samples_count,
+                    libpreps_count=libpreps_count,
                     next=self.get_argument('next', ''))
 
 
 class ApiHome(ApiRequestHandler):
     """API root: Links to API entry points.
-    Every call to any API resource must include an API access key in the header.
-    The key of the header record is 'X-Charon-API-key', and the value
-    is a random hexadecimal string set by the Userman system. Go to your
-    account in Userman to find the value for the Charon service."""
+    Every call to an API resource must include an API access
+    token in the header.
+    The key of the header record is 'X-Charon-API-token',
+    and the value is a random hexadecimal string."""
 
     def get(self):
         """Return links to API entry points.
@@ -138,6 +144,8 @@ handlers = \
          LibprepEdit, name='libprep_edit'),
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)',
          SeqrunCreate, name='seqrun_create'),
+     URL(r'/user/([^/]+)', User, name='user'),
+     URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
      URL(constants.LOGIN_URL, Login, name='login'),
      URL(r'/logout', Logout, name='logout'),
      URL(r'/version', Version, name='version'),

@@ -1,0 +1,62 @@
+{# User page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+User {{ user['email'] }}
+{% end %}
+
+{% block title %}
+{% module Icon('user') %}
+User {{ user['email'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('user_token', user['email']) }}",
+      method="POST">
+  {% module xsrf_form_html() %}
+  {% module Submit('apitoken_new', title='New API token',
+	      onclick="return confirm('Previous API token will become invalid.');") %}
+</form>
+
+{% include 'logout_form.html' %}
+{% end %}
+
+{% block content %}
+
+<table class="fields">
+  <tr>
+    <th>Email</th>
+    <td>{{ user['email'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Name</th>
+    <td>{{ user['fullname'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Role</th>
+    <td>{{ user['role'] }}</td>
+  </tr>
+
+  <tr>
+    <th>Status</th>
+    <td>{{ user.get('status') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>API token</th>
+    <td>{{ user.get('api_token') or '-' }}</td>
+  </tr>
+
+  <tr>
+    <th>Event log</th>
+    <td>
+      {% include 'log.html' %}
+    </td>
+  </tr>
+
+</table>
+
+{% end %}

@@ -1,4 +1,4 @@
-" Charon: Login interface. "
+" Charon: User account handling."
 
 import logging
 import json
@@ -35,7 +35,7 @@ class Login(RequestHandler):
                                    urllib.quote(email))
             data = json.dumps(dict(password=self.get_argument('password'),
                                    service='Charon'))
-            headers = {'X-Userman-API-key': settings['AUTH']['API_KEY']}
+            headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
             response = requests.post(url, data=data, headers=headers)
             if response.status_code != requests.codes.ok:
                 raise ValueError(str(response.reason))
@@ -66,3 +66,31 @@ class Logout(RequestHandler):
         self.check_xsrf_cookie()
         self.set_secure_cookie(constants.USER_COOKIE_NAME, '')
         self.redirect(self.reverse_url('login'))
+
+
+class User(RequestHandler):
+    "User account handler."
+
+    @tornado.web.authenticated
+    def get(self, email):
+        user = self.get_user(email)
+        if user != self.get_current_user() and user['role'] != 'admin':
+            raise tornado.web.HTTPError(403)
+        self.render('user.html',
+                    user=user,
+                    logs=self.get_logs(user['_id']))
+
+
+class UserApiToken(RequestHandler):
+    "API token handler for user account."
+
+    @tornado.web.authenticated
+    def post(self, email):
+        "Set the API token for the user."
+        self.check_xsrf_cookie()
+        user = self.get_user(email)
+        if user != self.get_current_user() and user['role'] != 'admin':
+            raise tornado.web.HTTPError(403)
+        with UserSaver(doc=user, rqh=self) as saver:
+            saver['api_token'] = utils.get_iuid()
+        self.redirect(self.reverse_url('user', user['email']))
