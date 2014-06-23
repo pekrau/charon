@@ -47,18 +47,24 @@ class ApiSeqrun(ApiRequestHandler):
         else:
             try:
                 data = json.loads(self.request.body)
-                if not isinstance(data.get('coverage', 0.0), (float, int)):
-                    raise ValueError('invalid coverage type')
+                try:
+                    if not isinstance(data['coverage'], (float, int)):
+                        raise ValueError('invalid coverage type')
+                    if pos != data.pop('pos'):
+                        raise ValueError('incorrect pos value')
+                except KeyError:
+                    pass
             except Exception, msg:
                 self.send_error(400, reason=str(msg))
             else:
                 seqrun.update(data)
-                with LibprepSave(doc=libprep, rqh=self) as saver:
+                with LibprepSaver(doc=libprep, rqh=self) as saver:
                     seqruns = libprep['seqruns']
                     seqruns[pos] = seqrun
                     saver['seqruns'] = seqruns
+                seqrun['pos'] = pos
                 self.write(seqrun)
-                
+
 
 class SeqrunCreate(RequestHandler):
     "Create a seqrun within a libprep."
@@ -81,7 +87,7 @@ class SeqrunCreate(RequestHandler):
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
                 seqrun = dict(status=self.get_argument('status', None),
-                              status=self.get_argument('flowcellid', None),
+                              flowcellid=self.get_argument('flowcellid', None),
                               alignment_status=self.get_argument('alignment_status', None))
                 try:
                     coverage = float(self.get_argument('alignment_coverage', 0.0))
@@ -107,7 +113,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
           alignment_status (optional)
           alignment_coverage (optional) in percent, float (max 100)
           pos (computed) number of seqrun within libprep
-        Return 204 "No content" and (note!) libprep URL in header.
+        Return 204 "No content" and (NOTE!) libprep URL in header.
         Return HTTP 400 if something is wrong with the values.
         Return HTTP 404 if no such project, sample or libprep.
         Return HTTP 409 if there is a document revision conflict."""
