@@ -45,8 +45,10 @@ class Login(RequestHandler):
                 user = response.json()
             else:
                 user.update(response.json())
-            with UserSaver(doc=user, rqh=self):
-                pass        # Changes already made.
+            with UserSaver(doc=user, rqh=self) as saver:
+                # All other changes already made.
+                if not user.get('api_token'):
+                    saver['api_token'] = utils.get_iuid()
             self.set_secure_cookie(constants.USER_COOKIE_NAME, email)
             url = self.get_argument('next', None)
             if not url:
