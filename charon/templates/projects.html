@@ -25,6 +25,8 @@ Projects
     <th>Identifier</th>
     <th>Name</th>
     <th>Status</th>
+    <th># samples</th>
+    <th># libpreps</th>
     <th>Created</th>
     <th>Modified</th>
   </tr>
@@ -38,6 +40,8 @@ Projects
     </td>
     <td>{{ project['name'] }}</td>
     <td>{{ project.get('status') or '-' }}</td>
+    <td class="number">{{ project['sample_count'] }}</td>
+    <td class="number">{{ project['libprep_count'] }}</td>
     <td class="localtime">{{ project['created'] }}</td>
     <td class="localtime">{{ project['modified'] }}</td>
   </tr>

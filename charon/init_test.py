@@ -6,9 +6,11 @@ import json
 import requests
 from nose import with_setup
 
+
+# NOTE: This is needed *only* to get the test API token.
+# No other Charon package settings are used by the test scripts.
 from charon import settings
 from charon import utils
-
 utils.load_settings(filepath=os.getenv('SETTINGS'))
 
 # This token is associated with a user account, and must be current.
