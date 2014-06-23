@@ -45,7 +45,7 @@ class RequestHandler(tornado.web.RequestHandler):
                 return None
             try:
                 user = self.get_user(email)
-            except KeyError:
+            except tornado.web.HTTPError:
                 return None
             if user.get('status') != constants.ACTIVE:
                 return None
