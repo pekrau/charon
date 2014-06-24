@@ -31,10 +31,14 @@ class Login(RequestHandler):
         self.check_xsrf_cookie()
         try:
             email = self.get_argument('email')
+            if not email:
+                raise ValueError('no email given')
             url = "{0}/{1}".format(settings['AUTH']['AUTH_HREF'],
                                    urllib.quote(email))
-            data = json.dumps(dict(password=self.get_argument('password'),
-                                   service='Charon'))
+            password = self.get_argument('password')
+            if not password:
+                raise ValueError('no password given')
+            data = json.dumps(dict(password=password, service='Charon'))
             headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
             response = requests.post(url, data=data, headers=headers)
             if response.status_code != requests.codes.ok:

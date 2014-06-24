@@ -1,3 +1,25 @@
+{# Login display. #}
+
+{% if not current_user %}
+
+<p>
+  {% module Icon('action') %}
+  Don't have an account? 
+  <a href="{{ settings['AUTH'].get('CREATE_HREF', settings['AUTH']['HREF']) }}">
+    Go here to create it.
+  </a>
+</p>
+
+<p>
+  {% module Icon('action') %}
+  Forgotten your password?
+  <a href="{{ settings['AUTH'].get('RESET_HREF', settings['AUTH']['HREF']) }}">
+    Go here to reset it.
+  </a>
+</p>
+
+{% end %}
+
 <form action="{{ reverse_url('login') }}" method="POST">
   {% module xsrf_form_html() %}
 
@@ -41,14 +63,3 @@
   </fieldset>
 
 </form>
-
-{% if not current_user %}
-
-<h3>
-  {% module Icon('action') %}
-  <a href="{{ settings['AUTH']['HREF'] }}">
-    Create, reset, activate or edit user account.
-  </a>
-</h3>
-
-{% end %}
