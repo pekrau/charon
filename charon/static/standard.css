@@ -110,6 +110,10 @@ button:disabled img {opacity:0.4;
 
 table.headless tr:nth-child(even) {background-color: linen; }
 
+table.list caption {font-size: medium;
+		    font-weight: bold;
+		   }
+
 table.list tr:nth-child(2n+3) {background-color: linen; }
 
 table.list th {text-align: left;

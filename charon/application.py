@@ -33,10 +33,25 @@ class Home(RequestHandler):
             libpreps_count = self.db.view('libprep/count').rows[0].value
         except IndexError:
             libpreps_count = 0
+        view = self.db.view('project/modified', limit=10,
+                            descending=True,
+                            include_docs=True)
+        projects = [r.doc for r in view]
+        view = self.db.view('sample/modified', limit=10,
+                            descending=True,
+                            include_docs=True)
+        samples = [r.doc for r in view]
+        view = self.db.view('libprep/modified', limit=10,
+                            descending=True,
+                            include_docs=True)
+        libpreps = [r.doc for r in view]
         self.render('home.html',
                     projects_count=len(list(self.db.view('project/name'))),
                     samples_count=samples_count,
                     libpreps_count=libpreps_count,
+                    projects=projects,
+                    samples=samples,
+                    libpreps=libpreps,
                     next=self.get_argument('next', ''))
 
 

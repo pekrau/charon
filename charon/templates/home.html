@@ -14,24 +14,92 @@
 {% block content %}
 
 {% if current_user %}
+
+<p>
+  <strong>Grand total</strong>:
+  {{ projects_count }} projects,
+  {{ samples_count }} samples,
+  {{ libpreps_count }} libpreps.
+</p>
+
 <table class="list">
+  <caption>Recently modified projects</caption>
   <tr>
-    <th>Items</th>
-    <th>Grand total</th>
+    <th>Identifier</th>
+    <th>Name</th>
+    <th>Modified</th>
   </tr>
+  {% for project in projects %}
   <tr>
-    <td><a href="{{ reverse_url('projects') }}">Projects</a></td>
-    <td class="number">{{ projects_count }}</td>
+    <td>
+      <a href="{{ reverse_url('project', project['projectid']) }}">
+	{{ project['projectid'] }}
+      </a>
+    </td>
+    <td>{{ project['name'] }}</td>
+    <td class="localtime">{{ project['modified'] }}</td>
   </tr>
-  <tr>
-    <td>Samples</td>
-    <td class="number">{{ samples_count }}</td>
-  </tr>
-  <tr>
-    <td>Libpreps</td>
-    <td class="number">{{ libpreps_count }}</td>
-  </tr>
+  {% end %}
 </table>
+
+<br>
+
+<table class="list">
+  <caption>Recently modified samples</caption>
+  <tr>
+    <th>Project</th>
+    <th>Sample</th>
+    <th>Modified</th>
+  </tr>
+  {% for sample in samples %}
+  <tr>
+    <td>
+      <a href="{{ reverse_url('project', sample['projectid']) }}">
+	{{ sample['projectid'] }}
+      </a>
+    </td>
+    <td>
+      <a href="{{ reverse_url('sample', sample['projectid'], sample['sampleid']) }}">
+	{{ sample['sampleid'] }}
+      </a>
+    </td>
+    <td class="localtime">{{ sample['modified'] }}</td>
+  </tr>
+  {% end %}
+</table>
+
+<br>
+
+<table class="list">
+  <caption>Recently modified libpreps</caption>
+  <tr>
+    <th>Project</th>
+    <th>Sample</th>
+    <th>Libprep</th>
+    <th>Modified</th>
+  </tr>
+  {% for libprep in libpreps %}
+  <tr>
+    <td>
+      <a href="{{ reverse_url('project', libprep['projectid']) }}">
+	{{ libprep['projectid'] }}
+      </a>
+    </td>
+    <td>
+      <a href="{{ reverse_url('sample', libprep['projectid'], libprep['sampleid']) }}">
+	{{ libprep['sampleid'] }}
+      </a>
+    </td>
+    <td>
+      <a href="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+	{{ libprep['libprepid'] }}
+      </a>
+    </td>
+    <td class="localtime">{{ libprep['modified'] }}</td>
+  </tr>
+  {% end %}
+</table>
+
 {% else %}
 {% include 'login_form.html' %}
 {% end %}
