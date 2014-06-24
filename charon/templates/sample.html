@@ -66,7 +66,12 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 
   <tr>
     <th>Received</th>
-    <td class="localtime">{{ sample.get('received') or '-' }}</td>
+    {% set timestamp = sample.get('received') %}
+    {% if timestamp %}
+    <td class="localtime">{{ timestamp }}</td>
+    {% else %}
+    <td>-</td>
+    {% end %}
   </tr>
 
   <tr>
@@ -91,22 +96,42 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 
   <tr>
     <th>Sequenced</th>
-    <td class="localtime">{{ sample.get('sequenced') or '-' }}</td>
+    {% set timestamp = sample.get('sequenced') %}
+    {% if timestamp %}
+    <td class="localtime">{{ timestamp }}</td>
+    {% else %}
+    <td>-</td>
+    {% end %}
   </tr>
 
   <tr>
     <th>Primary analysis done</th>
-    <td class="localtime">{{ sample.get('primary_analysis_done') or '-' }}</td>
+    {% set timestamp = sample.get('primary_analysis_done') %}
+    {% if timestamp %}
+    <td class="localtime">{{ timestamp }}</td>
+    {% else %}
+    <td>-</td>
+    {% end %}
   </tr>
 
   <tr>
     <th>Secondary analysis done</th>
-    <td class="localtime">{{ sample.get('secondary_analysis_done') or '-' }}</td>
+    {% set timestamp = sample.get('secondary_analysis_done') %}
+    {% if timestamp %}
+    <td class="localtime">{{ timestamp }}</td>
+    {% else %}
+    <td>-</td>
+    {% end %}
   </tr>
 
   <tr>
     <th>Delivered</th>
-    <td class="localtime">{{ sample.get('delivered') or '-' }}</td>
+    {% set timestamp = sample.get('delivered') %}
+    {% if timestamp %}
+    <td class="localtime">{{ timestamp }}</td>
+    {% else %}
+    <td>-</td>
+    {% end %}
   </tr>
 
   <tr>
