@@ -116,6 +116,7 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 	<tr class="list">
 	  <th>Identifier</th>
 	  <th>Status</th>
+	  <th># seqruns</th>
 	  <th>Modified</th>
 	</tr>
 	{% for libprep in libpreps %}
@@ -126,6 +127,7 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 	      </a>
 	  </td>
 	  <td>{{ libprep.get('status') or '-' }}</td>
+	  <td class="number">{{ libprep['seqruns_count'] }}</td>
 	  <td class="localtime">{{ libprep['modified'] }}</td>
 	</tr>
 	{% end %}

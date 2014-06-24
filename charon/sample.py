@@ -74,6 +74,17 @@ class Sample(RequestHandler):
         project = self.get_project(projectid)
         sample = self.get_sample(projectid, sampleid)
         libpreps = self.get_libpreps(projectid, sampleid)
+        view = self.db.view('seqrun/count')
+        for libprep in libpreps:
+            try:
+                startkey = [projectid, sampleid, libprep['libprepid']]
+                endkey = [projectid, sampleid, libprep['libprepid'],
+                          constants.HIGH_CHAR]
+                row = view[startkey:endkey].rows[0]
+            except IndexError:
+                libprep['seqruns_count'] = 0
+            else:
+                libprep['seqruns_count'] = row.value
         self.render('sample.html',
                     project=project,
                     sample=sample,

@@ -60,6 +60,16 @@ class Project(RequestHandler):
                 sample['libpreps_count'] = 0
             else:
                 sample['libpreps_count'] = row.value
+        view = self.db.view('seqrun/count')
+        for sample in samples:
+            try:
+                startkey = [projectid, sample['sampleid']]
+                endkey = [projectid, sample['sampleid'], constants.HIGH_CHAR]
+                row = view[startkey:endkey].rows[0]
+            except IndexError:
+                sample['seqruns_count'] = 0
+            else:
+                sample['seqruns_count'] = row.value
         self.render('project.html',
                     project=project,
                     samples=samples,
