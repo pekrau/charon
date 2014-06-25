@@ -77,6 +77,18 @@ Project {{ project['projectid'] }}
       </tr>
 
       <tr>
+	<th>Pipeline</th>
+	<td></td>
+	<td>
+	  <input type="text" name="pipeline"
+		 value="{{ project.get('pipeline') or '' }}">
+	</td>
+	<td class="description">
+	  The pipeline to use for project data analysis.
+	</td>
+      </tr>
+
+      <tr>
 	<th></th>
 	<td></td>
 	<td>

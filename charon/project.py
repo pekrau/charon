@@ -16,7 +16,8 @@ from .saver import DocumentSaver
 
 class ProjectSaver(DocumentSaver):
     doctype = constants.PROJECT
-    field_keys = ['projectid', 'name', 'status', 'best_practice_analysis']
+    field_keys = ['projectid', 'name', 'status',
+                  'best_practice_analysis', 'pipeline']
 
     def check_projectid(self, value):
         if self.is_new():

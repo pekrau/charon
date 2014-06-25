@@ -88,6 +88,12 @@ Libprep {{ libprep['libprepid'] }}
 	  <td class="number">
 	    {{ seqrun.get('alignment_coverage') or '0.0' }}
 	  </td>
+	  <td>
+	    <form action="{{ reverse_url('seqrun_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid'], str(pos+1)) }}">
+	      {% module xsrf_form_html() %}
+	      {% module Submit('edit') %}
+	    </form>
+	  </td>
 	</tr>
 	{% end %}
       </table>

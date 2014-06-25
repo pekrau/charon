@@ -86,15 +86,7 @@ class SeqrunCreate(RequestHandler):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
-                seqrun = dict(status=self.get_argument('status', None),
-                              flowcellid=self.get_argument('flowcellid', None),
-                              alignment_status=self.get_argument('alignment_status', None))
-                try:
-                    coverage = float(self.get_argument('alignment_coverage', 0.0))
-                except (ValueError, TypeError):
-                    coverage = 0.0
-                seqrun['alignment_coverage'] = coverage
-                saver['seqruns'] = libprep['seqruns'] + [seqrun]
+                saver.update_seqrun(None)
         except ValueError, msg:
             raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:
@@ -125,11 +117,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
         else:
             try:
                 with LibprepSaver(doc=libprep, rqh=self) as saver:
-                    seqrun = dict(status=data.get('status'),
-                                  alignment_status=data.get('alignment_status'),
-                                  alignment_coverage=data.get('alignment_coverage'),
-                                  pos=len(libprep['seqruns']))
-                    saver['seqruns'] = libprep['seqruns'] + [seqrun]
+                    saver.update_seqrun(None)
             except ValueError, msg:
                 raise tornado.web.HTTPError(400, reason=str(msg))
             except IOError, msg:
@@ -153,10 +141,12 @@ class SeqrunEdit(RequestHandler):
     def get(self, projectid, sampleid, libprepid, seqrunid):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
-            seqrunpos = int(seqrunid) - 1
+            seqrunid = int(seqrunid)
+            if seqrunid <= 0: raise ValueError
+            if seqrunid > len(libprep['seqruns']): raise ValueError
         except (TypeError, ValueError):
             raise tornado.web.HTTPError(404, reason='no such seqrun')
-        self.render('seqrun_edit.html', libprep=libprep, seqrunpos=seqrunpos)
+        self.render('seqrun_edit.html', libprep=libprep, seqrunid=seqrunid)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid, libprepid, seqrunid):
@@ -169,7 +159,7 @@ class SeqrunEdit(RequestHandler):
             raise tornado.web.HTTPError(404, reason='no such seqrun')
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
-                saver.update()
+                saver.update_seqrun(pos)
         except ValueError, msg:
             raise tornado.web.HTTPError(400, reason=str(msg))
         except IOError, msg:

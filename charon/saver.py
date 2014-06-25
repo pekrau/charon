@@ -1,5 +1,7 @@
 " Charon: Context handler for saving a document. "
 
+import logging
+
 import couchdb
 
 from . import constants
@@ -63,10 +65,13 @@ class DocumentSaver(object):
         else:
             value = converter(value)
         try:
-            if self.doc[key] == value: return
+            if self.doc[key] == value:
+                logging.debug("Saver.__setitem__() equal")
+                return
         except KeyError:
             pass
         self.doc[key] = value
+        logging.debug("Saver.__setitem__(%s, %s", key, value)
         self.changed[key] = value
 
     def __getitem__(self, key):

@@ -65,6 +65,11 @@ Project {{ project['projectid'] }}
   </tr>
 
   <tr>
+    <th>Pipeline</th>
+    <td>{{ project.get('pipeline') or '-' }}</td>
+  </tr>
+
+  <tr>
     <th>Samples</th>
     <td>
       <table class="list">

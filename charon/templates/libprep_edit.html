@@ -4,7 +4,8 @@
 
 {% block head_title %}
 Edit Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }})
+(project {{ libprep['projectid'] }},
+ sample {{ libprep['sampleid'] }})
 {% end %}
 
 {% block title %}
@@ -12,7 +13,8 @@ Edit Libprep {{ libprep['libprepid'] }}
 Edit
 {% module Icon('libprep') %}
 Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }})
+(project {{ libprep['projectid'] }},
+ sample {{ libprep['sampleid'] }})
 {% end %}
 
 {% block actions %}
@@ -29,7 +31,7 @@ Libprep {{ libprep['libprepid'] }}
 
   <fieldset>
 
-    <legend>Edit the sample information</legend>
+    <legend>Edit the libprep information</legend>
 
     <table class="fields">
 

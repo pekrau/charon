@@ -159,6 +159,8 @@ handlers = \
          LibprepEdit, name='libprep_edit'),
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)',
          SeqrunCreate, name='seqrun_create'),
+     URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)',
+         SeqrunEdit, name='seqrun_edit'),
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
      URL(constants.LOGIN_URL, Login, name='login'),

@@ -58,6 +58,22 @@ class LibprepSaver(DocumentSaver):
 
     def convert_status(self, value): return value or None
 
+    def update_seqrun(self, pos):
+        seqrun = dict(status=self.rqh.get_argument('status', None),
+                      flowcellid=self.rqh.get_argument('flowcellid', None),
+                      alignment_status=self.rqh.get_argument('alignment_status', None))
+        try:
+            coverage = float(self.rqh.get_argument('alignment_coverage', 0.0))
+        except (ValueError, TypeError):
+            coverage = 0.0
+        seqrun['alignment_coverage'] = coverage
+        if pos is None:
+            self['seqruns'] = self.doc['seqruns'] + [seqrun]
+        else:
+            seqruns = list(self.doc['seqruns']) # List copy required here!
+            seqruns[pos] = seqrun
+            self['seqruns'] = seqruns
+
 
 class Libprep(RequestHandler):
     "Display the libprep data."
