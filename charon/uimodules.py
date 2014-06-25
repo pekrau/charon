@@ -52,11 +52,14 @@ class Doc(tornado.web.UIModule):
 class Submit(tornado.web.UIModule):
     "HTML for a submit button with an icon, optionally with a different title."
 
-    def render(self, name, title=None, onclick=None):
+    def render(self, name, title=None, onclick=None, slim=False):
+        params = dict(type='submit')
         if onclick:
-            result = """<button type="submit" onclick="{0}">""".format(onclick)
-        else:
-            result = """<button type="submit">"""
+            params['onclick'] = onclick
+        if slim:
+            params['class'] = 'slim'
+        result = "<button {0}>".format(' '.join(['{0}="{1}"'.format(k,v)
+                                                 for k,v in params.items()]))
         Name = name.capitalize()
         result += """<img src="{url}" alt="{name}" title="{name}">""".format(
             url=self.handler.static_url(name + '.png'),

@@ -16,7 +16,8 @@ from .saver import DocumentSaver
 
 class LibprepSaver(DocumentSaver):
     doctype = constants.LIBPREP
-    # 'seqruns' not here, since must be updated only via /seqrun interface
+
+    # 'seqruns' not here, since must be updated only via update_seqrun
     field_keys = ['libprepid', 'status']
 
     def __init__(self, doc=None, rqh=None, db=None, sample=None):
@@ -41,6 +42,7 @@ class LibprepSaver(DocumentSaver):
             self.project = rqh.get_project(self.doc['projectid'])
 
     def check_libprepid(self, value):
+        "Libprep identifier must be unique within sample."
         if self.is_new():
             if not value:
                 raise ValueError('libprepid must have a defined value')
@@ -58,21 +60,32 @@ class LibprepSaver(DocumentSaver):
 
     def convert_status(self, value): return value or None
 
-    def update_seqrun(self, pos):
-        seqrun = dict(status=self.rqh.get_argument('status', None),
-                      flowcellid=self.rqh.get_argument('flowcellid', None),
-                      alignment_status=self.rqh.get_argument('alignment_status', None))
-        try:
-            coverage = float(self.rqh.get_argument('alignment_coverage', 0.0))
-        except (ValueError, TypeError):
-            coverage = 0.0
-        seqrun['alignment_coverage'] = coverage
+    def check_seqruns(self, value):
+        raise ValueError("'seqruns' may not be updated within libprep instance")
+
+    def update_seqrun(self, pos, seqrun=None):
+        "Create or update a given seqrun within the libprep."
+        if seqrun is None:
+            seqrun = dict(status=self.rqh.get_argument('status', None),
+                          flowcellid=self.rqh.get_argument('flowcellid', None),
+                          alignment_status=self.rqh.get_argument('alignment_status', None),
+                          alignment_coverage=self.rqh.get_argument('alignment_coverage', None))
+        coverage = seqrun.get('alignment_coverage', None)
+        if coverage is not None:
+            try:
+                coverage = float(coverage)
+                if coverage < 0.0: raise ValueError
+            except (ValueError, TypeError):
+                raise tornado.web.HTTPError(400, 'invalid alignment_coverage value')
+            seqrun['alignment_coverage'] = coverage
         if pos is None:
-            self['seqruns'] = self.doc['seqruns'] + [seqrun]
+            seqruns = self.doc['seqruns'] + [seqrun]
         else:
             seqruns = list(self.doc['seqruns']) # List copy required here!
             seqruns[pos] = seqrun
-            self['seqruns'] = seqruns
+        # Don't go via setitem, since that is blocked by checker.
+        self.doc['seqruns'] = seqruns
+        self.changed['seqruns'] = seqruns
 
 
 class Libprep(RequestHandler):
@@ -113,6 +126,8 @@ class ApiLibprep(ApiRequestHandler):
         else:
             try:
                 with LibprepSaver(doc=libprep, rqh=self) as saver:
+                    # Get rid of any seqruns data
+                    data.pop('seqruns', None)
                     saver.update(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))

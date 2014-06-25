@@ -70,8 +70,8 @@ class DocumentSaver(object):
                 return
         except KeyError:
             pass
-        self.doc[key] = value
         logging.debug("Saver.__setitem__(%s, %s", key, value)
+        self.doc[key] = value
         self.changed[key] = value
 
     def __getitem__(self, key):

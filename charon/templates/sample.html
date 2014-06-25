@@ -154,6 +154,11 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 	  <td>{{ libprep.get('status') or '-' }}</td>
 	  <td class="number">{{ libprep['seqruns_count'] }}</td>
 	  <td class="localtime">{{ libprep['modified'] }}</td>
+	  <td>
+	    <form action="{{ reverse_url('libprep_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+	      {% module Submit('edit', slim=True) %}
+	    </form>
+	  </td>
 	</tr>
 	{% end %}
       </table>

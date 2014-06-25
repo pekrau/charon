@@ -91,6 +91,11 @@ Project {{ project['projectid'] }}
 	  <td class="number">{{ sample['libpreps_count'] }}</td>
 	  <td class="number">{{ sample['seqruns_count'] }}</td>
 	  <td class="localtime">{{ sample['modified'] }}</td>
+	  <td>
+	    <form action="{{ reverse_url('sample_edit', sample['projectid'], sample['sampleid']) }}">
+	      {% module Submit('edit', slim=True) %}
+	    </form>
+	  </td>
 	</tr>
 	{% end %}
       </table>

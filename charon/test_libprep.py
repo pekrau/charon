@@ -128,18 +128,34 @@ def test_libprep_seqruns():
     data = response.json()
     seqruns = data['seqruns']
     assert len(seqruns) == 1
-    assert seqruns[0]['pos'] == 0
-    seqrunid = seqruns[0]['pos'] + 1 # NOTE: base 1 for seqrunid!
-    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, seqrunid),
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
                            headers=api_token)
-    assert response.status_code == 200
+    assert response.status_code == 200, response
+    assert seqruns[0] == response.json()
     data = dict(status='done',
                 alignment_status='started',
                 flowcellid='123_xyz_qwerty')
-    seqrunid = seqruns[0]['pos'] + 1 # NOTE: base 1 for seqrun id!
-    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, seqrunid),
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
                            data=json.dumps(data),
                            headers=api_token)
-    assert response.status_code == 200
+    assert response.status_code == 204, response
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+                           headers=api_token)
     newdata = response.json()
     assert data['flowcellid'] == newdata['flowcellid']
+    data = dict(status='done',
+                alignment_status='done',
+                alignment_coverage=1.0)
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 204, response
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+                           headers=api_token)
+    newdata = response.json()
+    assert data['alignment_coverage'] == newdata['alignment_coverage']
+    data = dict(alignment_coverage=-0.1)
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 400, response

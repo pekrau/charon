@@ -90,7 +90,6 @@ Libprep {{ libprep['libprepid'] }}
 	  </td>
 	  <td>
 	    <form action="{{ reverse_url('seqrun_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid'], str(pos+1)) }}">
-	      {% module xsrf_form_html() %}
 	      {% module Submit('edit') %}
 	    </form>
 	  </td>

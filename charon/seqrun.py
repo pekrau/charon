@@ -33,6 +33,7 @@ class ApiSeqrun(ApiRequestHandler):
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
         """Update the seqrun data.
+        Return HTTP 204 "No Content".
         Return HTTP 404 if no such seqrun, libprep, sample or project.
         Return HTTP 400 if any problem with a value."""
         project = self.get_project(projectid)
@@ -41,29 +42,18 @@ class ApiSeqrun(ApiRequestHandler):
         try:
             pos = int(seqrunid) - 1
             if pos < 0: raise ValueError
-            seqrun = libprep['seqruns'][pos]
-        except (ValueError, TypeError, IndexError):
+            if pos >= len(libprep['seqruns']): raise ValueError
+        except (ValueError, TypeError):
             self.send_error(404, reason='no such seqrun')
         else:
             try:
                 data = json.loads(self.request.body)
-                try:
-                    if not isinstance(data['coverage'], (float, int)):
-                        raise ValueError('invalid coverage type')
-                    if pos != data.pop('pos'):
-                        raise ValueError('incorrect pos value')
-                except KeyError:
-                    pass
             except Exception, msg:
                 self.send_error(400, reason=str(msg))
             else:
-                seqrun.update(data)
                 with LibprepSaver(doc=libprep, rqh=self) as saver:
-                    seqruns = libprep['seqruns']
-                    seqruns[pos] = seqrun
-                    saver['seqruns'] = seqruns
-                seqrun['pos'] = pos
-                self.write(seqrun)
+                    saver.update_seqrun(pos, seqrun=data)
+                self.set_status(204)
 
 
 class SeqrunCreate(RequestHandler):
@@ -103,8 +93,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
         JSON data:
           status (required)
           alignment_status (optional)
-          alignment_coverage (optional) in percent, float (max 100)
-          pos (computed) number of seqrun within libprep
+          alignment_coverage (optional), float (min 0.0)
         Return 204 "No content" and (NOTE!) libprep URL in header.
         Return HTTP 400 if something is wrong with the values.
         Return HTTP 404 if no such project, sample or libprep.
@@ -154,8 +143,9 @@ class SeqrunEdit(RequestHandler):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
             pos = int(seqrunid) - 1
-            libprep['seqruns'][pos]
-        except (TypeError, ValueError, IndexError):
+            if pos < 0: raise ValueError
+            if pos >= len(libprep['seqruns']): raise ValueError
+        except (TypeError, ValueError):
             raise tornado.web.HTTPError(404, reason='no such seqrun')
         try:
             with LibprepSaver(doc=libprep, rqh=self) as saver:
