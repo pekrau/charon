@@ -161,13 +161,14 @@ class ApiProject(ApiRequestHandler):
         for row in self.db.view('sample/sampleid')[startkey:endkey]:
             sampleid = row.key[1]
             data = dict(sampleid=sampleid,
-                        href=self.reverse_url('api_sample',
-                                              projectid,
-                                              sampleid))
+                        href=self.get_absolute_url('api_sample',
+                                                   projectid,
+                                                   sampleid))
             samples.append(data)
-        project['links'] = links = dict()
-        links['samples'] = dict(href=self.reverse_url('api_samples', projectid))
-        links['logs'] = dict(href=self.reverse_url('api_logs', project['_id']))
+        self.add_link(project, 'self', 'api_project', projectid)
+        self.add_link(project, 'samples', 'api_samples', projectid)
+        self.add_link(project, 'libpreps', 'api_project_libpreps', projectid)
+        self.add_link(project, 'logs', 'api_logs', project['_id'])
         self.write(project)
 
     def put(self, projectid):

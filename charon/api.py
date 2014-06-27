@@ -45,6 +45,12 @@ class ApiRequestHandler(RequestHandler):
                     else:
                         self.send_error(401, reason='user not active')
 
+    def add_link(self, doc, rel, name, *args):
+        """Add a link to JSON representation of an entity.
+        The name is the reverse_url handler."""
+        link = dict(rel=rel, href=self.get_absolute_url(name, *args))
+        doc.setdefault('links', []).append(link)
+
 
 class ApiDocument(ApiRequestHandler):
     "Access a database document as is."

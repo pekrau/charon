@@ -152,6 +152,10 @@ class ApiSample(ApiRequestHandler):
         Return HTTP 404 if no such sample or project."""
         sample = self.get_sample(projectid, sampleid)
         if not sample: return
+        self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
+        self.add_link(sample, 'libpreps', 'api_sample_libpreps',
+                      projectid, sampleid)
+        self.add_link(sample, 'logs', 'api_logs', sample['_id'])
         self.write(sample)
 
     def put(self, projectid, sampleid):
@@ -216,4 +220,11 @@ class ApiSamples(ApiRequestHandler):
     def get(self, projectid):
         "Return a list of all samples."
         samples = self.get_samples(projectid)
+        for sample in samples:
+            self.add_link(sample, 'project', 'api_project', projectid)
+            self.add_link(sample, 'self', 'api_sample', projectid,
+                          sample['sampleid'])
+            self.add_link(sample, 'libpreps', 'api_sample_libpreps',
+                          projectid, sample['sampleid'])
+            self.add_link(sample, 'logs', 'api_logs', sample['_id'])
         self.write(dict(samples=samples))

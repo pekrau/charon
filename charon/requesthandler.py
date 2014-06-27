@@ -35,6 +35,17 @@ class RequestHandler(tornado.web.RequestHandler):
         result['self_url'] = self.request.uri
         return result
 
+    def get_absolute_url(self, name, *args, **kwargs):
+        "Get the absolute URL given the handler name and any arguments."
+        if name is None:
+            path = ''
+        else:
+            path = self.reverse_url(name, *args)
+        url = settings['BASE_URL'].rstrip('/') + path
+        if kwargs:
+            url += '?' + urllib.urlencode(kwargs)
+        return url
+
     def get_current_user(self):
         "Get the currently logged-in user."
         try:
