@@ -128,13 +128,12 @@ def to_bool(value):
     value = value.lower()
     return value in ['true', 'yes'] or value[0] in ['t', 'y']
 
-def log(db, doc, changed={}, deleted={}, current_user=None):
+def log(db, doc, changed={}, current_user=None):
     "Create a log entry for the given document."
     entry = dict(_id=get_iuid(),
                  doc=doc['_id'],
                  doctype=doc[constants.DB_DOCTYPE],
                  changed=changed,
-                 deleted=deleted,
                  timestamp=timestamp())
     entry[constants.DB_DOCTYPE] = constants.LOG
     try:
