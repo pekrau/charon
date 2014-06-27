@@ -12,10 +12,10 @@ from . import constants
 from . import settings
 from . import utils
 from .requesthandler import RequestHandler
-from .saver import DocumentSaver
+from .saver import Saver
 
 
-class UserSaver(DocumentSaver):
+class UserSaver(Saver):
     doctype = constants.USER
 
 

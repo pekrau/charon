@@ -51,7 +51,7 @@ Project {{ project['projectid'] }}
 
   <tr>
     <th>Name</th>
-    <td>{{ project['name'] }}</td>
+    <td>{{ project.get('name') or '-' }}</td>
   </tr>
 
   <tr>
@@ -60,13 +60,13 @@ Project {{ project['projectid'] }}
   </tr>
 
   <tr>
-    <th>Best-practice analysis</th>
-    <td>{{ project.get('best_practice_analysis') or '-' }}</td>
+    <th>Pipeline</th>
+    <td>{{ project.get('pipeline') or '-' }}</td>
   </tr>
 
   <tr>
-    <th>Pipeline</th>
-    <td>{{ project.get('pipeline') or '-' }}</td>
+    <th>Best-practice analysis</th>
+    <td>{{ project.get('best_practice_analysis') or '-' }}</td>
   </tr>
 
   <tr>

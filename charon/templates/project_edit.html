@@ -25,79 +25,10 @@ Project {{ project['projectid'] }}
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Edit the project information</legend>
-
-    <table class="fields">
-
-      <tr>
-	<th>Identifier</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>{{ project['projectid'] }}</td>
-	<td class="description">
-	  The unique name of the project.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Name</th>
-	<td></td>
-	<td>
-	  <input type="text" name="name"
-		 value="{{ project.get('name') or '' }}">
-	</td>
-	<td class="description">
-	  The name of the project, e.g. P.Kraulis_14_01.
-	  Optional; must be unique if given.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td>
-	  <input type="text" name="status"
-		 value="{{ project.get('status') or '' }}">
-	</td>
-	<td class="description">
-	  The status of the project.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Best-practice analysis</th>
-	<td></td>
-	<td>
-	  <input type="text" name="best_practice_analysis"
-		 value="{{ project.get('best_practice_analysis') or '' }}">
-	</td>
-	<td class="description">
-	  Status of the Best-Practice Analysis.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Pipeline</th>
-	<td></td>
-	<td>
-	  <input type="text" name="pipeline"
-		 value="{{ project.get('pipeline') or '' }}">
-	</td>
-	<td class="description">
-	  The pipeline to use for project data analysis.
-	</td>
-      </tr>
-
-      <tr>
-	<th></th>
-	<td></td>
-	<td>
-	  {% module Submit('save') %}
-	</td>
-      </tr>
-
-    </table>
-
+    {% include 'error.html' %}
+    {% set entity = project %}
+    {% include 'edit_input_table.html' %}
   </fieldset>
 
 </form>

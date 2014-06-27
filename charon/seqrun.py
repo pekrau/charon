@@ -1,4 +1,4 @@
-" Charon: Seqrun interface. "
+" Charon: Seqrun entity (part of libprep) interface. "
 
 import logging
 import json
@@ -14,8 +14,73 @@ from .api import ApiRequestHandler
 from .libprep import LibprepSaver
 
 
+class SeqrunCreate(RequestHandler):
+    "Create a seqrun within a libprep."
+
+    @tornado.web.authenticated
+    def get(self, projectid, sampleid, libprepid):
+        project = self.get_project(projectid)
+        sample = self.get_sample(projectid, sampleid)
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        self.render('seqrun_create.html',
+                    project=project,
+                    sample=sample,
+                    libprep=libprep)
+
+    @tornado.web.authenticated
+    def post(self, projectid, sampleid, libprepid):
+        project = self.get_project(projectid)
+        sample = self.get_sample(projectid, sampleid)
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        try:
+            with LibprepSaver(doc=libprep, rqh=self) as saver:
+                saver.update_seqrun(None)
+        except ValueError, msg:
+            raise tornado.web.HTTPError(400, reason=str(msg))
+        except IOError, msg:
+            raise tornado.web.HTTPError(409, reason=str(msg))
+        url = self.reverse_url('libprep', projectid, sampleid, libprepid)
+        self.redirect(url)
+
+
+class SeqrunEdit(RequestHandler):
+    "Edit an existing seqrun."
+
+    @tornado.web.authenticated
+    def get(self, projectid, sampleid, libprepid, seqrunid):
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        try:
+            seqrunid = int(seqrunid)
+            if seqrunid <= 0: raise ValueError
+            if seqrunid > len(libprep['seqruns']): raise ValueError
+        except (TypeError, ValueError):
+            raise tornado.web.HTTPError(404, reason='no such seqrun')
+        self.render('seqrun_edit.html', libprep=libprep, seqrunid=seqrunid)
+
+    @tornado.web.authenticated
+    def post(self, projectid, sampleid, libprepid, seqrunid):
+        self.check_xsrf_cookie()
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        try:
+            pos = int(seqrunid) - 1
+            if pos < 0: raise ValueError
+            if pos >= len(libprep['seqruns']): raise ValueError
+        except (TypeError, ValueError):
+            raise tornado.web.HTTPError(404, reason='no such seqrun')
+        try:
+            with LibprepSaver(doc=libprep, rqh=self) as saver:
+                saver.update_seqrun(pos)
+        except ValueError, msg:
+            raise tornado.web.HTTPError(400, reason=str(msg))
+        except IOError, msg:
+            raise tornado.web.HTTPError(409, reason=str(msg))
+        else:
+            url = self.reverse_url('libprep', projectid, sampleid, libprepid)
+            self.redirect(url)
+
+
 class ApiSeqrun(ApiRequestHandler):
-    "Access a seqrun in a libprep."
+    "API: Access a seqrun in a libprep."
 
     def get(self, projectid, sampleid, libprepid, seqrunid):
         """Return the seqrun data.
@@ -56,37 +121,8 @@ class ApiSeqrun(ApiRequestHandler):
                 self.set_status(204)
 
 
-class SeqrunCreate(RequestHandler):
-    "Create a seqrun within a libprep."
-
-    @tornado.web.authenticated
-    def get(self, projectid, sampleid, libprepid):
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        self.render('seqrun_create.html',
-                    project=project,
-                    sample=sample,
-                    libprep=libprep)
-
-    @tornado.web.authenticated
-    def post(self, projectid, sampleid, libprepid):
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        try:
-            with LibprepSaver(doc=libprep, rqh=self) as saver:
-                saver.update_seqrun(None)
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        url = self.reverse_url('libprep', projectid, sampleid, libprepid)
-        self.redirect(url)
-
-
 class ApiSeqrunCreate(ApiRequestHandler):
-    "Create a seqrun within a libprep."
+    "API: Create a seqrun within a libprep."
 
     def post(self, projectid, sampleid, libprepid):
         """Create a seqrun within a libprep.
@@ -121,39 +157,3 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                        libprepid)
                 self.set_header('Location', url)
                 self.set_status(204)
-
-
-class SeqrunEdit(RequestHandler):
-    "Edit an existing seqrun."
-
-    @tornado.web.authenticated
-    def get(self, projectid, sampleid, libprepid, seqrunid):
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        try:
-            seqrunid = int(seqrunid)
-            if seqrunid <= 0: raise ValueError
-            if seqrunid > len(libprep['seqruns']): raise ValueError
-        except (TypeError, ValueError):
-            raise tornado.web.HTTPError(404, reason='no such seqrun')
-        self.render('seqrun_edit.html', libprep=libprep, seqrunid=seqrunid)
-
-    @tornado.web.authenticated
-    def post(self, projectid, sampleid, libprepid, seqrunid):
-        self.check_xsrf_cookie()
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        try:
-            pos = int(seqrunid) - 1
-            if pos < 0: raise ValueError
-            if pos >= len(libprep['seqruns']): raise ValueError
-        except (TypeError, ValueError):
-            raise tornado.web.HTTPError(404, reason='no such seqrun')
-        try:
-            with LibprepSaver(doc=libprep, rqh=self) as saver:
-                saver.update_seqrun(pos)
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        else:
-            url = self.reverse_url('libprep', projectid, sampleid, libprepid)
-            self.redirect(url)

@@ -19,52 +19,9 @@ Create Sample (project {{ project['projectid'] }})
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Create a new sample</legend>
-
-    <table class="fields">
-
-      <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('project', project['projectid']) }}">
-	    {{ project['projectid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the project to which the sample belongs.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Identifier</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td><input type="text" name="sampleid"></td>
-	<td class="description">
-	  The sample identifier, unique within the project.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td><input type="text" name="status"></td>
-	<td class="description">
-	  Sample status.
-	</td>
-      </tr>
-
-      <tr>
-	<th></th>
-	<td></td>
-	<td>
-	  {% module Submit('create') %}
-	</td>
-      </tr>
-
-    </table>
-
+    {% include 'error.html' %}
+    {% include 'create_input_table.html' %}
   </fieldset>
 
 </form>

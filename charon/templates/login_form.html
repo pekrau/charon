@@ -27,14 +27,7 @@
 
     <legend>Login to an account</legend>
 
-    {% try %}
-      {% if error %}
-      <p class="error code">
-	Error: {{ error }}
-      </p>
-      {% end %}
-    {% except NameError %}
-    {% end %}
+    {% include 'error.html' %}
 
     <table class="fields">
       <tr>

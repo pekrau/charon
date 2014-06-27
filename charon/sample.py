@@ -1,4 +1,4 @@
-" Charon: Sample interface. "
+" Charon: Sample entity interface. "
 
 import logging
 import json
@@ -11,59 +11,58 @@ from . import settings
 from . import utils
 from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
-from .saver import DocumentSaver
+from .saver import *
 
 
-class SampleSaver(DocumentSaver):
+class SampleidField(IdField):
+    "The unique identifier for the sample within the project."
+
+    def check_unique(self, saver, value):
+        key = (saver.project['projectid'], value)
+        view = saver.db.view('sample/sampleid')
+        if len(list(view[key])) > 0:
+            raise ValueError('sampleid is not unique')
+
+
+class SampleSaver(Saver):
+    "Saver and fields definions for the sample entity."
+
     doctype = constants.SAMPLE
-    field_keys = ['sampleid',
-                  'status',
-                  'received',
-                  'qc',
-                  'genotyping_status',
-                  'genotyping_concordance',
-                  'requires_more_sequence',
-                  'sequenced',
-                  'primary_analysis_done',
-                  'secondary_analysis_done',
-                  'delivered',
-                  ]
+
+    fields = [SampleidField('sampleid', title='Identifier'),
+              Field('status',
+                    description='The status of the sample.'),
+              Field('received',
+                    description='The reception date of the sample.'),
+              Field('qc', title='QC',
+                    description='The quality control status of the sample.'),
+              Field('genotyping_status',
+                    description='The genotyping status of the sample.'),
+              Field('genotyping_concordance',
+                    description='The genotyping concordance of the sample.'),
+              Field('sequencing_status',
+                    description='The sequencing status of the sample.'),
+              Field('primary_analysis_status',
+                    description='The primary analysis status of the sample.'),
+              Field('primary_analysis_status',
+                    description='The secondary analysis status of the sample.'),
+              Field('delivery_status',
+                    description='The delivery status of the sample.'),
+              ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):
         super(SampleSaver, self).__init__(doc=doc, rqh=rqh, db=db)
         if self.is_new():
-            assert project, 'project must be defined'
-            assert 'projectid' not in self.doc, 'projectid must not be set'
+            assert project
+            assert 'projectid' not in self.doc
             self.doc['projectid'] = project['projectid']
             self.project = project
         else:
             if project:
-                assert self.doc['projectid'] == project['projectid'], \
-                    'project must be same as at creation, if given'
+                assert self.doc['projectid'] == project['projectid']
                 self.project = project
             else:
                 self.project = rqh.get_project(self.doc['projectid'])
-
-    def check_sampleid(self, value):
-        if self.is_new():
-            if not value:
-                raise ValueError('sampleid must have a defined value')
-            key = (self.project['projectid'], value)
-            rows = list(self.db.view('sample/sampleid')[key])
-            if len(rows) > 0:
-                raise ValueError('sampleid is not unique')
-
-    def convert_sampleid(self, value):
-        "No change allowed after creation."
-        if self.is_new():
-            return value
-        else:
-            return self.doc['sampleid']
-
-    def convert_status(self, value): return value or None
-    def convert_qc(self, value): return value or None
-    def convert_genotyping_status(self, value): return value or None
-    def convert_genotyping_concordance(self, value): return value or None
 
 
 class Sample(RequestHandler):
@@ -92,8 +91,61 @@ class Sample(RequestHandler):
                     logs=self.get_logs(sample['_id']))
 
 
+class SampleCreate(RequestHandler):
+    "Create a sample."
+
+    @tornado.web.authenticated
+    def get(self, projectid):
+        self.render('sample_create.html',
+                    project=self.get_project(projectid),
+                    fields=SampleSaver.fields)
+
+    @tornado.web.authenticated
+    def post(self, projectid):
+        self.check_xsrf_cookie()
+        project = self.get_project(projectid)
+        try:
+            with SampleSaver(rqh=self, project=project) as saver:
+                saver.store()
+                sample = saver.doc
+        except (IOError, ValueError), msg:
+            self.render('sample_create.html',
+                        project=self.get_project(projectid),
+                        fields=SampleSaver.fields,
+                        error=str(error))
+        else:
+            url = self.reverse_url('sample', projectid, sample['sampleid'])
+            self.redirect(url)
+
+
+class SampleEdit(RequestHandler):
+    "Edit an existing sample."
+
+    @tornado.web.authenticated
+    def get(self, projectid, sampleid):
+        sample = self.get_sample(projectid, sampleid)
+        self.render('sample_edit.html',
+                    sample=sample,
+                    fields=SampleSaver.fields)
+
+    @tornado.web.authenticated
+    def post(self, projectid, sampleid):
+        self.check_xsrf_cookie()
+        sample = self.get_sample(projectid, sampleid)
+        try:
+            with SampleSaver(doc=sample, rqh=self) as saver:
+                saver.store()
+        except (IOError, ValueError), msg:
+            self.render('sample_edit.html',
+                        fields=SampleSaver.fields,
+                        error=str(msg))
+        else:
+            url = self.reverse_url('sample', projectid, sampleid)
+            self.redirect(url)
+
+
 class ApiSample(ApiRequestHandler):
-    "Access a sample."
+    "API: Access a sample."
 
     def get(self, projectid, sampleid):
         """Return the sample data as JSON.
@@ -115,7 +167,7 @@ class ApiSample(ApiRequestHandler):
         else:
             try:
                 with SampleSaver(doc=sample, rqh=self) as saver:
-                    saver.update(data=data)
+                    saver.store(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))
             except IOError, msg:
@@ -124,37 +176,11 @@ class ApiSample(ApiRequestHandler):
                 self.set_status(204)
 
 
-class SampleCreate(RequestHandler):
-    "Create a sample."
-
-    @tornado.web.authenticated
-    def get(self, projectid):
-        self.render('sample_create.html', project=self.get_project(projectid))
-
-    @tornado.web.authenticated
-    def post(self, projectid):
-        self.check_xsrf_cookie()
-        project = self.get_project(projectid)
-        try:
-            with SampleSaver(rqh=self, project=project) as saver:
-                saver.update()
-                sample = saver.doc
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        else:
-            url = self.reverse_url('sample', projectid, sample['sampleid'])
-            self.redirect(url)
-
-
 class ApiSampleCreate(ApiRequestHandler):
-    "Create a sample within a project."
+    "API: Create a sample within a project."
 
     def post(self, projectid):
         """Create a sample within a project.
-        JSON data:
-          XXX
         Return HTTP 201, sample URL in header "Location", and sample data.
         Return HTTP 400 if something is wrong with the input data.
         Return HTTP 404 if no such project.
@@ -168,7 +194,7 @@ class ApiSampleCreate(ApiRequestHandler):
         else:
             try:
                 with SampleSaver(rqh=self, project=project) as saver:
-                    saver.update(data=data)
+                    saver.store(data=data)
                     sample = saver.doc
             except (KeyError, ValueError), msg:
                 self.send_error(400, reason=str(msg))
@@ -182,30 +208,6 @@ class ApiSampleCreate(ApiRequestHandler):
                 self.set_header('Location', url)
                 self.set_status(201)
                 self.write(sample)
-
-
-class SampleEdit(RequestHandler):
-    "Edit an existing sample."
-
-    @tornado.web.authenticated
-    def get(self, projectid, sampleid):
-        sample = self.get_sample(projectid, sampleid)
-        self.render('sample_edit.html', sample=sample)
-
-    @tornado.web.authenticated
-    def post(self, projectid, sampleid):
-        self.check_xsrf_cookie()
-        sample = self.get_sample(projectid, sampleid)
-        try:
-            with SampleSaver(doc=sample, rqh=self) as saver:
-                saver.update()
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        else:
-            url = self.reverse_url('sample', projectid, sampleid)
-            self.redirect(url)
 
 
 class ApiSamples(ApiRequestHandler):

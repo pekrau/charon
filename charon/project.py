@@ -1,4 +1,4 @@
-" Charon: Project interface. "
+" Charon: Project entity interface. "
 
 import logging
 import json
@@ -11,38 +11,44 @@ from . import settings
 from . import utils
 from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
-from .saver import DocumentSaver
+from .saver import *
 
 
-class ProjectSaver(DocumentSaver):
+class ProjectidField(IdField):
+    "The unique identifier for the project, e.g. 'P1234'."
+
+    def check_unique(self, saver, value):
+        view = saver.db.view('project/projectid')
+        if len(list(view[value])) > 0:
+            raise ValueError('projectid is not unique')
+
+
+class ProjectnameField(NameField):
+    """The name of the project, e.g. 'P.Kraulis_14_01'.
+    Optional; must be unique if given."""
+
+    def check_unique(self, saver, value):
+        if not value: return
+        if saver.get(self.key) == value: return
+        view = saver.db.view('project/name')
+        if len(list(view[value])) > 0:
+            raise ValueError('name is not unique')
+
+
+class ProjectSaver(Saver):
+    "Saver and fields definions for the project entity."
+
     doctype = constants.PROJECT
-    field_keys = ['projectid', 'name', 'status',
-                  'best_practice_analysis', 'pipeline']
 
-    def check_projectid(self, value):
-        if self.is_new():
-            if not value:
-                raise ValueError('projectid must have a defined value')
-            view = self.db.view('project/projectid')
-            rows = list(view[value])
-            if len(rows) > 0:
-                raise ValueError('projectid is not unique')
-
-    def convert_projectid(self, value):
-        "No change allowed after creation."
-        if self.is_new():
-            return value
-        else:
-            return self.doc['projectid']
-
-    def check_name(self, value):
-        if self.is_new() and value:
-            view = self.db.view('project/name')
-            rows = list(view[value])
-            if len(rows) > 0:
-                raise ValueError('name is not unique')
-
-    def convert_status(self, value): return value or None
+    fields = [ProjectidField('projectid', title='Identifier'),
+              ProjectnameField('name'),
+              Field('status', description='The status of the project.'),
+              Field('pipeline',
+                    description='Pipeline to use for project data analysis.'),
+              Field('best_practice_analysis',
+                    title='Best-practice analysis',
+                    description='Status of best-practice analysis.'),
+              ]
 
 
 class Project(RequestHandler):
@@ -77,8 +83,72 @@ class Project(RequestHandler):
                     logs=self.get_logs(project['_id']))
 
 
+class ProjectCreate(RequestHandler):
+    "Create a new project and redirect to it."
+
+    @tornado.web.authenticated
+    def get(self):
+        "Display the project creation form."
+        self.render('project_create.html', fields=ProjectSaver.fields)
+
+    @tornado.web.authenticated
+    def post(self):
+        """Create the project given the form data.
+        Redirect to the project page."""
+        self.check_xsrf_cookie()
+        try:
+            with ProjectSaver(rqh=self) as saver:
+                saver.store()
+                project = saver.doc
+        except (IOError, ValueError), msg:
+            self.render('project_create.html',
+                        fields=ProjectSaver.fields,
+                        error=str(msg))
+        else:
+            url = self.reverse_url('project', project['projectid'])
+            self.redirect(url)
+
+
+class ProjectEdit(RequestHandler):
+    "Edit an existing project."
+
+    @tornado.web.authenticated
+    def get(self, projectid):
+        "Display the project edit form."
+        project = self.get_project(projectid)
+        self.render('project_edit.html',
+                    project=project,
+                    fields=ProjectSaver.fields)
+
+    @tornado.web.authenticated
+    def post(self, projectid):
+        "Edit the project with the given form data."
+        self.check_xsrf_cookie()
+        project = self.get_project(projectid)
+        try:
+            with ProjectSaver(doc=project, rqh=self) as saver:
+                saver.store()
+        except (IOError, ValueError), msg:
+            self.render('project_edit.html',
+                        fields=ProjectSaver.fields,
+                        project=project,
+                        error=str(msg))
+        else:
+            url = self.reverse_url('project', project['projectid'])
+            self.redirect(url)
+
+
+class Projects(RequestHandler):
+    "List all projects."
+
+    @tornado.web.authenticated
+    def get(self):
+        projects = self.get_projects()
+        self.render('projects.html', projects=projects)
+
+
 class ApiProject(ApiRequestHandler):
-    "Access a project."
+    "API: Access a project."
 
     def get(self, projectid):
         """Return the project data as JSON.
@@ -115,7 +185,7 @@ class ApiProject(ApiRequestHandler):
         else:
             try:
                 with ProjectSaver(doc=project, rqh=self) as saver:
-                    saver.update(data=data)
+                    saver.store(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))
             except IOError, msg:
@@ -134,35 +204,8 @@ class ApiProject(ApiRequestHandler):
         self.set_status(204)
 
 
-class ProjectCreate(RequestHandler):
-    "Create a new project and redirect to it."
-
-    @tornado.web.authenticated
-    def get(self):
-        "Display the project creation form."
-        self.render('project_create.html')
-
-    @tornado.web.authenticated
-    def post(self):
-        """Create the project given the form data.
-        Redirect to the project page.
-        Return HTTP 400 if something is wrong with the data."""
-        self.check_xsrf_cookie()
-        try:
-            with ProjectSaver(rqh=self) as saver:
-                saver.update()
-                project = saver.doc
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        else:
-            url = self.reverse_url('project', project['projectid'])
-            self.redirect(url)
-
-
 class ApiProjectCreate(ApiRequestHandler):
-    "Create a new project."
+    "API: Create a new project."
 
     def post(self):
         """Create a project.
@@ -176,7 +219,7 @@ class ApiProjectCreate(ApiRequestHandler):
         else:
             try:
                 with ProjectSaver(rqh=self) as saver:
-                    saver.update(data=data)
+                    saver.store(data=data)
                     project = saver.doc
             except (KeyError, ValueError), msg:
                 self.send_error(400, reason=str(msg))
@@ -190,42 +233,8 @@ class ApiProjectCreate(ApiRequestHandler):
                 self.write(project)
 
 
-class ProjectEdit(RequestHandler):
-    "Edit an existing project."
-
-    @tornado.web.authenticated
-    def get(self, projectid):
-        "Display the project edit form."
-        project = self.get_project(projectid)
-        self.render('project_edit.html', project=project)
-
-    @tornado.web.authenticated
-    def post(self, projectid):
-        "Edit the project with the given form data."
-        self.check_xsrf_cookie()
-        project = self.get_project(projectid)
-        try:
-            with ProjectSaver(doc=project, rqh=self) as saver:
-                saver.update()
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
-        else:
-            self.redirect(self.reverse_url('project', project['projectid']))
-
-
-class Projects(RequestHandler):
-    "List all projects."
-
-    @tornado.web.authenticated
-    def get(self):
-        projects = self.get_projects()
-        self.render('projects.html', projects=projects)
-
-
 class ApiProjects(ApiRequestHandler):
-    "Access to all projects."
+    "API: Access to all projects."
 
     def get(self):
         "Return a list of all projects."

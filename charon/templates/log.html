@@ -9,17 +9,8 @@
       </a>
     </td>
     <td>{{ log.get('operator') or '-' }}</td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <i>Changed:</i>
-      {{ ', '.join(log.get('changed', dict()).keys()) or '-' }}
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <i>Deleted:</i>
-      {{ ', '.join(log.get('deleted', dict()).keys()) or '-' }}
+    <td>
+      [{{ ', '.join(log.get('changed', dict()).keys()) or '-' }}]
     </td>
   </tr>
   {% end %}

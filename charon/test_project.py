@@ -59,6 +59,24 @@ def test_project_modify():
     assert newdata['name'] == data['name'], 'name must have been updated'
     assert newdata['name'] != olddata['name'], 'name must not be old value'
 
+def test_project_modify_undef_field():
+    "Try to modify undefined field."
+    response = session.get(url('project', PROJECTID), headers=api_token)
+    assert response.status_code == 200, response
+    olddata = response.json()
+    assert olddata.get('status') != 'brilliant'
+    data = dict(stuff='garbage', status='brilliant')
+    response = session.put(url('project', PROJECTID),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 204, response
+    response = session.get(url('project', PROJECTID), headers=api_token)
+    assert response.status_code == 200, response
+    newdata = response.json()
+    assert newdata['_rev'] != olddata['_rev'], 'new document revision'
+    assert newdata.get('status') == 'brilliant', 'status must have been updated'
+    assert newdata.get('stuff') is None, 'undef must not have been updated'
+
 def test_project_delete():
     "Delete a project."
     response = session.delete(url('project', PROJECTID), headers=api_token)
