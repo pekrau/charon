@@ -28,9 +28,9 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
   </a>
 </div>
 <div>
-  <a href="{{ reverse_url('api_libpreps', sample['projectid'], sample['sampleid']) }}">
+  <a href="{{ reverse_url('api_sample_libpreps', sample['projectid'], sample['sampleid']) }}">
     {% module Icon('json') %}
-    {{ reverse_url('api_libpreps', sample['projectid'], sample['sampleid']) }}
+    {{ reverse_url('api_sample_libpreps', sample['projectid'], sample['sampleid']) }}
   </a>
 </div>
 <div>

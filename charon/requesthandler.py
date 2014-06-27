@@ -123,9 +123,12 @@ class RequestHandler(tornado.web.RequestHandler):
         except KeyError:
             return self.get_and_cache('libprep/libprepid', key, self._libpreps)
 
-    def get_libpreps(self, projectid, sampleid):
+    def get_libpreps(self, projectid, sampleid=''):
         startkey = (projectid, sampleid, '')
-        endkey = (projectid, sampleid, constants.HIGH_CHAR)
+        if sampleid:
+            endkey = (projectid, sampleid, constants.HIGH_CHAR)
+        else:
+            endkey = (projectid, constants.HIGH_CHAR, constants.HIGH_CHAR)
         return [self.get_libprep(*r.key) for r in
                 self.db.view('libprep/libprepid')[startkey:endkey]]
 

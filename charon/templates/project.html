@@ -34,6 +34,12 @@ Project {{ project['projectid'] }}
   </a>
 </div>
 <div>
+  <a href="{{ reverse_url('api_project_libpreps', project['projectid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_project_libpreps', project['projectid']) }}
+  </a>
+</div>
+<div>
   <a href="{{ reverse_url('api_logs', project['_id']) }}">
     {% module Icon('json') %}
     {{ reverse_url('api_logs', '_id') }}

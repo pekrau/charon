@@ -23,7 +23,6 @@ from charon.api import *
 
 
 class Dummy(RequestHandler):
-
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
         logging.debug("dummy, %s, %s", args, kwargs)
@@ -69,8 +68,10 @@ handlers = \
          ApiLibprepCreate, name='api_libprep_create'),
      URL(r'/api/v1/libprep/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)/(?P<libprepid>[^/]+)',
          ApiLibprep, name='api_libprep'),
+     URL(r'/api/v1/libpreps/(?P<projectid>[^/]+)',
+         ApiProjectLibpreps, name='api_project_libpreps'),
      URL(r'/api/v1/libpreps/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)',
-         ApiLibpreps, name='api_libpreps'),
+         ApiSampleLibpreps, name='api_sample_libpreps'),
      URL(r'/api/v1/seqrun/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)/(?P<libprepid>[^/]+)',
          ApiSeqrunCreate, name='api_seqrun_create'),
      URL(r'/api/v1/seqrun/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)/(?P<libprepid>[^/]+)/(?P<seqrunid>[^/]+)',

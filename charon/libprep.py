@@ -220,7 +220,16 @@ class ApiLibprepCreate(ApiRequestHandler):
                 self.write(libprep)
 
 
-class ApiLibpreps(ApiRequestHandler):
+class ApiProjectLibpreps(ApiRequestHandler):
+    "Access to all libpreps for a project."
+
+    def get(self, projectid):
+        "Return a list of all libpreps for the given project."
+        libpreps = self.get_libpreps(projectid)
+        self.write(dict(libpreps=libpreps))
+
+
+class ApiSampleLibpreps(ApiRequestHandler):
     "Access to all libpreps for a sample."
 
     def get(self, projectid, sampleid):
