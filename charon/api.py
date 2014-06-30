@@ -17,6 +17,8 @@ from .user import UserSaver
 class ApiRequestHandler(RequestHandler):
     "Check API token unless logged in."
 
+    saver = None
+
     def prepare(self):
         super(ApiRequestHandler, self).prepare()
         self.check_api_access()

@@ -173,15 +173,6 @@ class Saver(object):
         "Perform any final modifications before saving the entity."
         self.doc['modified'] = utils.timestamp()
 
-    def update(self, data=None):
-        """Update the fields from either the explicit data dictionary,
-        or the HTML form parameters."""
-        for key in self.field_keys:
-            if data is None:
-                self[key] = self.rqh.get_argument(key, None)
-            else:
-                self[key] = data.get(key)
-
     def get(self, key, default=None):
         try:
             return self[key]

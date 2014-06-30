@@ -94,24 +94,26 @@ class Sample(RequestHandler):
 class SampleCreate(RequestHandler):
     "Create a sample."
 
+    saver = SampleSaver
+
     @tornado.web.authenticated
     def get(self, projectid):
         self.render('sample_create.html',
                     project=self.get_project(projectid),
-                    fields=SampleSaver.fields)
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid):
         self.check_xsrf_cookie()
         project = self.get_project(projectid)
         try:
-            with SampleSaver(rqh=self, project=project) as saver:
+            with self.saver(rqh=self, project=project) as saver:
                 saver.store()
                 sample = saver.doc
         except (IOError, ValueError), msg:
             self.render('sample_create.html',
                         project=self.get_project(projectid),
-                        fields=SampleSaver.fields,
+                        fields=self.saver.fields,
                         error=str(error))
         else:
             url = self.reverse_url('sample', projectid, sample['sampleid'])
@@ -121,23 +123,25 @@ class SampleCreate(RequestHandler):
 class SampleEdit(RequestHandler):
     "Edit an existing sample."
 
+    saver = SampleSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
         sample = self.get_sample(projectid, sampleid)
         self.render('sample_edit.html',
                     sample=sample,
-                    fields=SampleSaver.fields)
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid):
         self.check_xsrf_cookie()
         sample = self.get_sample(projectid, sampleid)
         try:
-            with SampleSaver(doc=sample, rqh=self) as saver:
+            with self.saver(doc=sample, rqh=self) as saver:
                 saver.store()
         except (IOError, ValueError), msg:
             self.render('sample_edit.html',
-                        fields=SampleSaver.fields,
+                        fields=self.saver.fields,
                         error=str(msg))
         else:
             url = self.reverse_url('sample', projectid, sampleid)
@@ -145,7 +149,9 @@ class SampleEdit(RequestHandler):
 
 
 class ApiSample(ApiRequestHandler):
-    "API: Access a sample."
+    "Access a sample."
+
+    saver = SampleSaver
 
     def get(self, projectid, sampleid):
         """Return the sample data as JSON.
@@ -170,7 +176,7 @@ class ApiSample(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with SampleSaver(doc=sample, rqh=self) as saver:
+                with self.saver(doc=sample, rqh=self) as saver:
                     saver.store(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))
@@ -181,7 +187,9 @@ class ApiSample(ApiRequestHandler):
 
 
 class ApiSampleCreate(ApiRequestHandler):
-    "API: Create a sample within a project."
+    "Create a sample within a project."
+
+    saver = SampleSaver
 
     def post(self, projectid):
         """Create a sample within a project.
@@ -197,7 +205,7 @@ class ApiSampleCreate(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with SampleSaver(rqh=self, project=project) as saver:
+                with self.saver(rqh=self, project=project) as saver:
                     saver.store(data=data)
                     sample = saver.doc
             except (KeyError, ValueError), msg:

@@ -14,14 +14,15 @@ API Documentation
 
 {% for host in hosts %}
 
-{% if host[0] == '.*' %}
+{% if host['name'] == '.*' %}
 <h2>Default host</h2>
 {% else %}
 <h2>Host {{ host[0] }}</h2>
 {% end %}
 
-{% for urlspec in host[1] %}
-<h3>{{ urlspec['pattern'] }}</h3>
+{% for urlspec in host['urlspecs'] %}
+
+<h3 class="section">{{ urlspec['pattern'] }}</h3>
 <p class="code">{{ urlspec['text'] }}</p>
 <table class="fields">
   {% for method in urlspec['methods'] %}
@@ -30,7 +31,41 @@ API Documentation
     <td class="code">{{ method[1] }}</td>
   </tr>
   {% end %}
+  {% if urlspec['fields'] %}
+  <tr>
+    <th>Input JSON</th>
+    <td>
+      <table class="params">
+	<tr>
+	  <th class="header">Field key</th>
+	  <th class="header">Type</th>
+	  <th class="header">Mandatory</th>
+	  <th class="header">Editable</th>
+	  <th class="header">Description</th>
+	</tr>
+	{% for field in urlspec['fields'] %}
+	<tr>
+	  <th>{{ field.key }}</th>
+	  <td>{{ field.type }}</td>
+	  <td>
+	    {% if field.mandatory %}
+            {% module Icon('mandatory') %}
+	    {% end %}
+	  </td>
+	  <td>
+	    {% if field.editable %}
+            {% module Icon('edit', title='Editable') %}
+	    {% end %}
+	  </td>
+	  <td>{{ field.description }}</td>
+	</tr>
+	{% end %}
+      </table>
+    </td>
+  </tr>
+  {% end %}
 </table>
+
 {% end %}
 
 {% end %}

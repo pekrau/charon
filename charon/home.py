@@ -92,9 +92,15 @@ class ApiDoc(RequestHandler):
         hosts = []
         for handler in self.application.handlers:
             urlspecs = []
-            hosts.append((handler[0].pattern.rstrip('$'), urlspecs))
+            hosts.append(dict(name=handler[0].pattern.rstrip('$'),
+                              urlspecs=urlspecs))
             for urlspec in handler[1]:
                 if not urlspec.regex.pattern.startswith('/api/'): continue
+                saver = urlspec.handler_class.saver
+                if saver is not None:
+                    fields = saver.fields
+                else:
+                    fields = []
                 methods = []
                 for name in ('get', 'post', 'put', 'delete'):
                     method = getattr(urlspec.handler_class, name)
@@ -102,6 +108,7 @@ class ApiDoc(RequestHandler):
                     methods.append((name, self.process_text(method.__doc__)))
                 urlspecs.append(dict(pattern=urlspec.regex.pattern.rstrip('$'),
                                      text=self.process_text(urlspec.handler_class.__doc__),
+                                     fields=fields,
                                      methods=methods))
         self.render('apidoc.html', hosts=hosts)
 

@@ -97,6 +97,8 @@ class Libprep(RequestHandler):
 class LibprepCreate(RequestHandler):
     "Create a libprep."
 
+    saver = LibprepSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
         self.render('libprep_create.html',
@@ -108,14 +110,14 @@ class LibprepCreate(RequestHandler):
         self.check_xsrf_cookie()
         sample = self.get_sample(projectid, sampleid)
         try:
-            with LibprepSaver(rqh=self, sample=sample) as saver:
+            with self.saver(rqh=self, sample=sample) as saver:
                 saver.store()
                 libprep = saver.doc
         except (IOError, ValueError), msg:
             self.render('libprep_create.html',
                         project=self.get_project(projectid),
                         sample=self.get_sample(projectid, sampleid),
-                        fields=LibprepSaver.fields,
+                        fields=self.libprep.fields,
                         error=str(error))
         else:
             url = self.reverse_url('libprep',
@@ -128,6 +130,8 @@ class LibprepCreate(RequestHandler):
 class LibprepEdit(RequestHandler):
     "Edit an existing libprep."
 
+    saver = LibprepSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
@@ -138,7 +142,7 @@ class LibprepEdit(RequestHandler):
         self.check_xsrf_cookie()
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
-            with LibprepSaver(doc=libprep, rqh=self) as saver:
+            with self.saver(doc=libprep, rqh=self) as saver:
                 saver.store()
         except ValueError, msg:
             raise tornado.web.HTTPError(400, reason=str(msg))
@@ -151,6 +155,8 @@ class LibprepEdit(RequestHandler):
 
 class ApiLibprep(ApiRequestHandler):
     "Access a libprep."
+
+    saver = LibprepSaver
 
     def get(self, projectid, sampleid, libprepid):
         """Return the libprep data as JSON.
@@ -175,7 +181,7 @@ class ApiLibprep(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with LibprepSaver(doc=libprep, rqh=self) as saver:
+                with self.saver(doc=libprep, rqh=self) as saver:
                     saver.store(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))
@@ -187,6 +193,8 @@ class ApiLibprep(ApiRequestHandler):
 
 class ApiLibprepCreate(ApiRequestHandler):
     "Create a libprep within a sample."
+
+    saver = LibprepSaver
 
     def post(self, projectid, sampleid):
         """Create a libprep within a sample.
@@ -206,7 +214,7 @@ class ApiLibprepCreate(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with LibprepSaver(rqh=self, sample=sample) as saver:
+                with self.saver(rqh=self, sample=sample) as saver:
                     saver.store(data=data)
                     libprep = saver.doc
             except (KeyError, ValueError), msg:

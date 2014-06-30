@@ -80,7 +80,7 @@ class SeqrunEdit(RequestHandler):
 
 
 class ApiSeqrun(ApiRequestHandler):
-    "API: Access a seqrun in a libprep."
+    "Access a seqrun in a libprep."
 
     def get(self, projectid, sampleid, libprepid, seqrunid):
         """Return the seqrun data.
@@ -122,7 +122,7 @@ class ApiSeqrun(ApiRequestHandler):
 
 
 class ApiSeqrunCreate(ApiRequestHandler):
-    "API: Create a seqrun within a libprep."
+    "Create a seqrun within a libprep."
 
     def post(self, projectid, sampleid, libprepid):
         """Create a seqrun within a libprep.

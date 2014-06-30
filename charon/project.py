@@ -86,10 +86,12 @@ class Project(RequestHandler):
 class ProjectCreate(RequestHandler):
     "Create a new project and redirect to it."
 
+    saver = ProjectSaver
+
     @tornado.web.authenticated
     def get(self):
         "Display the project creation form."
-        self.render('project_create.html', fields=ProjectSaver.fields)
+        self.render('project_create.html', fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self):
@@ -97,12 +99,12 @@ class ProjectCreate(RequestHandler):
         Redirect to the project page."""
         self.check_xsrf_cookie()
         try:
-            with ProjectSaver(rqh=self) as saver:
+            with self.saver(rqh=self) as saver:
                 saver.store()
                 project = saver.doc
         except (IOError, ValueError), msg:
             self.render('project_create.html',
-                        fields=ProjectSaver.fields,
+                        fields=self.saver.fields,
                         error=str(msg))
         else:
             url = self.reverse_url('project', project['projectid'])
@@ -112,13 +114,15 @@ class ProjectCreate(RequestHandler):
 class ProjectEdit(RequestHandler):
     "Edit an existing project."
 
+    saver = ProjectSaver
+
     @tornado.web.authenticated
     def get(self, projectid):
         "Display the project edit form."
         project = self.get_project(projectid)
         self.render('project_edit.html',
                     project=project,
-                    fields=ProjectSaver.fields)
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid):
@@ -126,11 +130,11 @@ class ProjectEdit(RequestHandler):
         self.check_xsrf_cookie()
         project = self.get_project(projectid)
         try:
-            with ProjectSaver(doc=project, rqh=self) as saver:
+            with self.saver(doc=project, rqh=self) as saver:
                 saver.store()
         except (IOError, ValueError), msg:
             self.render('project_edit.html',
-                        fields=ProjectSaver.fields,
+                        fields=self.saver.fields,
                         project=project,
                         error=str(msg))
         else:
@@ -148,7 +152,9 @@ class Projects(RequestHandler):
 
 
 class ApiProject(ApiRequestHandler):
-    "API: Access a project."
+    "Access a project."
+
+    saver = ProjectSaver
 
     def get(self, projectid):
         """Return the project data as JSON.
@@ -185,7 +191,7 @@ class ApiProject(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with ProjectSaver(doc=project, rqh=self) as saver:
+                with self.saver(doc=project, rqh=self) as saver:
                     saver.store(data=data)
             except ValueError, msg:
                 self.send_error(400, reason=str(msg))
@@ -206,7 +212,9 @@ class ApiProject(ApiRequestHandler):
 
 
 class ApiProjectCreate(ApiRequestHandler):
-    "API: Create a new project."
+    "Create a new project."
+
+    saver = ProjectSaver
 
     def post(self):
         """Create a project.
@@ -219,7 +227,7 @@ class ApiProjectCreate(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with ProjectSaver(rqh=self) as saver:
+                with self.saver(rqh=self) as saver:
                     saver.store(data=data)
                     project = saver.doc
             except (KeyError, ValueError), msg:
@@ -235,7 +243,7 @@ class ApiProjectCreate(ApiRequestHandler):
 
 
 class ApiProjects(ApiRequestHandler):
-    "API: Access to all projects."
+    "Access to all projects."
 
     def get(self):
         "Return a list of all projects."
