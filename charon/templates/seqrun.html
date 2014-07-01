@@ -1,0 +1,81 @@
+{# Seqrun page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Seqrun
+{{ project['projectid'] }},
+{{ sample['sampleid'] }},
+{{ libprep['libprepid'] }},
+{{ seqrun['seqrunid'] }}
+{% end %}
+
+{% block title %}
+{% module Icon('seqrun', label=True) %}
+{{ project['projectid'] }},
+{{ sample['sampleid'] }},
+{{ libprep['libprepid'] }},
+{{ seqrun['seqrunid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('seqrun_edit', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
+  {% module Submit('edit') %}
+</form>
+{% end %}
+
+{% block api %}
+<div>
+  <a href="{{ reverse_url('api_seqrun', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_seqrun', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}
+  </a>
+</div>
+<div>
+  <a href="{{ reverse_url('api_logs', seqrun['_id']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_logs', '_id') }}
+  </a>
+</div>
+{% end %}
+
+{% block content %}
+
+{% set entity = seqrun %}
+
+<table class="fields">
+
+  <tr>
+    <th>Project</th>
+    <td>
+      <a href="{{ reverse_url('project', seqrun['projectid']) }}">
+	{{ seqrun['projectid'] }}
+      </a>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Sample</th>
+    <td>
+      <a href="{{ reverse_url('sample', seqrun['projectid'], seqrun['sampleid']) }}">
+	{{ seqrun['sampleid'] }}
+      </a>
+    </td>
+  </tr>
+
+  <tr>
+    <th>Libprep</th>
+    <td>
+      <a href="{{ reverse_url('libprep', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid']) }}">
+	{{ seqrun['libprepid'] }}
+      </a>
+    </td>
+  </tr>
+
+  {% include 'display_fields.html' %}
+
+  {% include 'output_events_fields.html' %}
+
+</table>
+
+{% end %}
