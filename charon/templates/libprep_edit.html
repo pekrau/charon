@@ -30,68 +30,10 @@ Libprep {{ libprep['libprepid'] }}
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Edit the libprep information</legend>
-
-    <table class="fields">
-
-      <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('project', libprep['projectid']) }}">
-	    {{ libprep['projectid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the project to which the libprep belongs.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', libprep['projectid'], libprep['sampleid']) }}">
-	    {{ libprep['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample to which the libprep belongs.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Identifier</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>{{ libprep['libprepid'] }}</td>
-	<td class="description">
-	  The libprep identifier, unique within the project and sample.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td>
-	  <input type="text" name="status"
-		 value="{{ libprep.get('status') or '' }}">
-	</td>
-	<td class="description">
-	  Libprep status.
-	</td>
-      </tr>
-
-      <tr>
-	<th></th>
-	<td></td>
-	<td>
-	  {% module Submit('save') %}
-	</td>
-      </tr>
-
-    </table>
-
+    {% include 'error.html' %}
+    {% set entity = libprep %}
+    {% include 'edit_fields.html' %}
   </fieldset>
 
 </form>

@@ -25,7 +25,7 @@ class SampleidField(IdField):
 
 
 class SampleSaver(Saver):
-    "Saver and fields definions for the sample entity."
+    "Saver and fields definitions for the sample entity."
 
     doctype = constants.SAMPLE
 
@@ -42,8 +42,6 @@ class SampleSaver(Saver):
                     description='The genotyping concordance of the sample.'),
               Field('sequencing_status',
                     description='The sequencing status of the sample.'),
-              Field('primary_analysis_status',
-                    description='The primary analysis status of the sample.'),
               Field('primary_analysis_status',
                     description='The secondary analysis status of the sample.'),
               Field('delivery_status',
@@ -68,6 +66,8 @@ class SampleSaver(Saver):
 class Sample(RequestHandler):
     "Display the sample data."
 
+    saver = SampleSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
         project = self.get_project(projectid)
@@ -84,11 +84,13 @@ class Sample(RequestHandler):
                 libprep['seqruns_count'] = 0
             else:
                 libprep['seqruns_count'] = row.value
+        logs = self.get_logs(sample['_id']) # XXX limit?
         self.render('sample.html',
                     project=project,
                     sample=sample,
                     libpreps=libpreps,
-                    logs=self.get_logs(sample['_id']))
+                    fields=self.saver.fields,
+                    logs=logs)
 
 
 class SampleCreate(RequestHandler):

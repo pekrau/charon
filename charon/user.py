@@ -16,6 +16,7 @@ from .saver import Saver
 
 
 class UserSaver(Saver):
+
     doctype = constants.USER
 
 

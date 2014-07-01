@@ -36,7 +36,7 @@ class ProjectnameField(NameField):
 
 
 class ProjectSaver(Saver):
-    "Saver and fields definions for the project entity."
+    "Saver and fields definitions for the project entity."
 
     doctype = constants.PROJECT
 
@@ -53,6 +53,8 @@ class ProjectSaver(Saver):
 
 class Project(RequestHandler):
     "Display the project data."
+
+    saver = ProjectSaver
 
     @tornado.web.authenticated
     def get(self, projectid):
@@ -77,10 +79,12 @@ class Project(RequestHandler):
                 sample['seqruns_count'] = 0
             else:
                 sample['seqruns_count'] = row.value
+        logs = self.get_logs(project['_id']) # XXX limit?
         self.render('project.html',
                     project=project,
                     samples=samples,
-                    logs=self.get_logs(project['_id']))
+                    fields=self.saver.fields,
+                    logs=logs)
 
 
 class ProjectCreate(RequestHandler):

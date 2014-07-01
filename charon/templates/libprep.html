@@ -38,6 +38,8 @@ Libprep {{ libprep['libprepid'] }}
 
 {% block content %}
 
+{% set entity = libprep %}
+
 <table class="fields">
 
   <tr>
@@ -58,15 +60,7 @@ Libprep {{ libprep['libprepid'] }}
     </td>
   </tr>
 
-  <tr>
-    <th>Identifier</th>
-    <td>{{ libprep['libprepid'] }}</td>
-  </tr>
-
-  <tr>
-    <th>Status</th>
-    <td>{{ libprep.get('status') or '-' }}</td>
-  </tr>
+  {% include 'display_fields.html' %}
 
   <tr>
     <th>Seqruns</th>
@@ -79,18 +73,18 @@ Libprep {{ libprep['libprepid'] }}
 	  <th>Alignment status</th>
 	  <th>Alignment coverage</th>
 	</tr>
-	{% for pos, seqrun in enumerate(libprep['seqruns']) %}
+	{% for seqrun in seqruns %}
 	<tr>
-	  <td>{{ pos + 1 }}</td>
+	  <td>{{ seqrun['seqrunid'] }}</td>
 	  <td>{{ seqrun.get('status') or '-' }}</td>
-	  <td>{{ seqrun.get('flowcellid') or '-' }}</td>
+	  <td>{{ seqrun.get('runid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
 	  <td class="number">
 	    {{ seqrun.get('alignment_coverage') or '0.0' }}
 	  </td>
 	  <td>
-	    <form action="{{ reverse_url('seqrun_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid'], str(pos+1)) }}">
-	      {% module Submit('edit') %}
+	    <form action="{{ reverse_url('seqrun_edit', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
+	      {% module Submit('edit', slim=True) %}
 	    </form>
 	  </td>
 	</tr>
@@ -99,22 +93,7 @@ Libprep {{ libprep['libprepid'] }}
     </td>
   </tr>
 
-  <tr>
-    <th>Created</th>
-    <td class="localtime">{{ libprep['created'] }}</td>
-  </tr>
-
-  <tr>
-    <th>Modified</th>
-    <td class="localtime">{{ libprep['modified'] }}</td>
-  </tr>
-
-  <tr>
-    <th>Event log</th>
-    <td>
-      {% include 'log.html' %}
-    </td>
-  </tr>
+  {% include 'output_events_fields.html' %}
 
 </table>
 

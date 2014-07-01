@@ -24,6 +24,7 @@ class RequestHandler(tornado.web.RequestHandler):
         self._projects = weakref.WeakValueDictionary()
         self._samples = weakref.WeakValueDictionary()
         self._libpreps = weakref.WeakValueDictionary()
+        self._seqruns = weakref.WeakValueDictionary()
 
     def get_template_namespace(self):
         "Set the variables accessible within the template."
@@ -135,13 +136,35 @@ class RequestHandler(tornado.web.RequestHandler):
             return self.get_and_cache('libprep/libprepid', key, self._libpreps)
 
     def get_libpreps(self, projectid, sampleid=''):
+        """Get the libpreps for the sample if sampleid given.
+        For the entire project if no sampleid."""
         startkey = (projectid, sampleid, '')
-        if sampleid:
-            endkey = (projectid, sampleid, constants.HIGH_CHAR)
-        else:
-            endkey = (projectid, constants.HIGH_CHAR, constants.HIGH_CHAR)
+        endkey = (projectid,
+                  sampleid or constants.HIGH_CHAR,
+                  constants.HIGH_CHAR)
         return [self.get_libprep(*r.key) for r in
                 self.db.view('libprep/libprepid')[startkey:endkey]]
+
+    def get_seqrun(self, projectid, sampleid, libprepid, seqrunid):
+        """Get the libprep by the projectid, sampleid, libprepid and seqrunid.
+        Raise HTTP 404 if no such seqrun."""
+        key = (projectid, sampleid, libprepid, seqrunid)
+        try:
+            return self._seqruns[key]
+        except KeyError:
+            return self.get_and_cache('seqrun/seqrunid', key, self._seqruns)
+
+    def get_seqruns(self, projectid, sampleid='', libprepid=''):
+        """Get the seqruns for the libprep if libprepid given.
+        For the entire sample if no libprepid.
+        For the entire project if no sampleid."""
+        startkey = (projectid, sampleid, libprepid, 0)
+        endkey = (projectid,
+                  sampleid or constants.HIGH_CHAR,
+                  libprepid or constants.HIGH_CHAR,
+                  1000000)
+        return [self.get_seqrun(*r.key) for r in
+                self.db.view('seqrun/seqrunid')[startkey:endkey]]
 
     def get_and_cache(self, viewname, key, cache):
         """Get the item by the view name and the key.

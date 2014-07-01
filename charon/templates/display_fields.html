@@ -1,0 +1,14 @@
+{# Output fields for table display. #}
+
+{% for field in fields %}
+  <tr>
+    <th title="{{ field.description }}" class="nobr">{{ field.title }}</th>
+    <td>
+      {% if field.type == 'text' %}
+        {{ entity.get(field.key) or '-' }}
+      {% else %}
+        [invalid field type]
+      {% end %}
+    </td>
+  </tr>
+{% end %}

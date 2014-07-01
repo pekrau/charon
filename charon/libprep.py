@@ -26,12 +26,12 @@ class LibprepidField(IdField):
 
 
 class LibprepSaver(Saver):
-    "Saver and fields definions for the libprep entity."
+    "Saver and fields definitions for the libprep entity."
 
     doctype = constants.LIBPREP
 
     fields = [LibprepidField('libprepid', title='Identifier'),
-              Field('status',description='The status of the libprep.'),
+              Field('status', description='The status of the libprep.'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, sample=None):
@@ -39,11 +39,10 @@ class LibprepSaver(Saver):
         if self.is_new():
             assert sample
             assert 'sampleid' not in self.doc
-            self.sample = sample
             self.project = rqh.get_project(sample['projectid'])
+            self.sample = sample
             self.doc['projectid'] = sample['projectid']
             self.doc['sampleid'] = sample['sampleid']
-            self.doc['seqruns'] = []
         else:
             self.project = rqh.get_project(self.doc['projectid'])
             if sample:
@@ -54,44 +53,25 @@ class LibprepSaver(Saver):
                 self.sample = rqh.get_sample(self.doc['projectid'],
                                              self.doc['sampleid'])
 
-    def update_seqrun(self, pos, seqrun=None):
-        "Create or update a given seqrun within the libprep."
-        if seqrun is None:
-            seqrun = dict(status=self.rqh.get_argument('status', None),
-                          flowcellid=self.rqh.get_argument('flowcellid', None),
-                          alignment_status=self.rqh.get_argument('alignment_status', None),
-                          alignment_coverage=self.rqh.get_argument('alignment_coverage', None))
-        coverage = seqrun.get('alignment_coverage', None)
-        if coverage is not None:
-            try:
-                coverage = float(coverage)
-                if coverage < 0.0: raise ValueError
-            except (ValueError, TypeError):
-                raise tornado.web.HTTPError(400, 'invalid alignment_coverage value')
-            seqrun['alignment_coverage'] = coverage
-        if pos is None:
-            seqruns = self.doc['seqruns'] + [seqrun]
-        else:
-            seqruns = list(self.doc['seqruns']) # List copy required here!
-            seqruns[pos] = seqrun
-        # Don't go via setitem, since that is blocked by checker.
-        self.doc['seqruns'] = seqruns
-        self.changed['seqruns'] = seqruns
-
-
 class Libprep(RequestHandler):
     "Display the libprep data."
+
+    saver = LibprepSaver
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid):
         project = self.get_project(projectid)
         sample = self.get_sample(projectid, sampleid)
         libprep = self.get_libprep(projectid, sampleid, libprepid)
+        seqruns = self.get_seqruns(projectid, sampleid, libprepid)
+        logs = self.get_logs(libprep['_id']) # XXX limit?
         self.render('libprep.html',
                     project=project,
                     sample=sample,
                     libprep=libprep,
-                    logs=self.get_logs(libprep['_id']))
+                    seqruns=seqruns,
+                    fields=self.saver.fields,
+                    logs=logs)
 
 
 class LibprepCreate(RequestHandler):
@@ -103,7 +83,8 @@ class LibprepCreate(RequestHandler):
     def get(self, projectid, sampleid):
         self.render('libprep_create.html',
                     project=self.get_project(projectid),
-                    sample=self.get_sample(projectid, sampleid))
+                    sample=self.get_sample(projectid, sampleid),
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid):
@@ -116,8 +97,8 @@ class LibprepCreate(RequestHandler):
         except (IOError, ValueError), msg:
             self.render('libprep_create.html',
                         project=self.get_project(projectid),
-                        sample=self.get_sample(projectid, sampleid),
-                        fields=self.libprep.fields,
+                        sample=sample,
+                        fields=self.saver.fields,
                         error=str(error))
         else:
             url = self.reverse_url('libprep',

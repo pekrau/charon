@@ -1,8 +1,8 @@
 /* Charon
-   Index libprep documents by [projectid, sampleid, libprepid].
-   Value: number of seqruns.
+   Index seqrun documents by [projectid, sampleid, libprepid].
+   Value: 1.
 */
 function(doc) {
-    if (doc.charon_doctype !== 'libprep') return;
-    emit([doc.projectid, doc.sampleid, doc.libprepid], doc.seqruns.length);
+    if (doc.charon_doctype !== 'seqrun') return;
+    emit([doc.projectid, doc.sampleid, doc.libprepid], 1);
 }

@@ -25,10 +25,7 @@ class Field(object):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
         if not saver.is_new() and not self.editable: return
-        if data is None:
-            value = saver.rqh.get_argument(self.key, default=None)
-        else:
-            value = data.get(self.key)
+        value = self.get(saver, data=data)
         value = self.process(saver, value)
         if value == saver.doc.get(self.key):
             logging.debug("Field.store: '%s' value equal", self.key)
@@ -36,6 +33,13 @@ class Field(object):
         saver.doc[self.key] = value
         saver.changed[self.key] = value
         logging.debug("Field.store: %s, %s", self.key, value)
+
+    def get(self, saver, data=None):
+        "Obtain the value from data, if given, else from HTML form parameter."
+        if data is None:
+            return saver.rqh.get_argument(self.key, default=None)
+        else:
+            return data.get(self.key)
 
     def process(self, saver, value):
         "Check validity and return converted to the appropriate type."

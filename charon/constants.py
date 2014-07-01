@@ -19,6 +19,7 @@ USER       = 'user'
 PROJECT    = 'project'
 SAMPLE     = 'sample'
 LIBPREP    = 'libprep'
+SEQRUN     = 'seqrun'
 LOG        = 'log'
 
 # Status

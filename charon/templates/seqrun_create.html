@@ -20,97 +20,9 @@ Create Seqrun
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Create a new seqrun</legend>
-
-    <table class="fields">
-
-      <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('project', project['projectid']) }}">
-	    {{ project['projectid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the project to which the seqrun belongs.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
-	    {{ sample['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Libprep</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('libprep', project['projectid'], sample['sampleid'], libprep['libprepid']) }}">
-	    {{ libprep['libprepid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the libprep of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td><input type="text" name="status"></td>
-	<td class="description">
-	  Status of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Flowcell ID</th>
-	<td></td>
-	<td><input type="text" name="flowcellid"></td>
-	<td class="description">
-	  Flowcell identifier for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment status</th>
-	<td></td>
-	<td><input type="text" name="alignment_status"></td>
-	<td class="description">
-	  Status of the alignment for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment coverage</th>
-	<td></td>
-	<td><input type="number" min="0" step="0.01"
-		   name="alignment_coverage"></td>
-	<td class="description">
-	  Coverage of the alignment for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th></th>
-	<td></td>
-	<td>
-	  {% module Submit('create') %}
-	</td>
-      </tr>
-
-    </table>
-
+    {% include 'error.html' %}
+    {% include 'create_fields.html' %}
   </fieldset>
 
 </form>
