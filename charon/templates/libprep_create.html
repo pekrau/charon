@@ -4,18 +4,26 @@
 
 {% block head_title %}
 Create Libprep
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+in sample {{ sample['projectid'] }},
+sample {{ sample['sampleid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('libprep', label=True) %}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+in sample {{ sample['projectid'] }},
+sample {{ sample['sampleid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('sample', sample['projectid'], sample['sampleid']) }}">
+  {% module Submit('cancel') %}
+</form>
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('libprep_create', project['projectid'], sample['sampleid']) }}"
+<form action="{{ reverse_url('libprep_create', sample['projectid'], sample['sampleid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 

@@ -3,13 +3,16 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
+Edit Sample
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('edit') %} Edit
-{% module Icon('sample', label=True) %} {{ sample['sampleid'] }}
-(project {{ sample['projectid'] }})
+{% module Icon('edit', label=True) %}
+{% module Icon('sample', label=True) %}
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block actions %}

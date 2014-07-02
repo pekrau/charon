@@ -3,13 +3,21 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Create Sample (project {{ project['projectid'] }})
+Create
+Sample
+in project{{ project['projectid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('sample', label=True) %}
-(project {{ project['projectid'] }})
+in project {{ project['projectid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('project', project['projectid']) }}">
+  {% module Submit('cancel') %}
+</form>
 {% end %}
 
 {% block content %}

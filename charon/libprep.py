@@ -59,14 +59,10 @@ class Libprep(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid):
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         seqruns = self.get_seqruns(projectid, sampleid, libprepid)
         logs = self.get_logs(libprep['_id']) # XXX limit?
         self.render('libprep.html',
-                    project=project,
-                    sample=sample,
                     libprep=libprep,
                     seqruns=seqruns,
                     fields=self.saver.fields,
@@ -80,10 +76,8 @@ class LibprepCreate(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
-        project = self.get_project(projectid)
         sample = self.get_sample(projectid, sampleid)
         self.render('libprep_create.html',
-                    project=project,
                     sample=sample,
                     fields=self.saver.fields)
 

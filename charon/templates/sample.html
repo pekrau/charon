@@ -3,12 +3,15 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
+Sample
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('sample', label=True) %} {{ sample['sampleid'] }}
-(project {{ sample['projectid'] }})
+{% module Icon('sample', label=True) %}
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block actions %}
@@ -77,7 +80,7 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
 	{% for libprep in libpreps %}
 	<tr>
 	  <td>
-	    <a href="{{ reverse_url('libprep', project['projectid'], sample['sampleid'], libprep['libprepid']) }}">
+	    <a href="{{ reverse_url('libprep', sample['projectid'], sample['sampleid'], libprep['libprepid']) }}">
 	      {{ libprep['libprepid'] }}
 	      </a>
 	  </td>

@@ -26,8 +26,8 @@ def my_teardown():
 
 
 @with_setup(my_setup, my_teardown)
-def test_libprep_seqruns():
-    "Create some seqruns in a libprep, and manipulate those."
+def test_create_seqrun():
+    "Create a seqrun in a libprep and manipulate it."
     data = dict(status='initialized')
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
@@ -64,8 +64,8 @@ def test_libprep_seqruns():
                            headers=api_token)
     newdata = response.json()
     assert data['alignment_coverage'] == newdata['alignment_coverage']
-    # data = dict(alignment_coverage=-0.1)
-    # response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
-    #                        data=json.dumps(data),
-    #                        headers=api_token)
-    # assert response.status_code == 400, response
+    data = dict(alignment_coverage=-1.0)
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 400, response

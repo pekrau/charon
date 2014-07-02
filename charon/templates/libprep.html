@@ -3,13 +3,17 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Libprep {{ libprep['libprepid'] }}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+Libprep
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('libprep', label=True) %} {{ libprep['libprepid'] }}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+{% module Icon('libprep', label=True) %}
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block actions %}

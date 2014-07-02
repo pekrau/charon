@@ -13,6 +13,12 @@ Create Seqrun
 (project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }}, libprep {{ libprep['libprepid']}})
 {% end %}
 
+{% block actions %}
+<form action="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+  {% module Submit('cancel') %}
+</form>
+{% end %}
+
 {% block content %}
 
 <form action="{{ reverse_url('seqrun_create', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}"

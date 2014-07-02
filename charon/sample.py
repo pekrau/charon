@@ -70,7 +70,6 @@ class Sample(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
-        project = self.get_project(projectid)
         sample = self.get_sample(projectid, sampleid)
         libpreps = self.get_libpreps(projectid, sampleid)
         view = self.db.view('seqrun/count')
@@ -86,7 +85,6 @@ class Sample(RequestHandler):
                 libprep['seqruns_count'] = row.value
         logs = self.get_logs(sample['_id']) # XXX limit?
         self.render('sample.html',
-                    project=project,
                     sample=sample,
                     libpreps=libpreps,
                     fields=self.saver.fields,
@@ -114,7 +112,7 @@ class SampleCreate(RequestHandler):
                 sample = saver.doc
         except (IOError, ValueError), msg:
             self.render('sample_create.html',
-                        project=self.get_project(projectid),
+                        project=project,
                         fields=self.saver.fields,
                         error=str(error))
         else:

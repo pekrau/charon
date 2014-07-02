@@ -3,17 +3,18 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }},
- sample {{ libprep['sampleid'] }})
+Edit Libprep
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('edit', label=True) %}
-{% module Icon('libprep') %}
-Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }},
- sample {{ libprep['sampleid'] }})
+{% module Icon('libprep', label=True) %}
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block actions %}

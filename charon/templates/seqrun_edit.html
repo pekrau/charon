@@ -3,10 +3,11 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Seqrun {{ seqrun['seqrunid'] }}
-(project {{ seqrun['projectid'] }},
-sample {{ seqrun['sampleid'] }},
-libprep {{ seqrun['libprepid']}})
+Edit Seqrun 
+{{ seqrun['projectid'] }},
+{{ seqrun['sampleid'] }},
+{{ seqrun['libprepid']}},
+{{ seqrun['seqrunid'] }}
 {% end %}
 
 {% block title %}

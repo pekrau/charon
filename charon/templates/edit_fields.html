@@ -18,8 +18,12 @@
 	{% elif field.type == 'auto' %}
 	  [autoassigned]
 	{% elif field.type == 'number' %}
-	  <input type="text" name="{{ field.key }}"
-		 value="{{ entity.get(field.key) is None and '' or entity.get(field.key) }}">
+	  {% set value = entity.get(field.key) %}
+	  {% if value is None %}
+	  <input type="text" name="{{ field.key }}">
+	  {% else %}
+	  <input type="text" name="{{ field.key }}" value="{{ value }}">
+	  {% end %}
 	{% else %}
 	  [invalid field type]
 	{% end %}
