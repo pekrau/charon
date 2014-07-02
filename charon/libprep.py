@@ -81,9 +81,11 @@ class LibprepCreate(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
+        project = self.get_project(projectid)
+        sample = self.get_sample(projectid, sampleid)
         self.render('libprep_create.html',
-                    project=self.get_project(projectid),
-                    sample=self.get_sample(projectid, sampleid),
+                    project=project,
+                    sample=sample,
                     fields=self.saver.fields)
 
     @tornado.web.authenticated
@@ -116,7 +118,9 @@ class LibprepEdit(RequestHandler):
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid):
         libprep = self.get_libprep(projectid, sampleid, libprepid)
-        self.render('libprep_edit.html', libprep=libprep)
+        self.render('libprep_edit.html',
+                    libprep=libprep,
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid, libprepid):
@@ -125,10 +129,11 @@ class LibprepEdit(RequestHandler):
         try:
             with self.saver(doc=libprep, rqh=self) as saver:
                 saver.store()
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
+        except (IOError, ValueError), msg:
+            self.render('libprep_edit.html',
+                        libprep=libprep,
+                        fields=self.saver.fields,
+                        error=str(msg))
         else:
             url = self.reverse_url('libprep', projectid, sampleid, libprepid)
             self.redirect(url)

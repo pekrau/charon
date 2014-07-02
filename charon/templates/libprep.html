@@ -29,6 +29,12 @@ Libprep {{ libprep['libprepid'] }}
   </a>
 </div>
 <div>
+  <a href="{{ reverse_url('api_libprep_seqruns', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_libprep_seqruns', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}
+  </a>
+</div>
+<div>
   <a href="{{ reverse_url('api_logs', libprep['_id']) }}">
     {% module Icon('json') %}
     {{ reverse_url('api_logs', '_id') }}
@@ -67,15 +73,19 @@ Libprep {{ libprep['libprepid'] }}
     <td>
       <table class="list">
 	<tr class="list">
-	  <th>Number</th>
+	  <th>Identifier</th>
 	  <th>Status</th>
-	  <th>Flowcell ID</th>
+	  <th>Run ID</th>
 	  <th>Alignment status</th>
 	  <th>Alignment coverage</th>
 	</tr>
 	{% for seqrun in seqruns %}
 	<tr>
-	  <td>{{ seqrun['seqrunid'] }}</td>
+	  <td>
+	    <a href="{{ reverse_url('seqrun', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'],  seqrun['seqrunid']) }}">
+	      {{ seqrun['seqrunid'] }}
+	    </a>
+	  </td>
 	  <td>{{ seqrun.get('status') or '-' }}</td>
 	  <td>{{ seqrun.get('runid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>

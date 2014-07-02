@@ -8,7 +8,6 @@
 import os
 import getpass
 
-from charon import settings
 from charon import constants
 from charon import utils
 from charon.load_designs import load_designs

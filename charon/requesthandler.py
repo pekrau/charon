@@ -148,10 +148,11 @@ class RequestHandler(tornado.web.RequestHandler):
     def get_seqrun(self, projectid, sampleid, libprepid, seqrunid):
         """Get the libprep by the projectid, sampleid, libprepid and seqrunid.
         Raise HTTP 404 if no such seqrun."""
-        key = (projectid, sampleid, libprepid, seqrunid)
         try:
+            seqrunid = int(seqrunid)
+            key = (projectid, sampleid, libprepid, seqrunid)
             return self._seqruns[key]
-        except KeyError:
+        except (ValueError, KeyError):
             return self.get_and_cache('seqrun/seqrunid', key, self._seqruns)
 
     def get_seqruns(self, projectid, sampleid='', libprepid=''):

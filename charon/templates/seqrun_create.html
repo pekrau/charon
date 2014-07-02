@@ -4,18 +4,18 @@
 
 {% block head_title %}
 Create Seqrun
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }}, libprep {{ libprep['libprepid']}})
+(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }}, libprep {{ libprep['libprepid']}})
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('seqrun', label=True) %}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }}, libprep {{ libprep['libprepid']}})
+(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }}, libprep {{ libprep['libprepid']}})
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('seqrun_create', project['projectid'], sample['sampleid'], libprep['libprepid']) }}"
+<form action="{{ reverse_url('seqrun_create', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 

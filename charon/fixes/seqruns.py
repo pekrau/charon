@@ -15,6 +15,8 @@ def write_seqrun_docs(db, libprep):
         doc['libprepid'] = libprep['libprepid']
         doc['seqrunid'] = pos + 1
         doc['runid'] = None
+        doc['modified'] = libprep['modified']
+        doc['created'] = libprep['created']
         db.save(doc)
         print doc
 

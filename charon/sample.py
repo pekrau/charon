@@ -143,6 +143,7 @@ class SampleEdit(RequestHandler):
                 saver.store()
         except (IOError, ValueError), msg:
             self.render('sample_edit.html',
+                        sample=sample,
                         fields=self.saver.fields,
                         error=str(msg))
         else:
@@ -160,6 +161,7 @@ class ApiSample(ApiRequestHandler):
         Return HTTP 404 if no such sample or project."""
         sample = self.get_sample(projectid, sampleid)
         if not sample: return
+        self.add_link(sample, 'project', 'api_project', projectid)
         self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
         self.add_link(sample, 'libpreps', 'api_sample_libpreps',
                       projectid, sampleid)

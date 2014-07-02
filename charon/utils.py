@@ -18,8 +18,8 @@ from . import settings
 
 
 def load_settings(filepath=None):
-    """Load the settings from the given settings file, or from the first
-    existing file in a predefined list of filepaths.
+    """Load and return the settings from the given settings file,
+    or from the first existing file in a predefined list of filepaths.
     Raise IOError if no readable settings file was found.
     Raise KeyError if a settings variable is missing.
     Raise ValueError if the settings variable value is invalid."""
@@ -87,6 +87,7 @@ def load_settings(filepath=None):
             settings['PORT'] =  443
         else:
             raise ValueError('could not determine port from BASE_URL')
+    return settings
 
 def get_db():
     "Return the handle for the CouchDB database."

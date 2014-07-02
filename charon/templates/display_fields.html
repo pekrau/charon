@@ -6,6 +6,8 @@
     <td>
       {% if field.type == 'text' %}
         {{ entity.get(field.key) or '-' }}
+      {% elif field.type == 'auto' %}
+        {{ entity.get(field.key) or '-' }}
       {% else %}
         [invalid field type]
       {% end %}

@@ -43,7 +43,7 @@ class SeqrunSaver(Saver):
     fields = [SeqrunidField('seqrunid'),
               Field('status', description='The status of the seqrun.'),
               Field('runid',
-                    description='The identifier for the flowcell and lane.'),
+                    description='The flowcell+lane identifier.'),
               Field('alignment_status',
                     description='Status of the alignment of data to the reference genome.'),
               Field('alignment_coverage', 
@@ -76,6 +76,27 @@ class SeqrunSaver(Saver):
                                                self.doc['libprepid'])
 
 
+class Seqrun(RequestHandler):
+    "Display the seqrun data."
+
+    saver = SeqrunSaver
+
+    @tornado.web.authenticated
+    def get(self, projectid, sampleid, libprepid, seqrunid):
+        project = self.get_project(projectid)
+        sample = self.get_sample(projectid, sampleid)
+        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
+        logs = self.get_logs(seqrun['_id']) # XXX limit?
+        self.render('seqrun.html',
+                    project=project,
+                    sample=sample,
+                    libprep=libprep,
+                    seqrun=seqrun,
+                    fields=self.saver.fields,
+                    logs=logs)
+
+
 class SeqrunCreate(RequestHandler):
     "Create a seqrun within a libprep."
 
@@ -83,123 +104,108 @@ class SeqrunCreate(RequestHandler):
 
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid):
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         self.render('seqrun_create.html',
-                    project=project,
-                    sample=sample,
                     libprep=libprep,
                     fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid, libprepid):
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
+        self.check_xsrf_cookie()
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         try:
             with self.saver(rqh=self, libprep=libprep) as saver:
-                saver.store(None)
-                seqrun = saver.seqrun
+                saver.store()
+                seqrun = saver.doc
         except (IOError, ValueError), msg:
             self.render('seqrun_create.html',
-                        project=project,
-                        sample=sample,
                         libprep=libprep,
                         fields=self.saver.fields,
                         error=str(error))
         else:
-            url = self.reverse_url('seqrun', projectid, sampleid, libprepid,)
+            url = self.reverse_url('seqrun',
+                                   projectid,
+                                   sampleid,
+                                   libprepid,
+                                   seqrun['seqrunid'])
             self.redirect(url)
 
 
 class SeqrunEdit(RequestHandler):
     "Edit an existing seqrun."
 
+    saver = SeqrunSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid, libprepid, seqrunid):
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        try:
-            seqrunid = int(seqrunid)
-            if seqrunid <= 0: raise ValueError
-            if seqrunid > len(libprep['seqruns']): raise ValueError
-        except (TypeError, ValueError):
-            raise tornado.web.HTTPError(404, reason='no such seqrun')
-        self.render('seqrun_edit.html', libprep=libprep, seqrunid=seqrunid)
+        seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
+        self.render('seqrun_edit.html',
+                    seqrun=seqrun,
+                    fields=self.saver.fields)
 
     @tornado.web.authenticated
     def post(self, projectid, sampleid, libprepid, seqrunid):
         self.check_xsrf_cookie()
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
         try:
-            pos = int(seqrunid) - 1
-            if pos < 0: raise ValueError
-            if pos >= len(libprep['seqruns']): raise ValueError
-        except (TypeError, ValueError):
-            raise tornado.web.HTTPError(404, reason='no such seqrun')
-        try:
-            with LibprepSaver(doc=libprep, rqh=self) as saver:
-                saver.update_seqrun(pos)
-        except ValueError, msg:
-            raise tornado.web.HTTPError(400, reason=str(msg))
-        except IOError, msg:
-            raise tornado.web.HTTPError(409, reason=str(msg))
+            with self.saver(doc=seqrun, rqh=self) as saver:
+                saver.store()
+        except (IOError, ValueError), msg:
+            self.render('seqrun_edit.html',
+                        seqrun=seqrun,
+                        fields=self.saver.fields,
+                        error=str(msg))
         else:
-            url = self.reverse_url('libprep', projectid, sampleid, libprepid)
+            url = self.reverse_url('seqrun', projectid, sampleid, libprepid, seqrunid)
             self.redirect(url)
 
 
 class ApiSeqrun(ApiRequestHandler):
     "Access a seqrun in a libprep."
 
+    saver = SeqrunSaver
+
     def get(self, projectid, sampleid, libprepid, seqrunid):
         """Return the seqrun data.
         Return HTTP 404 if no such seqrun, libprep, sample or project."""
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
-        if not libprep: return
-        try:
-            pos = int(seqrunid) - 1
-            if pos < 0: raise ValueError
-            seqrun = libprep['seqruns'][pos]
-        except (TypeError, ValueError, IndexError):
-            self.send_error(404, reason='no such seqrun')
-        else:
-            self.write(seqrun)
+        seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
+        if not seqrun: return
+        self.add_link(seqrun, 'project', 'api_project', projectid)
+        self.add_link(seqrun, 'sample', 'api_sample', projectid, sampleid)
+        self.add_link(seqrun, 'libprep', 'api_libprep', projectid, sampleid, libprepid)
+        self.add_link(seqrun, 'self', 'api_seqrun', projectid, sampleid, libprepid, seqrunid)
+        self.add_link(seqrun, 'logs', 'api_logs', seqrun['_id'])
+        self.write(seqrun)
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
         """Update the seqrun data.
         Return HTTP 204 "No Content".
         Return HTTP 404 if no such seqrun, libprep, sample or project.
         Return HTTP 400 if any problem with a value."""
-        project = self.get_project(projectid)
-        sample = self.get_sample(projectid, sampleid)
-        libprep = self.get_libprep(projectid, sampleid, libprepid)
+        seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
         try:
-            pos = int(seqrunid) - 1
-            if pos < 0: raise ValueError
-            if pos >= len(libprep['seqruns']): raise ValueError
-        except (ValueError, TypeError):
-            self.send_error(404, reason='no such seqrun')
+            data = json.loads(self.request.body)
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
         else:
             try:
-                data = json.loads(self.request.body)
-            except Exception, msg:
+                with self.saver(doc=seqrun, rqh=self) as saver:
+                    saver.store(data=data)
+            except ValueError, msg:
                 self.send_error(400, reason=str(msg))
+            except IOError, msg:
+                self.send_error(409, reason=str(msg))
             else:
-                with LibprepSaver(doc=libprep, rqh=self) as saver:
-                    saver.update_seqrun(pos, seqrun=data)
                 self.set_status(204)
 
 
 class ApiSeqrunCreate(ApiRequestHandler):
     "Create a seqrun within a libprep."
 
+    saver = SeqrunSaver
+
     def post(self, projectid, sampleid, libprepid):
         """Create a seqrun within a libprep.
-        JSON data:
-          status (required)
-          alignment_status (optional)
-          alignment_coverage (optional), float (min 0.0)
         Return 204 "No content" and (NOTE!) libprep URL in header.
         Return HTTP 400 if something is wrong with the values.
         Return HTTP 404 if no such project, sample or libprep.
@@ -227,3 +233,40 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                        libprepid)
                 self.set_header('Location', url)
                 self.set_status(204)
+
+
+class ApiProjectSeqruns(ApiRequestHandler):
+    "Access to all seqruns for a project."
+
+    def get(self, projectid):
+        "Return list of all seqruns for the given project."
+        self.write(dict(seqruns=self._get(projectid)))
+
+    def _get(self, projectid, sampleid='', libprepid=''):
+        seqruns = self.get_seqruns(projectid, sampleid, libprepid)
+        for seqrun in seqruns:
+            self.add_link(seqrun, 'project', 'api_project', projectid)
+            self.add_link(seqrun, 'sample', 'api_sample', projectid,
+                          seqrun['sampleid'])
+            self.add_link(seqrun, 'libprep', 'api_libprep', projectid,
+                          seqrun['sampleid'], seqrun['libprepid'])
+            self.add_link(seqrun, 'self', 'api_libprep', projectid,
+                          seqrun['sampleid'], seqrun['libprepid'])
+            self.add_link(seqrun, 'logs', 'api_logs', seqrun['_id'])
+        return seqruns
+
+
+class ApiSampleSeqruns(ApiProjectSeqruns):
+    "Access to all seqruns for a sample."
+
+    def get(self, projectid, sampleid):
+        "Return list of all seqruns for the given sample and project."
+        self.write(dict(seqruns=self._get(projectid, sampleid)))
+
+
+class ApiLibprepSeqruns(ApiProjectSeqruns):
+    "Access to all seqruns for a libprep."
+
+    def get(self, projectid, sampleid, libprepid):
+        "Return list of all seqruns for the given libprep, sample and project."
+        self.write(dict(seqruns=self._get(projectid, sampleid, libprepid)))

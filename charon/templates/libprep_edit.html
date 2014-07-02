@@ -9,8 +9,7 @@ Edit Libprep {{ libprep['libprepid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('edit') %}
-Edit
+{% module Icon('edit', label=True) %}
 {% module Icon('libprep') %}
 Libprep {{ libprep['libprepid'] }}
 (project {{ libprep['projectid'] }},

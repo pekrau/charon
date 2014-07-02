@@ -7,7 +7,6 @@ import tornado.web
 import couchdb
 
 import charon
-from charon import settings
 from charon import constants
 from charon import utils
 from charon import uimodules
@@ -46,6 +45,8 @@ handlers = \
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)',
          SeqrunCreate, name='seqrun_create'),
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)',
+         Seqrun, name='seqrun'),
+     URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)/edit',
          SeqrunEdit, name='seqrun_edit'),
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
@@ -76,6 +77,12 @@ handlers = \
          ApiSeqrunCreate, name='api_seqrun_create'),
      URL(r'/api/v1/seqrun/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)/(?P<libprepid>[^/]+)/(?P<seqrunid>[^/]+)',
          ApiSeqrun, name='api_seqrun'),
+     URL(r'/api/v1/seqruns/(?P<projectid>[^/]+)',
+         ApiProjectSeqruns, name='api_project_seqruns'),
+     URL(r'/api/v1/seqruns/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)',
+         ApiSampleSeqruns, name='api_sample_seqruns'),
+     URL(r'/api/v1/seqruns/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)/(?P<libprepid>[^/]+)',
+         ApiLibprepSeqruns, name='api_libprep_seqruns'),
      URL(r'/api/v1/version', ApiVersion, name='api_version'),
      URL(r'/api/v1/doc/([a-f0-9]{32})', ApiDocument, name='api_doc'),
      URL(r'/api/v1/logs/([a-f0-9]{32})', ApiLogs, name='api_logs'),
@@ -87,9 +94,9 @@ if __name__ == "__main__":
     import sys
     import tornado.ioloop
     try:
-        utils.load_settings(filepath=sys.argv[1])
+        settings = utils.load_settings(filepath=sys.argv[1])
     except IndexError:
-        utils.load_settings()
+        settings = utils.load_settings()
     application = tornado.web.Application(
         handlers=handlers,
         debug=settings.get('TORNADO_DEBUG', False),

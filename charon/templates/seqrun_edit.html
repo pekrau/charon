@@ -3,29 +3,30 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Seqrun {{ seqrunid }}
-(project {{ libprep['projectid'] }},
-sample {{ libprep['sampleid'] }},
-libprep {{ libprep['libprepid']}})
+Edit Seqrun {{ seqrun['seqrunid'] }}
+(project {{ seqrun['projectid'] }},
+sample {{ seqrun['sampleid'] }},
+libprep {{ seqrun['libprepid']}})
 {% end %}
 
 {% block title %}
 {% module Icon('edit', label=True) %}
-{% module Icon('seqrun', label=True, title="Seqrun {0}".format(seqrunid)) %}
-(project {{ libprep['projectid'] }},
-sample {{ libprep['sampleid'] }},
-libprep {{ libprep['libprepid']}})
+{% module Icon('seqrun', label=True) %}
+{{ seqrun['seqrunid'] }}
+(project {{ seqrun['projectid'] }},
+sample {{ seqrun['sampleid'] }},
+libprep {{ seqrun['libprepid']}})
 {% end %}
 
 {% block actions %}
-<form action="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+<form action="{{ reverse_url('seqrun', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
   {% module Submit('cancel') %}
 </form>
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('seqrun_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid'], seqrunid) }}"
+<form action="{{ reverse_url('seqrun_edit', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 

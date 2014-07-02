@@ -49,7 +49,7 @@ def test_libprep_modify():
     assert libprep['libprepid'] == LIBPREPID
     assert libprep['status'] == 'new'
     # Modify the libprep, setting status to 'old'
-    libprep_url = settings['BASE_URL'].rstrip('/') + response.headers['location']
+    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     data = dict(status='old')
     response = session.put(libprep_url,
                            data=json.dumps(data),

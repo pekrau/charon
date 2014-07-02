@@ -34,6 +34,12 @@ Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
   </a>
 </div>
 <div>
+  <a href="{{ reverse_url('api_sample_seqruns', sample['projectid'], sample['sampleid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_sample_seqruns', sample['projectid'], sample['sampleid']) }}
+  </a>
+</div>
+<div>
   <a href="{{ reverse_url('api_logs', sample['_id']) }}">
     {% module Icon('json') %}
     {{ reverse_url('api_logs', '_id') }}

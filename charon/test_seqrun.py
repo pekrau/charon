@@ -37,7 +37,7 @@ def test_libprep_seqruns():
                             data=json.dumps(data),
                             headers=api_token)
     assert response.status_code == 204, response
-    libprep_url = settings['BASE_URL'].rstrip('/') + response.headers['location']
+    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     response = session.get(libprep_url, headers=api_token)
     assert response.status_code == 200, response
     data = response.json()
