@@ -21,8 +21,7 @@ class LibprepidField(IdField):
         key = (saver.project['projectid'], saver.sample['sampleid'], value)
         view = saver.db.view('libprep/libprepid')
         if len(list(view[key])) > 0:
-            raise ValueError('libprepid is not unique')
-        return value
+            raise ValueError('not unique')
 
 
 class LibprepSaver(Saver):
@@ -149,10 +148,7 @@ class ApiLibprep(ApiRequestHandler):
         Return HTTP 404 if no such libprep, sample or project."""
         libprep = self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
-        self.add_link(libprep, 'project', 'api_project', projectid)
-        self.add_link(libprep, 'sample', 'api_sample', projectid, sampleid)
-        self.add_link(libprep, 'self', 'api_libprep', projectid, sampleid, libprepid)
-        self.add_link(libprep, 'logs', 'api_logs', libprep['_id'])
+        self.add_libprep_links(libprep)
         self.write(libprep)
 
     def put(self, projectid, sampleid, libprepid):
@@ -184,8 +180,6 @@ class ApiLibprepCreate(ApiRequestHandler):
 
     def post(self, projectid, sampleid):
         """Create a libprep within a sample.
-        JSON data:
-          XXX
         Return HTTP 201, libprep URL in header "Location", and libprep data.
         Return HTTP 400 if something is wrong with the input data.
         Return HTTP 404 if no such project or sample.
@@ -208,13 +202,13 @@ class ApiLibprepCreate(ApiRequestHandler):
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
-                logging.debug("created libprep %s", libprep['libprepid'])
                 url = self.reverse_url('api_libprep',
                                        projectid,
                                        sampleid,
                                        libprep['libprepid'])
                 self.set_header('Location', url)
                 self.set_status(201)
+                self.add_libprep_links(libprep)
                 self.write(libprep)
 
 

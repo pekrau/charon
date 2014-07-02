@@ -6,6 +6,10 @@
     <td>
       {% if field.type == 'text' %}
         {{ entity.get(field.key) or '-' }}
+      {% elif field.type == 'number' %}
+        <span class="number">
+	  {{ entity.get(field.key) is None and '-' or entity.get(field.key) }}
+	</span>
       {% elif field.type == 'auto' %}
         {{ entity.get(field.key) or '-' }}
       {% else %}

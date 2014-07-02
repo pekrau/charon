@@ -53,6 +53,49 @@ class ApiRequestHandler(RequestHandler):
         link = dict(rel=rel, href=self.get_absolute_url(name, *args))
         doc.setdefault('links', []).append(link)
 
+    def add_project_links(self, project):
+        "Add the links to a project representation."
+        projectid = project['projectid']
+        self.add_link(project, 'self', 'api_project', projectid)
+        self.add_link(project, 'samples', 'api_samples', projectid)
+        self.add_link(project, 'libpreps', 'api_project_libpreps', projectid)
+        self.add_link(project, 'logs', 'api_logs', project['_id'])
+
+    def add_sample_links(self, sample):
+        "Add the links to a sample representation."
+        projectid = sample['projectid']
+        sampleid = sample['sampleid']
+        self.add_link(sample, 'project', 'api_project', projectid)
+        self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
+        self.add_link(sample, 'libpreps', 'api_sample_libpreps',
+                      projectid, sampleid)
+        self.add_link(sample, 'logs', 'api_logs', sample['_id'])
+
+    def add_libprep_links(self, libprep):
+        "Add the links to a libprep representation."
+        projectid = libprep['projectid']
+        sampleid = libprep['sampleid']
+        libprepid = libprep['libprepid']
+        self.add_link(libprep, 'project', 'api_project', projectid)
+        self.add_link(libprep, 'sample', 'api_sample', projectid, sampleid)
+        self.add_link(libprep, 'self', 'api_libprep',
+                      projectid, sampleid, libprepid)
+        self.add_link(libprep, 'logs', 'api_logs', libprep['_id'])
+
+    def add_seqrun_links(self, seqrun):
+        "Add the links to a seqrun representation."
+        projectid = seqrun['projectid']
+        sampleid = seqrun['sampleid']
+        libprepid = seqrun['libprepid']
+        seqrunid = seqrun['seqrunid']
+        self.add_link(seqrun, 'project', 'api_project', projectid)
+        self.add_link(seqrun, 'sample', 'api_sample', projectid, sampleid)
+        self.add_link(seqrun, 'libprep', 'api_libprep',
+                      projectid, sampleid, libprepid)
+        self.add_link(seqrun, 'self', 'api_seqrun',
+                      projectid, sampleid, libprepid, seqrunid)
+        self.add_link(seqrun, 'logs', 'api_logs', seqrun['_id'])
+
 
 class ApiDocument(ApiRequestHandler):
     "Access a database document as is."

@@ -173,7 +173,20 @@ def delete_sample(db, sample):
 def delete_libprep(db, libprep):
     "Delete the libprep and all its dependent entities."
     delete_logs(db, libprep['_id'])
+    startkey = (libprep['projectid'], libprep['sampleid'],
+                libprep['libprepid'], 0)
+    endkey = (libprep['projectid'], libprep['sampleid'],
+              libprep['libprepid'], 1000000)
+    view = db.view('seqrun/seqrunid', include_docs=True)
+    seqruns = [r.doc for r in view[startkey:endkey]]
+    for seqrun in seqruns:
+        delete_seqrun(db, seqrun)
     del db[libprep['_id']]
+
+def delete_seqrun(db, seqrun):
+    "Delete the seqrun and all its dependent entities."
+    delete_logs(db, seqrun['_id'])
+    del db[seqrun['_id']]
 
 def delete_logs(db, id):
     "Delete the log documents for the given doc id."

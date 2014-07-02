@@ -21,7 +21,7 @@ class SampleidField(IdField):
         key = (saver.project['projectid'], value)
         view = saver.db.view('sample/sampleid')
         if len(list(view[key])) > 0:
-            raise ValueError('sampleid is not unique')
+            raise ValueError('not unique')
 
 
 class SampleSaver(Saver):
@@ -161,11 +161,7 @@ class ApiSample(ApiRequestHandler):
         Return HTTP 404 if no such sample or project."""
         sample = self.get_sample(projectid, sampleid)
         if not sample: return
-        self.add_link(sample, 'project', 'api_project', projectid)
-        self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
-        self.add_link(sample, 'libpreps', 'api_sample_libpreps',
-                      projectid, sampleid)
-        self.add_link(sample, 'logs', 'api_logs', sample['_id'])
+        self.add_sample_links(sample)
         self.write(sample)
 
     def put(self, projectid, sampleid):
@@ -217,12 +213,12 @@ class ApiSampleCreate(ApiRequestHandler):
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
-                logging.debug("created sample %s", sample['sampleid'])
                 url = self.reverse_url('api_sample',
                                        projectid,
                                        sample['sampleid'])
                 self.set_header('Location', url)
                 self.set_status(201)
+                self.add_sample_links(sample)
                 self.write(sample)
 
 
@@ -233,10 +229,5 @@ class ApiSamples(ApiRequestHandler):
         "Return a list of all samples."
         samples = self.get_samples(projectid)
         for sample in samples:
-            self.add_link(sample, 'project', 'api_project', projectid)
-            self.add_link(sample, 'self', 'api_sample', projectid,
-                          sample['sampleid'])
-            self.add_link(sample, 'libpreps', 'api_sample_libpreps',
-                          projectid, sample['sampleid'])
-            self.add_link(sample, 'logs', 'api_logs', sample['_id'])
+            self.add_sample_links(sample)
         self.write(dict(samples=samples))

@@ -46,8 +46,10 @@ class SeqrunSaver(Saver):
                     description='The flowcell+lane identifier.'),
               Field('alignment_status',
                     description='Status of the alignment of data to the reference genome.'),
-              Field('alignment_coverage', 
-                    description='The coverage of the reference genome, in percent.'),
+              RangeFloatField('alignment_coverage', 
+                              minimum=0.0,
+                              description='The coverage of the reference'
+                              ' genome, in percent.'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, libprep=None):
@@ -170,11 +172,7 @@ class ApiSeqrun(ApiRequestHandler):
         Return HTTP 404 if no such seqrun, libprep, sample or project."""
         seqrun = self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
         if not seqrun: return
-        self.add_link(seqrun, 'project', 'api_project', projectid)
-        self.add_link(seqrun, 'sample', 'api_sample', projectid, sampleid)
-        self.add_link(seqrun, 'libprep', 'api_libprep', projectid, sampleid, libprepid)
-        self.add_link(seqrun, 'self', 'api_seqrun', projectid, sampleid, libprepid, seqrunid)
-        self.add_link(seqrun, 'logs', 'api_logs', seqrun['_id'])
+        self.add_seqrun_links(seqrun)
         self.write(seqrun)
 
     def put(self, projectid, sampleid, libprepid, seqrunid):
@@ -206,7 +204,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
 
     def post(self, projectid, sampleid, libprepid):
         """Create a seqrun within a libprep.
-        Return 204 "No content" and (NOTE!) libprep URL in header.
+        Return HTTP 201, seqrun URL in header "Location", and seqrun data.
         Return HTTP 400 if something is wrong with the values.
         Return HTTP 404 if no such project, sample or libprep.
         Return HTTP 409 if there is a document revision conflict."""
@@ -217,22 +215,23 @@ class ApiSeqrunCreate(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             try:
-                with LibprepSaver(doc=libprep, rqh=self) as saver:
-                    saver.update_seqrun(None)
+                with self.saver(rqh=self, libprep=libprep) as saver:
+                    saver.store()
+                    seqrun = saver.doc
             except ValueError, msg:
                 raise tornado.web.HTTPError(400, reason=str(msg))
             except IOError, msg:
                 raise tornado.web.HTTPError(409, reason=str(msg))
             else:
-                logging.debug("created seqrun %i %s",
-                              len(libprep['seqruns']),
-                              libprep['libprepid'])
-                url = self.reverse_url('api_libprep',
+                url = self.reverse_url('api_seqrun',
                                        projectid,
                                        sampleid,
-                                       libprepid)
+                                       libprepid,
+                                       seqrun['seqrunid'])
                 self.set_header('Location', url)
-                self.set_status(204)
+                self.set_status(201)
+                self.add_seqrun_links(seqrun)
+                self.write(seqrun)
 
 
 class ApiProjectSeqruns(ApiRequestHandler):
@@ -240,19 +239,12 @@ class ApiProjectSeqruns(ApiRequestHandler):
 
     def get(self, projectid):
         "Return list of all seqruns for the given project."
-        self.write(dict(seqruns=self._get(projectid)))
+        self.write(dict(seqruns=self.get_seqruns(projectid)))
 
-    def _get(self, projectid, sampleid='', libprepid=''):
+    def get_seqruns(self, projectid, sampleid='', libprepid=''):
         seqruns = self.get_seqruns(projectid, sampleid, libprepid)
         for seqrun in seqruns:
-            self.add_link(seqrun, 'project', 'api_project', projectid)
-            self.add_link(seqrun, 'sample', 'api_sample', projectid,
-                          seqrun['sampleid'])
-            self.add_link(seqrun, 'libprep', 'api_libprep', projectid,
-                          seqrun['sampleid'], seqrun['libprepid'])
-            self.add_link(seqrun, 'self', 'api_libprep', projectid,
-                          seqrun['sampleid'], seqrun['libprepid'])
-            self.add_link(seqrun, 'logs', 'api_logs', seqrun['_id'])
+            self.add_seqrun_links(seqrun)
         return seqruns
 
 
@@ -261,7 +253,7 @@ class ApiSampleSeqruns(ApiProjectSeqruns):
 
     def get(self, projectid, sampleid):
         "Return list of all seqruns for the given sample and project."
-        self.write(dict(seqruns=self._get(projectid, sampleid)))
+        self.write(dict(seqruns=self.get_seqruns(projectid, sampleid)))
 
 
 class ApiLibprepSeqruns(ApiProjectSeqruns):
@@ -269,4 +261,4 @@ class ApiLibprepSeqruns(ApiProjectSeqruns):
 
     def get(self, projectid, sampleid, libprepid):
         "Return list of all seqruns for the given libprep, sample and project."
-        self.write(dict(seqruns=self._get(projectid, sampleid, libprepid)))
+        self.write(dict(seqruns=self.get_seqruns(projectid, sampleid, libprepid)))

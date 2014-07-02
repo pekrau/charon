@@ -13,6 +13,8 @@
       <td>
 	{% if field.type == 'text' %}
 	  <input type="text" name="{{ field.key }}">
+	{% elif field.type == 'number' %}
+	  <input type="text" name="{{ field.key }}">
 	{% elif field.type == 'auto' %}
 	  [autoassigned]
 	{% else %}
