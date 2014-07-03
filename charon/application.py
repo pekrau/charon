@@ -53,7 +53,7 @@ handlers = \
      URL(constants.LOGIN_URL, Login, name='login'),
      URL(r'/logout', Logout, name='logout'),
      URL(r'/version', Version, name='version'),
-     URL(r'/apidoc', ApiDoc, name='apidoc'),
+     URL(r'/apidoc', ApiDocumentation, name='apidoc'),
      URL(r'/api/v1', ApiHome, name='api_home'),
      URL(r'/api/v1/project', ApiProjectCreate, name='api_project_create'),
      URL(r'/api/v1/project/(?P<projectid>[^/]+)',

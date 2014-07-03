@@ -11,11 +11,12 @@ from . import utils
 class Field(object):
     "Specification of a data field for an entity."
 
-    def __init__(self, key, type='text', title=None, description=None,
+    type ='text'
+
+    def __init__(self, key, title=None, description=None,
                  mandatory=False, editable=True):
         assert key
         self.key = key
-        self.type = type                       # HTML input field type
         self.title = title or key.capitalize().replace('_', ' ')
         self.description = description or self.__doc__
         self.mandatory = mandatory             # A non-None value is requried.
@@ -74,6 +75,8 @@ class Field(object):
 class IdField(Field):
     "The identifier for the entity."
 
+    type ='identifier'
+
     def __init__(self, key, title=None, description=None):
         super(IdField, self).__init__(key, title=title,
                                       description=description,
@@ -107,10 +110,11 @@ class NameField(Field):
 class FloatField(Field):
     "A floating point value field."
 
+    type ='float'
+
     def __init__(self, key, title=None, description=None,
                  mandatory=False, editable=True):
         super(FloatField, self).__init__(key,
-                                           type='number',
                                            title=title,
                                            description=description,
                                            mandatory=mandatory,
@@ -231,12 +235,9 @@ class Saver(object):
             else:
                 value = converter(value)
             try:
-                if self.doc[key] == value:
-                    logging.debug("Saver.__setitem__() equal")
-                    return
+                if self.doc[key] == value: return
             except KeyError:
                 pass
-            logging.debug("Saver.__setitem__(%s, %s", key, value)
             self.doc[key] = value
             self.changed[key] = value
         else:
