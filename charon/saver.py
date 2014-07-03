@@ -54,6 +54,22 @@ class Field(object):
         if self.mandatory and value is None:
             raise ValueError('a defined value is mandatory')
 
+    def html_display(self, entity):
+        "Return the field value as valid HTML."
+        return str(entity.get(self.key) or '-')
+
+    def html_create(self):
+        "Return the field HTML input field for a create form."
+        return '<input type="text" name="{0}">'.format(self.key)
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        if self.editable:
+            return '<input type="text" name="{0}" value="{1}">'.\
+                format(self.key, entity.get(self.key) or '')
+        else:
+            return entity.get(self.key) or '-'
+
 
 class IdField(Field):
     "The identifier for the entity."
@@ -105,6 +121,30 @@ class FloatField(Field):
         if value is None: return None
         if value == '': return None
         return float(value)
+
+    def html_display(self, entity):
+        "Return the field value as valid HTML."
+        value = entity.get(self.key)
+        if value is None:
+            value = '-'
+        else:
+            value = str(value)
+        return '<span class="number">{0}</span>'.format(value)
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        value = entity.get(self.key)
+        if value is None:
+            if self.editable:
+                return '<input type="text" name="{0}">'.format(self.key)
+            else:
+                return '-'
+        else:
+            if self.editable:
+                return '<input type="text" name="{0}" value="{1}">'.\
+                    format(self.key, value)
+            else:
+                return str(value)
 
 
 class RangeFloatField(FloatField):

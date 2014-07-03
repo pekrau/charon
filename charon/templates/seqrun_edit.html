@@ -34,8 +34,31 @@ libprep {{ seqrun['libprepid']}})
   <fieldset>
     <legend>Edit the seqrun information</legend>
     {% include 'error.html' %}
-    {% set entity = seqrun %}
-    {% include 'edit_fields.html' %}
+
+    <table class="fields">
+
+      {% for field in fields %}
+      <tr>
+	<th>{{ field.title }}</th>
+	<td>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
+	</td>
+	<td>{% raw field.html_edit(seqrun) %}</td>
+	<td class="description">{{ field.description }}</td>
+      </tr>
+      {% end %}
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('save') %}
+	</td>
+      </tr>
+
+    </table>
   </fieldset>
 
 </form>

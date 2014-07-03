@@ -32,8 +32,31 @@ Edit Libprep
   <fieldset>
     <legend>Edit the libprep information</legend>
     {% include 'error.html' %}
-    {% set entity = libprep %}
-    {% include 'edit_fields.html' %}
+
+    <table class="fields">
+
+      {% for field in fields %}
+      <tr>
+	<th>{{ field.title }}</th>
+	<td>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
+	</td>
+	<td>{% raw field.html_edit(libprep) %}</td>
+	<td class="description">{{ field.description }}</td>
+      </tr>
+      {% end %}
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('save') %}
+	</td>
+      </tr>
+
+    </table>
   </fieldset>
 
 </form>

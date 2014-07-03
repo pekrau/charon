@@ -55,11 +55,14 @@ Project {{ project['projectid'] }}
 
 {% block content %}
 
-{% set entity = project %}
-
 <table class="fields">
 
-  {% include 'display_fields.html' %}
+  {% for field in fields %}
+  <tr>
+    <th title="{{ field.description }}" class="nobr">{{ field.title }}</th>
+    <td>{% raw field.html_display(project) %}</td>
+  </tr>
+  {% end %}
 
   <tr>
     <th>Samples</th>
@@ -72,6 +75,8 @@ Project {{ project['projectid'] }}
 	  <th># seqruns</th>
 	  <th>Modified</th>
 	</tr>
+
+	{% if samples %}
 	{% for sample in samples %}
 	<tr>
 	  <td>
@@ -90,10 +95,17 @@ Project {{ project['projectid'] }}
 	  </td>
 	</tr>
 	{% end %}
+
+	{% else %}
+	<tr>
+	  <td>[none]</td>
+	</tr>
+	{% end %}
       </table>
     </td>
   </tr>
 
+  {% set entity = project %}
   {% include 'output_events_fields.html' %}
 
 </table>

@@ -41,8 +41,6 @@ Seqrun
 
 {% block content %}
 
-{% set entity = seqrun %}
-
 <table class="fields">
 
   <tr>
@@ -72,8 +70,14 @@ Seqrun
     </td>
   </tr>
 
-  {% include 'display_fields.html' %}
+  {% for field in fields %}
+  <tr>
+    <th title="{{ field.description }}" class="nobr">{{ field.title }}</th>
+    <td>{% raw field.html_display(seqrun) %}</td>
+  </tr>
+  {% end %}
 
+  {% set entity = seqrun %}
   {% include 'output_events_fields.html' %}
 
 </table>

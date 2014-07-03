@@ -52,8 +52,6 @@ Sample
 
 {% block content %}
 
-{% set entity = sample %}
-
 <table class="fields">
 
   <tr>
@@ -65,7 +63,12 @@ Sample
     </td>
   </tr>
 
-  {% include 'display_fields.html' %}
+  {% for field in fields %}
+  <tr>
+    <th title="{{ field.description }}" class="nobr">{{ field.title }}</th>
+    <td>{% raw field.html_display(sample) %}</td>
+  </tr>
+  {% end %}
 
   <tr>
     <th>Libpreps</th>
@@ -77,6 +80,8 @@ Sample
 	  <th># seqruns</th>
 	  <th>Modified</th>
 	</tr>
+
+	{% if libpreps %}
 	{% for libprep in libpreps %}
 	<tr>
 	  <td>
@@ -94,10 +99,17 @@ Sample
 	  </td>
 	</tr>
 	{% end %}
+
+	{% else %}
+	<tr>
+	  <td>[none]</td>
+	</tr>
+	{% end %}
       </table>
     </td>
   </tr>
 
+  {% set entity = sample %}
   {% include 'output_events_fields.html' %}
 
 </table>

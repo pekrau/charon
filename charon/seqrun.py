@@ -19,7 +19,6 @@ class SeqrunidField(Field):
 
     def __init__(self, key):
         super(SeqrunidField, self).__init__(key,
-                                            type='auto',
                                             mandatory=True,
                                             editable=False)
 
@@ -33,6 +32,14 @@ class SeqrunidField(Field):
             return 1
         else:
             return row.value + 1
+
+    def html_create(self, entity=None):
+        "Return the field HTML input field for a create form."
+        return '[autoassigned]'
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        return entity.get(self.key) or '-'
 
 
 class SeqrunSaver(Saver):
