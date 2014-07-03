@@ -1,11 +1,28 @@
-" Charon: nosetests /api/v1/libprep "
+""" Charon: nosetests /api/v1/libprep 
+Requires env vars CHARON_API_TOKEN and CHARON_BASE_URL.
+"""
 
-from charon.init_test import *
+import os
+import json
+import requests
+import nose
+
+def url(*segments):
+    "Synthesize absolute URL from path segments."
+    return "{0}api/v1/{1}".format(BASE_URL,'/'.join([str(s) for s in segments]))
+
+API_TOKEN = os.getenv('CHARON_API_TOKEN')
+if not API_TOKEN: raise ValueError('no API token')
+BASE_URL = os.getenv('CHARON_BASE_URL')
+if not BASE_URL: raise ValueError('no base URL')
 
 PROJECTID = 'P0'
 SAMPLEID = 'S1'
 LIBPREPID = 'A'
 LIBPREPID2 = 'B'
+
+api_token = {'X-Charon-API-token': API_TOKEN}
+session = requests.Session()
 
 
 def my_setup():
@@ -21,7 +38,7 @@ def my_teardown():
     "Delete the project and all its dependents."
     session.delete(url('project', PROJECTID), headers=api_token)
 
-@with_setup(my_setup, my_teardown)
+@nose.with_setup(my_setup, my_teardown)
 def test_libprep_create():
     "Create a libprep."
     data = dict(libprepid=LIBPREPID)
@@ -34,7 +51,7 @@ def test_libprep_create():
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
 
-@with_setup(my_setup, my_teardown)
+@nose.with_setup(my_setup, my_teardown)
 def test_libprep_modify():
     "Create and modify a libprep."
     # Create the libprep, with status 'new'
@@ -60,7 +77,7 @@ def test_libprep_modify():
     libprep = response.json()
     assert libprep['status'] == 'old'
 
-@with_setup(my_setup, my_teardown)
+@nose.with_setup(my_setup, my_teardown)
 def test_libprep_create_collision():
     "Create a libprep, and try creating another with same name."
     data = dict(libprepid=LIBPREPID)
@@ -78,7 +95,7 @@ def test_libprep_create_collision():
                             headers=api_token)
     assert response.status_code == 400, response
 
-@with_setup(my_setup, my_teardown)
+@nose.with_setup(my_setup, my_teardown)
 def test_libprep_create_multiple():
     "Create several libpreps, obtain list of all."
     data = dict(libprepid=LIBPREPID)

@@ -1,10 +1,27 @@
-" Charon: nosetests /api/v1/seqrun "
+""" Charon: nosetests /api/v1/seqrun 
+Requires env vars CHARON_API_TOKEN and CHARON_BASE_URL.
+"""
 
-from charon.init_test import *
+import os
+import json
+import requests
+import nose
+
+def url(*segments):
+    "Synthesize absolute URL from path segments."
+    return "{0}api/v1/{1}".format(BASE_URL,'/'.join([str(s) for s in segments]))
+
+API_TOKEN = os.getenv('CHARON_API_TOKEN')
+if not API_TOKEN: raise ValueError('no API token')
+BASE_URL = os.getenv('CHARON_BASE_URL')
+if not BASE_URL: raise ValueError('no base URL')
 
 PROJECTID = 'P0'
 SAMPLEID = 'S1'
 LIBPREPID = 'A'
+
+api_token = {'X-Charon-API-token': API_TOKEN}
+session = requests.Session()
 
 
 def my_setup():
@@ -25,7 +42,7 @@ def my_teardown():
     session.delete(url('project', PROJECTID), headers=api_token)
 
 
-@with_setup(my_setup, my_teardown)
+@nose.with_setup(my_setup, my_teardown)
 def test_create_seqrun():
     "Create a seqrun in a libprep and manipulate it."
     data = dict(status='initialized')
