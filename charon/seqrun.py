@@ -130,7 +130,7 @@ class SeqrunCreate(RequestHandler):
             self.render('seqrun_create.html',
                         libprep=libprep,
                         fields=self.saver.fields,
-                        error=str(error))
+                        error=str(msg))
         else:
             url = self.reverse_url('seqrun',
                                    projectid,

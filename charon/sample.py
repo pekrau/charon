@@ -114,7 +114,7 @@ class SampleCreate(RequestHandler):
             self.render('sample_create.html',
                         project=project,
                         fields=self.saver.fields,
-                        error=str(error))
+                        error=str(msg))
         else:
             url = self.reverse_url('sample', projectid, sample['sampleid'])
             self.redirect(url)

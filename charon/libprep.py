@@ -94,7 +94,7 @@ class LibprepCreate(RequestHandler):
                         project=self.get_project(projectid),
                         sample=sample,
                         fields=self.saver.fields,
-                        error=str(error))
+                        error=str(msg))
         else:
             url = self.reverse_url('libprep',
                                    projectid,

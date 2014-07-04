@@ -84,8 +84,14 @@ class IdField(Field):
     
     def process(self, saver, value):
         self.check_mandatory(saver, value)
+        self.check_valid(saver, value)
         self.check_unique(saver, value)
         return value
+
+    def check_valid(self, saver, value):
+        "Only allow a subset of ordinary ASCII characters."
+        if not constants.ID_RX.match(value):
+            raise ValueError('invalid identifier value (disallowed characters)')
 
     def check_unique(self, saver, value):
         raise NotImplementedError
