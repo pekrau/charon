@@ -59,6 +59,7 @@ class ApiRequestHandler(RequestHandler):
         self.add_link(project, 'self', 'api_project', projectid)
         self.add_link(project, 'samples', 'api_samples', projectid)
         self.add_link(project, 'libpreps', 'api_project_libpreps', projectid)
+        self.add_link(project, 'seqruns', 'api_project_seqruns', projectid)
         self.add_link(project, 'logs', 'api_logs', project['_id'])
 
     def add_sample_links(self, sample):
@@ -68,6 +69,8 @@ class ApiRequestHandler(RequestHandler):
         self.add_link(sample, 'project', 'api_project', projectid)
         self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
         self.add_link(sample, 'libpreps', 'api_sample_libpreps',
+                      projectid, sampleid)
+        self.add_link(sample, 'seqruns', 'api_sample_seqruns',
                       projectid, sampleid)
         self.add_link(sample, 'logs', 'api_logs', sample['_id'])
 
@@ -79,6 +82,8 @@ class ApiRequestHandler(RequestHandler):
         self.add_link(libprep, 'project', 'api_project', projectid)
         self.add_link(libprep, 'sample', 'api_sample', projectid, sampleid)
         self.add_link(libprep, 'self', 'api_libprep',
+                      projectid, sampleid, libprepid)
+        self.add_link(libprep, 'seqruns', 'api_libprep_seqruns',
                       projectid, sampleid, libprepid)
         self.add_link(libprep, 'logs', 'api_logs', libprep['_id'])
 

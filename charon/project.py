@@ -240,4 +240,6 @@ class ApiProjects(ApiRequestHandler):
     def get(self):
         "Return a list of all projects."
         projects = self.get_projects()
+        for project in projects:
+            self.add_project_links(project)
         self.write(dict(projects=projects))

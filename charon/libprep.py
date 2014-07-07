@@ -213,12 +213,7 @@ class ApiProjectLibpreps(ApiRequestHandler):
         "Return a list of all libpreps for the given project."
         libpreps = self.get_libpreps(projectid)
         for libprep in libpreps:
-            self.add_link(libprep, 'project', 'api_project', projectid)
-            self.add_link(libprep, 'sample', 'api_sample', projectid,
-                          libprep['sampleid'])
-            self.add_link(libprep, 'self', 'api_libprep', projectid,
-                          libprep['sampleid'], libprep['libprepid'])
-            self.add_link(libprep, 'logs', 'api_logs', libprep['_id'])
+            self.add_libprep_links(libprep)
         self.write(dict(libpreps=libpreps))
 
 
@@ -229,10 +224,5 @@ class ApiSampleLibpreps(ApiRequestHandler):
         "Return a list of all libpreps for the given sample and project."
         libpreps = self.get_libpreps(projectid, sampleid)
         for libprep in libpreps:
-            self.add_link(libprep, 'project', 'api_project', projectid)
-            self.add_link(libprep, 'sample', 'api_sample', projectid,
-                          libprep['sampleid'])
-            self.add_link(libprep, 'self', 'api_libprep', projectid,
-                          libprep['sampleid'], libprep['libprepid'])
-            self.add_link(libprep, 'logs', 'api_logs', libprep['_id'])
+            self.add_libprep_links(libprep)
         self.write(dict(libpreps=libpreps))

@@ -246,26 +246,29 @@ class ApiProjectSeqruns(ApiRequestHandler):
 
     def get(self, projectid):
         "Return list of all seqruns for the given project."
-        self.write(dict(seqruns=self.get_seqruns(projectid)))
-
-    def get_seqruns(self, projectid, sampleid='', libprepid=''):
-        seqruns = self.get_seqruns(projectid, sampleid, libprepid)
+        seqruns = self.get_seqruns(projectid)
         for seqrun in seqruns:
             self.add_seqrun_links(seqrun)
-        return seqruns
+        self.write(dict(seqruns=seqruns))
 
 
-class ApiSampleSeqruns(ApiProjectSeqruns):
+class ApiSampleSeqruns(ApiRequestHandler):
     "Access to all seqruns for a sample."
 
     def get(self, projectid, sampleid):
         "Return list of all seqruns for the given sample and project."
-        self.write(dict(seqruns=self.get_seqruns(projectid, sampleid)))
+        seqruns = self.get_seqruns(projectid, sampleid)
+        for seqrun in seqruns:
+            self.add_seqrun_links(seqrun)
+        self.write(dict(seqruns=seqruns))
 
 
-class ApiLibprepSeqruns(ApiProjectSeqruns):
+class ApiLibprepSeqruns(ApiRequestHandler):
     "Access to all seqruns for a libprep."
 
     def get(self, projectid, sampleid, libprepid):
         "Return list of all seqruns for the given libprep, sample and project."
-        self.write(dict(seqruns=self.get_seqruns(projectid, sampleid, libprepid)))
+        seqruns = self.get_seqruns(projectid, sampleid, libprepid)
+        for seqrun in seqruns:
+            self.add_seqrun_links(seqrun)
+        self.write(dict(seqruns=seqruns))
