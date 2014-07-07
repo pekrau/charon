@@ -3,13 +3,21 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Create Sample (project {{ project['projectid'] }})
+Create
+Sample
+in project{{ project['projectid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('sample', label=True) %}
-(project {{ project['projectid'] }})
+in project {{ project['projectid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('project', project['projectid']) }}">
+  {% module Submit('cancel') %}
+</form>
 {% end %}
 
 {% block content %}
@@ -21,7 +29,31 @@ Create Sample (project {{ project['projectid'] }})
   <fieldset>
     <legend>Create a new sample</legend>
     {% include 'error.html' %}
-    {% include 'create_input_table.html' %}
+
+    <table class="fields">
+
+      {% for field in fields %}
+      <tr>
+	<th>{{ field.title }}</th>
+	<td>
+	  {% if field.mandatory %}
+	  {% module Icon('mandatory') %}
+	  {% end %}
+	</td>
+	<td>{% raw field.html_create() %}</td>
+	<td class="description">{{ field.description }}</td>
+      </tr>
+      {% end %}
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('create') %}
+	</td>
+      </tr>
+
+    </table>
   </fieldset>
 
 </form>

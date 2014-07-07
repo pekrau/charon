@@ -3,7 +3,8 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Project {{ project['projectid'] }}
+Edit Project
+{{ project['projectid'] }}
 {% end %}
 
 {% block title %}
@@ -27,8 +28,31 @@ Project {{ project['projectid'] }}
   <fieldset>
     <legend>Edit the project information</legend>
     {% include 'error.html' %}
-    {% set entity = project %}
-    {% include 'edit_input_table.html' %}
+
+    <table class="fields">
+
+      {% for field in fields %}
+      <tr>
+	<th>{{ field.title }}</th>
+	<td>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
+	</td>
+	<td>{% raw field.html_edit(project) %}</td>
+	<td class="description">{{ field.description }}</td>
+      </tr>
+      {% end %}
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('save') %}
+	</td>
+      </tr>
+
+    </table>
   </fieldset>
 
 </form>

@@ -20,7 +20,7 @@ class ProjectidField(IdField):
     def check_unique(self, saver, value):
         view = saver.db.view('project/projectid')
         if len(list(view[value])) > 0:
-            raise ValueError('projectid is not unique')
+            raise ValueError('not unique')
 
 
 class ProjectnameField(NameField):
@@ -32,11 +32,11 @@ class ProjectnameField(NameField):
         if saver.get(self.key) == value: return
         view = saver.db.view('project/name')
         if len(list(view[value])) > 0:
-            raise ValueError('name is not unique')
+            raise ValueError('not unique')
 
 
 class ProjectSaver(Saver):
-    "Saver and fields definions for the project entity."
+    "Saver and fields definitions for the project entity."
 
     doctype = constants.PROJECT
 
@@ -53,6 +53,8 @@ class ProjectSaver(Saver):
 
 class Project(RequestHandler):
     "Display the project data."
+
+    saver = ProjectSaver
 
     @tornado.web.authenticated
     def get(self, projectid):
@@ -77,10 +79,12 @@ class Project(RequestHandler):
                 sample['seqruns_count'] = 0
             else:
                 sample['seqruns_count'] = row.value
+        logs = self.get_logs(project['_id']) # XXX limit?
         self.render('project.html',
                     project=project,
                     samples=samples,
-                    logs=self.get_logs(project['_id']))
+                    fields=self.saver.fields,
+                    logs=logs)
 
 
 class ProjectCreate(RequestHandler):
@@ -161,20 +165,7 @@ class ApiProject(ApiRequestHandler):
         Return HTTP 404 if no such project."""
         project = self.get_project(projectid)
         if not project: return
-        startkey = (projectid, '')
-        endkey = (projectid, constants.HIGH_CHAR)
-        project['samples'] = samples = []
-        for row in self.db.view('sample/sampleid')[startkey:endkey]:
-            sampleid = row.key[1]
-            data = dict(sampleid=sampleid,
-                        href=self.get_absolute_url('api_sample',
-                                                   projectid,
-                                                   sampleid))
-            samples.append(data)
-        self.add_link(project, 'self', 'api_project', projectid)
-        self.add_link(project, 'samples', 'api_samples', projectid)
-        self.add_link(project, 'libpreps', 'api_project_libpreps', projectid)
-        self.add_link(project, 'logs', 'api_logs', project['_id'])
+        self.add_project_links(project)
         self.write(project)
 
     def put(self, projectid):
@@ -235,10 +226,11 @@ class ApiProjectCreate(ApiRequestHandler):
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
-                logging.debug("created project %s", project['projectid'])
-                url = self.reverse_url('api_project', project['projectid'])
+                projectid = project['projectid']
+                url = self.reverse_url('api_project', projectid)
                 self.set_header('Location', url)
                 self.set_status(201)
+                self.add_project_links(project)
                 self.write(project)
 
 
@@ -248,4 +240,6 @@ class ApiProjects(ApiRequestHandler):
     def get(self):
         "Return a list of all projects."
         projects = self.get_projects()
+        for project in projects:
+            self.add_project_links(project)
         self.write(dict(projects=projects))

@@ -11,11 +11,12 @@ from . import utils
 class Field(object):
     "Specification of a data field for an entity."
 
-    def __init__(self, key, type='text', title=None, description=None,
+    type ='text'
+
+    def __init__(self, key, title=None, description=None,
                  mandatory=False, editable=True):
         assert key
         self.key = key
-        self.type = type                       # HTML input field type
         self.title = title or key.capitalize().replace('_', ' ')
         self.description = description or self.__doc__
         self.mandatory = mandatory             # A non-None value is requried.
@@ -25,30 +26,56 @@ class Field(object):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
         if not saver.is_new() and not self.editable: return
-        if data is None:
-            value = saver.rqh.get_argument(self.key, default=None)
-        else:
-            value = data.get(self.key)
-        value = self.process(saver, value)
+        value = self.get(saver, data=data)
+        try:
+            value = self.process(saver, value)
+        except ValueError, msg:
+            raise ValueError("field {0}: {1}".format(self.key, msg))
         if value == saver.doc.get(self.key):
             logging.debug("Field.store: '%s' value equal", self.key)
             return
         saver.doc[self.key] = value
         saver.changed[self.key] = value
-        logging.debug("Field.store: %s, %s", self.key, value)
+        logging.debug("Field.store: '%s', %s", self.key, value)
+
+    def get(self, saver, data=None):
+        "Obtain the value from data, if given, else from HTML form parameter."
+        if data is None:
+            return saver.rqh.get_argument(self.key, default=None)
+        else:
+            return data.get(self.key)
 
     def process(self, saver, value):
-        "Check validity and return converted to the appropriate type."
+        """Check validity and return converted to the appropriate type.
+        Raise ValueError if there is a problem."""
         self.check_mandatory(saver, value)
         return value or None
 
     def check_mandatory(self, saver, value):
         if self.mandatory and value is None:
-            raise ValueError("a value for '{0}' is mandatory".format(self.key))
+            raise ValueError('a defined value is mandatory')
+
+    def html_display(self, entity):
+        "Return the field value as valid HTML."
+        return str(entity.get(self.key) or '-')
+
+    def html_create(self):
+        "Return the field HTML input field for a create form."
+        return '<input type="text" name="{0}">'.format(self.key)
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        if self.editable:
+            return '<input type="text" name="{0}" value="{1}">'.\
+                format(self.key, entity.get(self.key) or '')
+        else:
+            return entity.get(self.key) or '-'
 
 
 class IdField(Field):
     "The identifier for the entity."
+
+    type ='identifier'
 
     def __init__(self, key, title=None, description=None):
         super(IdField, self).__init__(key, title=title,
@@ -57,8 +84,14 @@ class IdField(Field):
     
     def process(self, saver, value):
         self.check_mandatory(saver, value)
+        self.check_valid(saver, value)
         self.check_unique(saver, value)
         return value
+
+    def check_valid(self, saver, value):
+        "Only allow a subset of ordinary ASCII characters."
+        if not constants.ID_RX.match(value):
+            raise ValueError('invalid identifier value (disallowed characters)')
 
     def check_unique(self, saver, value):
         raise NotImplementedError
@@ -79,7 +112,74 @@ class NameField(Field):
     def check_unique(self, saver, value):
         raise NotImplementedError
 
-    
+
+class FloatField(Field):
+    "A floating point value field."
+
+    type ='float'
+
+    def __init__(self, key, title=None, description=None,
+                 mandatory=False, editable=True):
+        super(FloatField, self).__init__(key,
+                                           title=title,
+                                           description=description,
+                                           mandatory=mandatory,
+                                           editable=editable)
+
+    def process(self, saver, value):
+        self.check_mandatory(saver, value)
+        if value is None: return None
+        if value == '': return None
+        return float(value)
+
+    def html_display(self, entity):
+        "Return the field value as valid HTML."
+        value = entity.get(self.key)
+        if value is None:
+            value = '-'
+        else:
+            value = str(value)
+        return '<span class="number">{0}</span>'.format(value)
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        value = entity.get(self.key)
+        if value is None:
+            if self.editable:
+                return '<input type="text" name="{0}">'.format(self.key)
+            else:
+                return '-'
+        else:
+            if self.editable:
+                return '<input type="text" name="{0}" value="{1}">'.\
+                    format(self.key, value)
+            else:
+                return str(value)
+
+
+class RangeFloatField(FloatField):
+    "A floating point value field, with an allowed range."
+
+    def __init__(self, key, minimum=None, maximum=None,
+                 title=None, description=None,
+                 mandatory=False, editable=True):
+        super(RangeFloatField, self).__init__(key,
+                                              title=title,
+                                              description=description,
+                                              mandatory=mandatory,
+                                              editable=editable)
+        self.minimum = minimum
+        self.maximum = maximum
+
+    def process(self, saver, value):
+        value = super(RangeFloatField, self).process(saver, value)
+        if value is None: return None
+        if self.minimum is not None:
+            if value < self.minimum: raise ValueError('value too low')
+        if self.maximum is not None:
+            if value > self.maximum: raise ValueError('value too high')
+        return value
+
 
 class Saver(object):
     "Context handler defining the fields of the entity and saving the data."
@@ -141,12 +241,9 @@ class Saver(object):
             else:
                 value = converter(value)
             try:
-                if self.doc[key] == value:
-                    logging.debug("Saver.__setitem__() equal")
-                    return
+                if self.doc[key] == value: return
             except KeyError:
                 pass
-            logging.debug("Saver.__setitem__(%s, %s", key, value)
             self.doc[key] = value
             self.changed[key] = value
         else:

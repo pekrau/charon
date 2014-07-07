@@ -3,135 +3,52 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Seqrun {{ seqrunid }}
-(project {{ libprep['projectid'] }},
-sample {{ libprep['sampleid'] }},
-libprep {{ libprep['libprepid']}})
+Edit Seqrun 
+{{ seqrun['projectid'] }},
+{{ seqrun['sampleid'] }},
+{{ seqrun['libprepid']}},
+{{ seqrun['seqrunid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('edit', label=True) %}
-{% module Icon('seqrun', label=True, title="Seqrun {0}".format(seqrunid)) %}
-(project {{ libprep['projectid'] }},
-sample {{ libprep['sampleid'] }},
-libprep {{ libprep['libprepid']}})
+{% module Icon('seqrun', label=True) %}
+{{ seqrun['seqrunid'] }}
+(project {{ seqrun['projectid'] }},
+sample {{ seqrun['sampleid'] }},
+libprep {{ seqrun['libprepid']}})
 {% end %}
 
 {% block actions %}
-<form action="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+<form action="{{ reverse_url('seqrun', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
   {% module Submit('cancel') %}
 </form>
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('seqrun_edit', libprep['projectid'], libprep['sampleid'], libprep['libprepid'], seqrunid) }}"
+<form action="{{ reverse_url('seqrun_edit', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Edit the seqrun information</legend>
+    {% include 'error.html' %}
 
     <table class="fields">
 
+      {% for field in fields %}
       <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
+	<th>{{ field.title }}</th>
 	<td>
-	  <a href="{{ reverse_url('project', libprep['projectid']) }}">
-	    {{ libprep['projectid'] }}
-	  </a>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
 	</td>
-	<td class="description">
-	  The identifier for the project to which the seqrun belongs.
-	</td>
+	<td>{% raw field.html_edit(seqrun) %}</td>
+	<td class="description">{{ field.description }}</td>
       </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', libprep['projectid'], libprep['sampleid']) }}">
-	    {{ libprep['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Libprep</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
-	    {{ libprep['libprepid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the libprep of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Seqrun</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>{{ seqrunid }}</td>
-	<td class="description">
-	  The seqrun number.
-	</td>
-      </tr>
-
-      {% set seqrun = libprep['seqruns'][seqrunid-1] %}
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td>
-	  <input type="text" name="status"
-		 value="{{ seqrun.get('status') or '' }}">
-	</td>
-	<td class="description">
-	  Status of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Flowcell ID</th>
-	<td></td>
-	<td>
-	  <input type="text" name="flowcellid"
-		 value="{{ seqrun.get('flowcellid') or '' }}">
-	</td>
-	<td class="description">
-	  Flowcell identifier for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment status</th>
-	<td></td>
-	<td>
-	  <input type="text" name="alignment_status"
-		 value="{{ seqrun.get('alignment_status') or '' }}">
-	</td>
-	<td class="description">
-	  Status of the alignment for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment coverage</th>
-	<td></td>
-	<td>
-	  <input type="number" min="0" step="0.01"
-		 name="alignment_coverage"
-		 value="{{ seqrun.get('alignment_coverage') or '' }}">
-	</td>
-	<td class="description">
-	  Coverage of the alignment for the seqrun.
-	</td>
-      </tr>
+      {% end %}
 
       <tr>
 	<th></th>
@@ -142,7 +59,6 @@ libprep {{ libprep['libprepid']}})
       </tr>
 
     </table>
-
   </fieldset>
 
 </form>

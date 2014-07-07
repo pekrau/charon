@@ -18,8 +18,8 @@ from . import settings
 
 
 def load_settings(filepath=None):
-    """Load the settings from the given settings file, or from the first
-    existing file in a predefined list of filepaths.
+    """Load and return the settings from the given settings file,
+    or from the first existing file in a predefined list of filepaths.
     Raise IOError if no readable settings file was found.
     Raise KeyError if a settings variable is missing.
     Raise ValueError if the settings variable value is invalid."""
@@ -87,6 +87,7 @@ def load_settings(filepath=None):
             settings['PORT'] =  443
         else:
             raise ValueError('could not determine port from BASE_URL')
+    return settings
 
 def get_db():
     "Return the handle for the CouchDB database."
@@ -172,7 +173,20 @@ def delete_sample(db, sample):
 def delete_libprep(db, libprep):
     "Delete the libprep and all its dependent entities."
     delete_logs(db, libprep['_id'])
+    startkey = (libprep['projectid'], libprep['sampleid'],
+                libprep['libprepid'], 0)
+    endkey = (libprep['projectid'], libprep['sampleid'],
+              libprep['libprepid'], 1000000)
+    view = db.view('seqrun/seqrunid', include_docs=True)
+    seqruns = [r.doc for r in view[startkey:endkey]]
+    for seqrun in seqruns:
+        delete_seqrun(db, seqrun)
     del db[libprep['_id']]
+
+def delete_seqrun(db, seqrun):
+    "Delete the seqrun and all its dependent entities."
+    delete_logs(db, seqrun['_id'])
+    del db[seqrun['_id']]
 
 def delete_logs(db, id):
     "Delete the log documents for the given doc id."

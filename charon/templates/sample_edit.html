@@ -3,13 +3,16 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
+Edit Sample
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('edit') %} Edit
-{% module Icon('sample', label=True) %} {{ sample['sampleid'] }}
-(project {{ sample['projectid'] }})
+{% module Icon('edit', label=True) %}
+{% module Icon('sample', label=True) %}
+{{ sample['projectid'] }},
+{{ sample['sampleid'] }}
 {% end %}
 
 {% block actions %}
@@ -27,8 +30,31 @@ Edit Sample {{ sample['sampleid'] }} (project {{ sample['projectid'] }})
   <fieldset>
     <legend>Edit the sample information</legend>
     {% include 'error.html' %}
-    {% set entity = sample %}
-    {% include 'edit_input_table.html' %}
+
+    <table class="fields">
+
+      {% for field in fields %}
+      <tr>
+	<th>{{ field.title }}</th>
+	<td>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
+	</td>
+	<td>{% raw field.html_edit(sample) %}</td>
+	<td class="description">{{ field.description }}</td>
+      </tr>
+      {% end %}
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('save') %}
+	</td>
+      </tr>
+
+    </table>
   </fieldset>
 
 </form>

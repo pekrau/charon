@@ -4,70 +4,47 @@
 
 {% block head_title %}
 Create Libprep
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+in sample {{ sample['projectid'] }},
+sample {{ sample['sampleid'] }}
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('libprep', label=True) %}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }})
+in sample {{ sample['projectid'] }},
+sample {{ sample['sampleid'] }}
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('sample', sample['projectid'], sample['sampleid']) }}">
+  {% module Submit('cancel') %}
+</form>
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('libprep_create', project['projectid'], sample['sampleid']) }}"
+<form action="{{ reverse_url('libprep_create', sample['projectid'], sample['sampleid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Create a new libprep</legend>
+    {% include 'error.html' %}
 
     <table class="fields">
 
+      {% for field in fields %}
       <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
+	<th>{{ field.title }}</th>
 	<td>
-	  <a href="{{ reverse_url('project', project['projectid']) }}">
-	    {{ project['projectid'] }}
-	  </a>
+	  {% if field.mandatory %}
+	  {% module Icon('mandatory') %}
+	  {% end %}
 	</td>
-	<td class="description">
-	  The identifier for the project to which the libprep belongs.
-	</td>
+	<td>{% raw field.html_create() %}</td>
+	<td class="description">{{ field.description }}</td>
       </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', project['projectid'], sample['projectid']) }}">
-	    {{ sample['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample of the libprep.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Identifier</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td><input type="text" name="libprepid"></td>
-	<td class="description">
-	  The unique libprep identifier.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td><input type="text" name="status"></td>
-	<td class="description">
-	  Status of the libprep.
-	</td>
-      </tr>
+      {% end %}
 
       <tr>
 	<th></th>
@@ -78,7 +55,6 @@ Create Libprep
       </tr>
 
     </table>
-
   </fieldset>
 
 </form>

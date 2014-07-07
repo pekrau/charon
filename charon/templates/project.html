@@ -40,6 +40,12 @@ Project {{ project['projectid'] }}
   </a>
 </div>
 <div>
+  <a href="{{ reverse_url('api_project_seqruns', project['projectid']) }}">
+    {% module Icon('json') %}
+    {{ reverse_url('api_project_seqruns', project['projectid']) }}
+  </a>
+</div>
+<div>
   <a href="{{ reverse_url('api_logs', project['_id']) }}">
     {% module Icon('json') %}
     {{ reverse_url('api_logs', '_id') }}
@@ -50,30 +56,13 @@ Project {{ project['projectid'] }}
 {% block content %}
 
 <table class="fields">
-  <tr>
-    <th>Identifier</th>
-    <td>{{ project['projectid'] }}</td>
-  </tr>
 
+  {% for field in fields %}
   <tr>
-    <th>Name</th>
-    <td>{{ project.get('name') or '-' }}</td>
+    <th title="{{ field.description }}" class="nobr">{{ field.title }}</th>
+    <td>{% raw field.html_display(project) %}</td>
   </tr>
-
-  <tr>
-    <th>Status</th>
-    <td>{{ project.get('status') or '-' }}</td>
-  </tr>
-
-  <tr>
-    <th>Pipeline</th>
-    <td>{{ project.get('pipeline') or '-' }}</td>
-  </tr>
-
-  <tr>
-    <th>Best-practice analysis</th>
-    <td>{{ project.get('best_practice_analysis') or '-' }}</td>
-  </tr>
+  {% end %}
 
   <tr>
     <th>Samples</th>
@@ -86,12 +75,14 @@ Project {{ project['projectid'] }}
 	  <th># seqruns</th>
 	  <th>Modified</th>
 	</tr>
+
+	{% if samples %}
 	{% for sample in samples %}
 	<tr>
 	  <td>
 	    <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
 	      {{ sample['sampleid'] }}
-	      </a>
+	    </a>
 	  </td>
 	  <td>{{ sample.get('status') or '-' }}</td>
 	  <td class="number">{{ sample['libpreps_count'] }}</td>
@@ -104,26 +95,18 @@ Project {{ project['projectid'] }}
 	  </td>
 	</tr>
 	{% end %}
+
+	{% else %}
+	<tr>
+	  <td>[none]</td>
+	</tr>
+	{% end %}
       </table>
     </td>
   </tr>
 
-  <tr>
-    <th>Created</th>
-    <td class="localtime">{{ project['created'] }}</td>
-  </tr>
-
-  <tr>
-    <th>Modified</th>
-    <td class="localtime">{{ project['modified'] }}</td>
-  </tr>
-
-  <tr>
-    <th>Event log</th>
-    <td>
-      {% include 'log.html' %}
-    </td>
-  </tr>
+  {% set entity = project %}
+  {% include 'output_events_fields.html' %}
 
 </table>
 

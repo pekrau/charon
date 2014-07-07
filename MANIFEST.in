@@ -2,5 +2,6 @@ include README.md
 recursive-include charon/designs *
 recursive-include charon/static *
 recursive-include charon/templates *
+recursive-include charon/fixes *
 recursive-include charon/misc *
 include charon/example.yaml

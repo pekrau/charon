@@ -6,7 +6,7 @@ from setuptools import setup
 os.system("pandoc -o README.txt -f markdown -t rst README.md")
 
 setup(name='charon',
-      version='14.6',
+      version='14.7',
       description='Database for IGN projects and samples, with RESTful interface.',
       license='MIT',
       author='Per Kraulis',

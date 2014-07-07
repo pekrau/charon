@@ -21,11 +21,11 @@ class SampleidField(IdField):
         key = (saver.project['projectid'], value)
         view = saver.db.view('sample/sampleid')
         if len(list(view[key])) > 0:
-            raise ValueError('sampleid is not unique')
+            raise ValueError('not unique')
 
 
 class SampleSaver(Saver):
-    "Saver and fields definions for the sample entity."
+    "Saver and fields definitions for the sample entity."
 
     doctype = constants.SAMPLE
 
@@ -42,8 +42,6 @@ class SampleSaver(Saver):
                     description='The genotyping concordance of the sample.'),
               Field('sequencing_status',
                     description='The sequencing status of the sample.'),
-              Field('primary_analysis_status',
-                    description='The primary analysis status of the sample.'),
               Field('primary_analysis_status',
                     description='The secondary analysis status of the sample.'),
               Field('delivery_status',
@@ -68,9 +66,10 @@ class SampleSaver(Saver):
 class Sample(RequestHandler):
     "Display the sample data."
 
+    saver = SampleSaver
+
     @tornado.web.authenticated
     def get(self, projectid, sampleid):
-        project = self.get_project(projectid)
         sample = self.get_sample(projectid, sampleid)
         libpreps = self.get_libpreps(projectid, sampleid)
         view = self.db.view('seqrun/count')
@@ -84,11 +83,12 @@ class Sample(RequestHandler):
                 libprep['seqruns_count'] = 0
             else:
                 libprep['seqruns_count'] = row.value
+        logs = self.get_logs(sample['_id']) # XXX limit?
         self.render('sample.html',
-                    project=project,
                     sample=sample,
                     libpreps=libpreps,
-                    logs=self.get_logs(sample['_id']))
+                    fields=self.saver.fields,
+                    logs=logs)
 
 
 class SampleCreate(RequestHandler):
@@ -112,9 +112,9 @@ class SampleCreate(RequestHandler):
                 sample = saver.doc
         except (IOError, ValueError), msg:
             self.render('sample_create.html',
-                        project=self.get_project(projectid),
+                        project=project,
                         fields=self.saver.fields,
-                        error=str(error))
+                        error=str(msg))
         else:
             url = self.reverse_url('sample', projectid, sample['sampleid'])
             self.redirect(url)
@@ -141,6 +141,7 @@ class SampleEdit(RequestHandler):
                 saver.store()
         except (IOError, ValueError), msg:
             self.render('sample_edit.html',
+                        sample=sample,
                         fields=self.saver.fields,
                         error=str(msg))
         else:
@@ -158,10 +159,7 @@ class ApiSample(ApiRequestHandler):
         Return HTTP 404 if no such sample or project."""
         sample = self.get_sample(projectid, sampleid)
         if not sample: return
-        self.add_link(sample, 'self', 'api_sample', projectid, sampleid)
-        self.add_link(sample, 'libpreps', 'api_sample_libpreps',
-                      projectid, sampleid)
-        self.add_link(sample, 'logs', 'api_logs', sample['_id'])
+        self.add_sample_links(sample)
         self.write(sample)
 
     def put(self, projectid, sampleid):
@@ -213,12 +211,12 @@ class ApiSampleCreate(ApiRequestHandler):
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
-                logging.debug("created sample %s", sample['sampleid'])
                 url = self.reverse_url('api_sample',
                                        projectid,
                                        sample['sampleid'])
                 self.set_header('Location', url)
                 self.set_status(201)
+                self.add_sample_links(sample)
                 self.write(sample)
 
 
@@ -229,10 +227,5 @@ class ApiSamples(ApiRequestHandler):
         "Return a list of all samples."
         samples = self.get_samples(projectid)
         for sample in samples:
-            self.add_link(sample, 'project', 'api_project', projectid)
-            self.add_link(sample, 'self', 'api_sample', projectid,
-                          sample['sampleid'])
-            self.add_link(sample, 'libpreps', 'api_sample_libpreps',
-                          projectid, sample['sampleid'])
-            self.add_link(sample, 'logs', 'api_logs', sample['_id'])
+            self.add_sample_links(sample)
         self.write(dict(samples=samples))

@@ -1,0 +1,19 @@
+{# Output fields for entity events in table display. #}
+
+<tr>
+  <th>Modified</th>
+  <td class="localtime">{{ entity['modified'] }}</td>
+</tr>
+
+<tr>
+  <th>Created</th>
+  <td class="localtime">{{ entity['created'] }}</td>
+</tr>
+
+<tr>
+  <th>Event log</th>
+  <td>
+    {% include 'log.html' %}
+  </td>
+</tr>
+

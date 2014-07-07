@@ -4,7 +4,8 @@ import re
 
 HIGH_CHAR = unichr(2**16)
 
-IUID_RX   = re.compile(r'^[0-9a-z]{32}$')
+IUID_RX = re.compile(r'^[0-9a-z]{32}$')
+ID_RX = re.compile(r'^[a-z][-._a-z0-9]*$', re.IGNORECASE)
 
 # Tornado server
 USER_COOKIE_NAME = 'charon_user'
@@ -19,6 +20,7 @@ USER       = 'user'
 PROJECT    = 'project'
 SAMPLE     = 'sample'
 LIBPREP    = 'libprep'
+SEQRUN     = 'seqrun'
 LOG        = 'log'
 
 # Status

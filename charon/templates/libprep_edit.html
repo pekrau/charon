@@ -3,18 +3,18 @@
 {% extends "base.html" %}
 
 {% block head_title %}
-Edit Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }},
- sample {{ libprep['sampleid'] }})
+Edit Libprep
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('edit') %}
-Edit
-{% module Icon('libprep') %}
-Libprep {{ libprep['libprepid'] }}
-(project {{ libprep['projectid'] }},
- sample {{ libprep['sampleid'] }})
+{% module Icon('edit', label=True) %}
+{% module Icon('libprep', label=True) %}
+{{ libprep['projectid'] }},
+{{ libprep['sampleid'] }},
+{{ libprep['libprepid'] }}
 {% end %}
 
 {% block actions %}
@@ -30,57 +30,23 @@ Libprep {{ libprep['libprepid'] }}
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Edit the libprep information</legend>
+    {% include 'error.html' %}
 
     <table class="fields">
 
+      {% for field in fields %}
       <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
+	<th>{{ field.title }}</th>
 	<td>
-	  <a href="{{ reverse_url('project', libprep['projectid']) }}">
-	    {{ libprep['projectid'] }}
-	  </a>
+	  {% if field.mandatory %}
+          {% module Icon('mandatory') %}
+	  {% end %}
 	</td>
-	<td class="description">
-	  The identifier for the project to which the libprep belongs.
-	</td>
+	<td>{% raw field.html_edit(libprep) %}</td>
+	<td class="description">{{ field.description }}</td>
       </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', libprep['projectid'], libprep['sampleid']) }}">
-	    {{ libprep['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample to which the libprep belongs.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Identifier</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>{{ libprep['libprepid'] }}</td>
-	<td class="description">
-	  The libprep identifier, unique within the project and sample.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td>
-	  <input type="text" name="status"
-		 value="{{ libprep.get('status') or '' }}">
-	</td>
-	<td class="description">
-	  Libprep status.
-	</td>
-      </tr>
+      {% end %}
 
       <tr>
 	<th></th>
@@ -91,7 +57,6 @@ Libprep {{ libprep['libprepid'] }}
       </tr>
 
     </table>
-
   </fieldset>
 
 </form>

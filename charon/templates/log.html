@@ -9,9 +9,7 @@
       </a>
     </td>
     <td>{{ log.get('operator') or '-' }}</td>
-    <td>
-      [{{ ', '.join(log.get('changed', dict()).keys()) or '-' }}]
-    </td>
+    <td>{{ ', '.join(sorted(log.get('changed', {}).keys())) or '-' }}</td>
   </tr>
   {% end %}
 </table>

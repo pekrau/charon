@@ -4,102 +4,45 @@
 
 {% block head_title %}
 Create Seqrun
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }}, libprep {{ libprep['libprepid']}})
+(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }}, libprep {{ libprep['libprepid']}})
 {% end %}
 
 {% block title %}
 {% module Icon('create', label=True) %}
 {% module Icon('seqrun', label=True) %}
-(project {{ project['projectid'] }}, sample {{ sample['sampleid'] }}, libprep {{ libprep['libprepid']}})
+(project {{ libprep['projectid'] }}, sample {{ libprep['sampleid'] }}, libprep {{ libprep['libprepid']}})
+{% end %}
+
+{% block actions %}
+<form action="{{ reverse_url('libprep', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}">
+  {% module Submit('cancel') %}
+</form>
 {% end %}
 
 {% block content %}
 
-<form action="{{ reverse_url('seqrun_create', project['projectid'], sample['sampleid'], libprep['libprepid']) }}"
+<form action="{{ reverse_url('seqrun_create', libprep['projectid'], libprep['sampleid'], libprep['libprepid']) }}"
       method="POST">
   {% module xsrf_form_html() %}
 
   <fieldset>
-
     <legend>Create a new seqrun</legend>
+    {% include 'error.html' %}
 
     <table class="fields">
 
+      {% for field in fields %}
       <tr>
-	<th>Project</th>
-	<td>{% module Icon('mandatory') %}</td>
+	<th>{{ field.title }}</th>
 	<td>
-	  <a href="{{ reverse_url('project', project['projectid']) }}">
-	    {{ project['projectid'] }}
-	  </a>
+	  {% if field.mandatory %}
+	  {% module Icon('mandatory') %}
+	  {% end %}
 	</td>
-	<td class="description">
-	  The identifier for the project to which the seqrun belongs.
-	</td>
+	<td>{% raw field.html_create() %}</td>
+	<td class="description">{{ field.description }}</td>
       </tr>
-
-      <tr>
-	<th>Sample</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
-	    {{ sample['sampleid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the sample of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Libprep</th>
-	<td>{% module Icon('mandatory') %}</td>
-	<td>
-	  <a href="{{ reverse_url('libprep', project['projectid'], sample['sampleid'], libprep['libprepid']) }}">
-	    {{ libprep['libprepid'] }}
-	  </a>
-	</td>
-	<td class="description">
-	  The identifier for the libprep of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Status</th>
-	<td></td>
-	<td><input type="text" name="status"></td>
-	<td class="description">
-	  Status of the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Flowcell ID</th>
-	<td></td>
-	<td><input type="text" name="flowcellid"></td>
-	<td class="description">
-	  Flowcell identifier for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment status</th>
-	<td></td>
-	<td><input type="text" name="alignment_status"></td>
-	<td class="description">
-	  Status of the alignment for the seqrun.
-	</td>
-      </tr>
-
-      <tr>
-	<th>Alignment coverage</th>
-	<td></td>
-	<td><input type="number" min="0" step="0.01"
-		   name="alignment_coverage"></td>
-	<td class="description">
-	  Coverage of the alignment for the seqrun.
-	</td>
-      </tr>
+      {% end %}
 
       <tr>
 	<th></th>
@@ -110,7 +53,6 @@ Create Seqrun
       </tr>
 
     </table>
-
   </fieldset>
 
 </form>
