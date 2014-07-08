@@ -27,15 +27,21 @@
 
       <div class="right">
 	{% block login %}
+	{% if current_user %}
 	<div>
-	  {% if current_user %}
+	  <form action="{{ reverse_url('search') }}" method="GET">
+	    {% module Icon('search') %}
+	    <input type="text" name="term">
+	  </form>
+	</div>
+	<div>
 	  Logged in as
 	  <a href="{{ reverse_url('user', current_user['email']) }}">
 	    {% module Icon('user') %}
 	    {{ current_user['email'] }}
 	  </a>
-	  {% end %}
 	</div>
+	{% end %}
 	{% end %}
       </div>
 
@@ -45,6 +51,7 @@
       {% block navigation %}
       <div><a href="{{ reverse_url('home') }}">Home</a></div>
       {% if current_user %}
+      <div><a href="{{ reverse_url('search') }}">Search</a></div>
       <div><a href="{{ reverse_url('projects') }}">Projects</a></div>
       <div class="menu1">
 	<div><a href="{{ reverse_url('project_create') }}">Create</div>

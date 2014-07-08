@@ -48,6 +48,7 @@ handlers = \
          Seqrun, name='seqrun'),
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)/edit',
          SeqrunEdit, name='seqrun_edit'),
+     URL(r'/search', Search, name='search'),
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
      URL(constants.LOGIN_URL, Login, name='login'),

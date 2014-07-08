@@ -47,6 +47,42 @@ class Home(RequestHandler):
                     next=self.get_argument('next', ''))
 
 
+class Search(RequestHandler):
+    "Search page."
+
+    @tornado.web.authenticated
+    def get(self):
+        term = self.get_argument('term', '')
+        items = dict()
+        if term:
+            view = self.db.view('project/projectid')
+            for row in view[term : term+constants.HIGH_CHAR]:
+                doc = self.get_project(row.key)
+                items[doc['_id']] = doc
+            view = self.db.view('project/name')
+            for row in view[term : term+constants.HIGH_CHAR]:
+                doc = self.get_project(row.value)
+                items[doc['_id']] = doc
+            view = self.db.view('project/splitname')
+            for row in view[term : term+constants.HIGH_CHAR]:
+                doc = self.get_project(row.value)
+                items[doc['_id']] = doc
+            view = self.db.view('user/email')
+            for row in view[term : term+constants.HIGH_CHAR]:
+                doc = self.get_user(row.key)
+                items[doc['_id']] = doc
+            view = self.db.view('user/name')
+            for row in view[term : term+constants.HIGH_CHAR]:
+                doc = self.get_user(row.value)
+                items[doc['_id']] = doc
+        items = sorted(items.values(),
+                       cmp=lambda i,j: cmp(i['modified'], j['modified']),
+                       reverse=True)
+        self.render('search.html',
+                    term=term,
+                    items=items)
+
+
 class ApiHome(ApiRequestHandler):
     """API root: Links to API entry points.
     Every call to an API resource must include an API access
