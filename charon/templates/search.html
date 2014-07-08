@@ -1,0 +1,45 @@
+{# Search page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Search
+{% end %}
+
+{% block title %}
+{% module Icon('search', label=True) %}
+{% end %}
+
+{% block content %}
+
+<form action="{{ reverse_url('search') }}" method="GET">
+  {% module Icon('search') %}
+  <input type="text" name="term" value="{{ term or '' }}">
+</form>
+
+<br>
+
+<table class="list">
+
+  {% for item in items %}
+  {% set doctype = item['charon_doctype'] %}
+  <tr>
+    <td>
+      {% if doctype == 'project' %}
+      <a href="{{ reverse_url('project', item['projectid'])}}">
+	{% module Icon('project') %}
+	{{ item['projectid'] }}
+      </a> {{ item['name'] }}
+      {% elif doctype == 'user' %}
+      <a href="{{ reverse_url('user', item['email'])}}">
+	{% module Icon('user') %}
+	{{ item['email'] }}
+      </a> {{ item.get('name') or '' }}
+      {% end %}
+    </td>
+  </tr>
+  {% end %}
+
+</table>
+
+{% end %}
