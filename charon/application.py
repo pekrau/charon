@@ -51,6 +51,7 @@ handlers = \
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
      URL(constants.LOGIN_URL, Login, name='login'),
+     URL(r'/users', Users, name='users'),
      URL(r'/logout', Logout, name='logout'),
      URL(r'/version', Version, name='version'),
      URL(r'/apidoc', ApiDocumentation, name='apidoc'),

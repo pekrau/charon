@@ -7,8 +7,8 @@ User {{ user['email'] }}
 {% end %}
 
 {% block title %}
-{% module Icon('user') %}
-User {{ user['email'] }}
+{% module Icon('user', label=True) %}
+{{ user['email'] }}
 {% end %}
 
 {% block actions %}
@@ -33,7 +33,7 @@ User {{ user['email'] }}
 
   <tr>
     <th>Name</th>
-    <td>{{ user['fullname'] }}</td>
+    <td>{{ user['name'] }}</td>
   </tr>
 
   <tr>
