@@ -81,10 +81,11 @@ class User(RequestHandler):
     @tornado.web.authenticated
     def get(self, email):
         user = self.get_user(email)
-        if user != self.get_current_user() and user['role'] != 'admin':
-            raise tornado.web.HTTPError(403)
+        current_user = self.get_current_user()
+        privileged = current_user == user or current_user['role'] == 'admin'
         self.render('user.html',
                     user=user,
+                    privileged=privileged,
                     logs=self.get_logs(user['_id']))
 
 

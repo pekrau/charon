@@ -12,14 +12,15 @@ User {{ user['email'] }}
 {% end %}
 
 {% block actions %}
+{% if privileged %}
 <form action="{{ reverse_url('user_token', user['email']) }}",
       method="POST">
   {% module xsrf_form_html() %}
   {% module Submit('apitoken_new', title='New API token',
 	      onclick="return confirm('Previous API token will become invalid.');") %}
 </form>
-
 {% include 'logout_form.html' %}
+{% end %}
 {% end %}
 
 {% block content %}
@@ -45,10 +46,12 @@ User {{ user['email'] }}
     <td>{{ user.get('status') or '-' }}</td>
   </tr>
 
+  {% if privileged %}
   <tr>
     <th>API token</th>
     <td>{{ user.get('api_token') or '-' }}</td>
   </tr>
+  {% end %}
 
   <tr>
     <th>Event log</th>
