@@ -81,10 +81,11 @@ class User(RequestHandler):
     @tornado.web.authenticated
     def get(self, email):
         user = self.get_user(email)
-        if user != self.get_current_user() and user['role'] != 'admin':
-            raise tornado.web.HTTPError(403)
+        current_user = self.get_current_user()
+        privileged = current_user == user or current_user['role'] == 'admin'
         self.render('user.html',
                     user=user,
+                    privileged=privileged,
                     logs=self.get_logs(user['_id']))
 
 
@@ -96,8 +97,20 @@ class UserApiToken(RequestHandler):
         "Set the API token for the user."
         self.check_xsrf_cookie()
         user = self.get_user(email)
-        if user != self.get_current_user() and user['role'] != 'admin':
+        current_user = self.get_current_user()
+        privileged = current_user == user or current_user['role'] == 'admin'
+        if not privileged:
             raise tornado.web.HTTPError(403)
         with UserSaver(doc=user, rqh=self) as saver:
             saver['api_token'] = utils.get_iuid()
         self.redirect(self.reverse_url('user', user['email']))
+
+
+class Users(RequestHandler):
+    "Display all users."
+
+    @tornado.web.authenticated
+    def get(self):
+        view = self.db.view('user/email')
+        users = [self.get_user(r.key) for r in view]
+        self.render('users.html', users=users)
