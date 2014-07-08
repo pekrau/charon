@@ -58,7 +58,7 @@ simpler for me...
 
 The development server is upgraded thus:
 
-    $ pip install --upgrade --no-deps git+https://github.com/pekrau/charon
+    $ pip install --upgrade --no-deps git+https://github.com/NationalGenomicsInfrastructure/charon
 
 The Tornado service is controlled by the upstart script `/etc/init/charon`.
 
