@@ -76,12 +76,11 @@ def test_project_modify():
     assert newdata['name'] != olddata['name'], 'name must not be old value'
 
 def test_project_modify_undef_field():
-    "Try to modify undefined field."
+    "Try to modify an undefined field."
     response = session.get(url('project', PROJECTID), headers=api_token)
     assert response.status_code == 200, response
     olddata = response.json()
-    assert olddata.get('status') != 'brilliant'
-    data = dict(stuff='garbage', status='brilliant')
+    data = dict(stuff='garbage')
     response = session.put(url('project', PROJECTID),
                            data=json.dumps(data),
                            headers=api_token)
@@ -90,8 +89,29 @@ def test_project_modify_undef_field():
     assert response.status_code == 200, response
     newdata = response.json()
     assert newdata['_rev'] != olddata['_rev'], 'new document revision'
-    assert newdata.get('status') == 'brilliant', 'status must have been updated'
     assert newdata.get('stuff') is None, 'undef must not have been updated'
+
+def test_project_modify_status_field():
+    "Modify the status field with valid and invalid values."
+    response = session.get(url('project', PROJECTID), headers=api_token)
+    assert response.status_code == 200, response
+    olddata = response.json()
+    assert olddata.get('status') != 'open'
+    data = dict(status='open')
+    response = session.put(url('project', PROJECTID),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 204, response
+    response = session.get(url('project', PROJECTID), headers=api_token)
+    assert response.status_code == 200, response
+    newdata = response.json()
+    assert newdata['_rev'] != olddata['_rev'], 'new document revision'
+    assert newdata.get('status') == 'open', 'status must have been updated'
+    data = dict(status='no-such-status-value')
+    response = session.put(url('project', PROJECTID),
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 400, response
 
 def test_project_delete():
     "Delete a project."

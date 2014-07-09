@@ -49,11 +49,17 @@ class Field(object):
         """Check validity and return converted to the appropriate type.
         Raise ValueError if there is a problem."""
         self.check_mandatory(saver, value)
+        self.check_valid(saver, value)
         return value or None
 
     def check_mandatory(self, saver, value):
+        "Check that a value is provided when required."
         if self.mandatory and value is None:
             raise ValueError('a defined value is mandatory')
+
+    def check_valid(self, saver, value):
+        "Check that the value, if provided, is valid."
+        pass
 
     def html_display(self, entity):
         "Return the field value as valid HTML."
@@ -82,19 +88,10 @@ class IdField(Field):
                                       description=description,
                                       mandatory=True, editable=False)
     
-    def process(self, saver, value):
-        self.check_mandatory(saver, value)
-        self.check_valid(saver, value)
-        self.check_unique(saver, value)
-        return value
-
     def check_valid(self, saver, value):
         "Only allow a subset of ordinary ASCII characters."
         if not constants.ID_RX.match(value):
             raise ValueError('invalid identifier value (disallowed characters)')
-
-    def check_unique(self, saver, value):
-        raise NotImplementedError
 
 
 class SelectField(Field):
@@ -116,12 +113,17 @@ class SelectField(Field):
             value = saver.rqh.get_argument(self.key, default=None)
             if value == self.none_value:
                 return None
-            elif value in self.options:
-                return value
             else:
-                return None
+                return value
         else:
             return data.get(self.key)
+
+    def check_valid(self, saver, value):
+        "Check that the value, if provided, is valid."
+        if value is None: return
+        if value not in self.options:
+            logging.debug("invalid select value: %s", value)
+            raise ValueError('invalid value; not among options for select')
 
     def html_create(self):
         "Return the field HTML input field for a create form."
@@ -159,13 +161,6 @@ class NameField(Field):
         super(NameField, self).__init__(key, title=title,
                                         description=description,
                                         mandatory=False)
-    def process(self, saver, value):
-        self.check_mandatory(saver, value)
-        self.check_unique(saver, value)
-        return value or None
-
-    def check_unique(self, saver, value):
-        raise NotImplementedError
 
 
 class FloatField(Field):

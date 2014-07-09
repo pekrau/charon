@@ -17,7 +17,9 @@ from .saver import *
 class ProjectidField(IdField):
     "The unique identifier for the project, e.g. 'P1234'."
 
-    def check_unique(self, saver, value):
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        super(ProjectidField, self).check_valid(saver, value)
         view = saver.db.view('project/projectid')
         if len(list(view[value])) > 0:
             raise ValueError('not unique')
@@ -27,8 +29,9 @@ class ProjectnameField(NameField):
     """The name of the project, e.g. 'P.Kraulis_14_01'.
     Optional; must be unique if given."""
 
-    def check_unique(self, saver, value):
-        if not value: return
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        super(ProjectnameField, self).check_valid(saver, value)
         if saver.get(self.key) == value: return
         view = saver.db.view('project/name')
         if len(list(view[value])) > 0:
