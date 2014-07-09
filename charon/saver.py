@@ -60,11 +60,11 @@ class Field(object):
         return str(entity.get(self.key) or '-')
 
     def html_create(self):
-        "Return the field HTML input field for a create form."
+        "Return an appropriate HTML input field for a create form."
         return '<input type="text" name="{0}">'.format(self.key)
 
     def html_edit(self, entity):
-        "Return the field HTML input field for an edit form."
+        "Return an appropriate HTML input field for an edit form."
         if self.editable:
             return '<input type="text" name="{0}" value="{1}">'.\
                 format(self.key, entity.get(self.key) or '')
@@ -95,6 +95,61 @@ class IdField(Field):
 
     def check_unique(self, saver, value):
         raise NotImplementedError
+
+
+class SelectField(Field):
+    "Select one of a set of values."
+
+    none_value = '[none]'
+
+    def __init__(self, key, title=None, description=None,
+                 mandatory=False, editable=True, options=[]):
+        super(SelectField, self).__init__(key, title=title,
+                                          description=description,
+                                          mandatory=mandatory,
+                                          editable=editable)
+        self.options = options
+
+    def get(self, saver, data=None):
+        "Obtain the value from data, if given, else from HTML form parameter."
+        if data is None:
+            value = saver.rqh.get_argument(self.key, default=None)
+            if value == self.none_value:
+                return None
+            elif value in self.options:
+                return value
+            else:
+                return None
+        else:
+            return data.get(self.key)
+
+    def html_create(self):
+        "Return the field HTML input field for a create form."
+        options = ["<option>{0}</option>".format(o) for o in self.options]
+        if not self.mandatory:
+            options.insert(0, "<option>{0}</option>".format(self.none_value))
+        return '<select name="{0}">{1}</select>'.format(self.key, options)
+
+    def html_edit(self, entity):
+        "Return the field HTML input field for an edit form."
+        value = entity.get(self.key)
+        if self.editable:
+            options = []
+            if not self.mandatory:
+                if value is None:
+                    options.append("<option selected>{0}</option>".format(
+                            self.none_value))
+                else:
+                    options.append("<option>{0}</option>".format(
+                            self.none_value))
+            for option in self.options:
+                if value == option:
+                    options.append("<option selected>{0}</option>".format(option))
+                else:
+                    options.append("<option>{0}</option>".format(option))
+            return '<select name="{0}">{1}</select>'.format(self.key, options)
+        else:
+            return value or '-'
 
 
 class NameField(Field):

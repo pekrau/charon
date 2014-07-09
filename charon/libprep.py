@@ -30,7 +30,8 @@ class LibprepSaver(Saver):
     doctype = constants.LIBPREP
 
     fields = [LibprepidField('libprepid', title='Identifier'),
-              Field('status', description='The status of the libprep.'),
+              SelectField('status', description='The status of the libprep.',
+                          options=['new', 'ok', 'working', 'done', 'aborted']),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, sample=None):

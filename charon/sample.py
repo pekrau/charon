@@ -30,8 +30,9 @@ class SampleSaver(Saver):
     doctype = constants.SAMPLE
 
     fields = [SampleidField('sampleid', title='Identifier'),
-              Field('status',
-                    description='The status of the sample.'),
+              SelectField('status',
+                          description='The status of the sample.',
+                          options=['new', 'ok', 'working', 'done', 'aborted']),
               Field('received',
                     description='The reception date of the sample.'),
               Field('qc', title='QC',
