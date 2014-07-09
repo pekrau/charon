@@ -17,7 +17,9 @@ from .saver import *
 class LibprepidField(IdField):
     "The unique identifier for the libprep within the sample."
 
-    def check_unique(self, saver, value):
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        super(LibprepidField, self).check_valid(saver, value)
         key = (saver.project['projectid'], saver.sample['sampleid'], value)
         view = saver.db.view('libprep/libprepid')
         if len(list(view[key])) > 0:

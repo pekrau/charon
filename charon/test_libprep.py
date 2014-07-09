@@ -65,9 +65,9 @@ def test_libprep_modify():
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
     assert libprep['status'] == 'new'
-    # Modify the libprep, setting status to 'old'
     libprep_url = BASE_URL.rstrip('/') + response.headers['location']
-    data = dict(status='old')
+    # Modify the libprep, setting status to 'aborted'
+    data = dict(status='aborted')
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -75,7 +75,13 @@ def test_libprep_modify():
     response = session.get(libprep_url, headers=api_token)
     assert response.status_code == 200, response
     libprep = response.json()
-    assert libprep['status'] == 'old'
+    assert libprep['status'] == 'aborted'
+    # Try setting an invalid status
+    data = dict(status='no-such-status')
+    response = session.put(libprep_url,
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 400, response
 
 @nose.with_setup(my_setup, my_teardown)
 def test_libprep_create_collision():

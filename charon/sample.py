@@ -17,7 +17,9 @@ from .saver import *
 class SampleidField(IdField):
     "The unique identifier for the sample within the project."
 
-    def check_unique(self, saver, value):
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        super(SampleidField, self).check_valid(saver, value)
         key = (saver.project['projectid'], value)
         view = saver.db.view('sample/sampleid')
         if len(list(view[key])) > 0:

@@ -57,7 +57,7 @@ def test_sample_modify():
     assert sample['sampleid'] == SAMPLEID
     assert sample['status'] == 'new'
     sample_url = BASE_URL.rstrip('/') + response.headers['location']
-    data = dict(status='old')
+    data = dict(status='aborted')
     response = session.put(sample_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -65,7 +65,12 @@ def test_sample_modify():
     response = session.get(sample_url, headers=api_token)
     assert response.status_code == 200, response
     sample = response.json()
-    assert sample['status'] == 'old'
+    assert sample['status'] == 'aborted'
+    data = dict(status='no-such-value')
+    response = session.put(sample_url,
+                           data=json.dumps(data),
+                           headers=api_token)
+    assert response.status_code == 400, response
 
 @nose.with_setup(my_setup, my_teardown)
 def test_no_such_sample():
