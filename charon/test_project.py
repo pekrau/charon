@@ -27,6 +27,7 @@ def test_project_create_not_json():
                             data='% not JSON',
                             headers=api_token)
     assert response.status_code == 400, response
+    assert response.reason == 'No JSON object could be decoded'
 
 def test_project_create():
     "Create a project."
@@ -112,6 +113,7 @@ def test_project_modify_status_field():
                            data=json.dumps(data),
                            headers=api_token)
     assert response.status_code == 400, response
+    assert response.reason == "field 'status': invalid value; not among options for select"
 
 def test_project_delete():
     "Delete a project."
