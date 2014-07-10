@@ -1,8 +1,11 @@
 " Charon: Various constants."
 
 import re
+import string
 
-HIGH_CHAR = unichr(2**8)        # Used for string range searches in CouchDB.
+# Used for CouchDB ranges.
+# For some incomprehensible reason, using unichr(2**8) does not work?
+HIGH_CHAR = unichr(2**16)
 
 IUID_RX = re.compile(r'^[0-9a-z]{32}$')
 ID_RX = re.compile(r'^[a-z][-._a-z0-9]*$', re.IGNORECASE)
