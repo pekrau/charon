@@ -183,14 +183,17 @@ class ApiProject(ApiRequestHandler):
         try:
             data = json.loads(self.request.body)
         except Exception, msg:
+            logging.debug("Exception: %s", msg)
             self.send_error(400, reason=str(msg))
         else:
             try:
                 with self.saver(doc=project, rqh=self) as saver:
                     saver.store(data=data)
             except ValueError, msg:
+                logging.debug("ValueError: %s", msg)
                 self.send_error(400, reason=str(msg))
             except IOError, msg:
+                logging.debug("IOError: %s", msg)
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)

@@ -33,7 +33,6 @@ class RequestHandler(tornado.web.RequestHandler):
         result['settings'] = settings
         result['constants'] = constants
         result['current_user'] = self.get_current_user()
-        result['self_url'] = self.request.uri
         return result
 
     def get_absolute_url(self, name, *args, **kwargs):
@@ -186,3 +185,39 @@ class RequestHandler(tornado.web.RequestHandler):
         return sorted([r.doc for r in view[id]],
                       cmp=utils.cmp_timestamp,
                       reverse=True)
+
+    def send_error(self, status_code=500, **kwargs):
+        """ ** This is really a bug fix for Tornado!
+        *** A bug fix has been pull-requested to the master Tornado repo.
+
+        Sends the given HTTP error code to the browser.
+
+        If `flush()` has already been called, it is not possible to send
+        an error, so this method will simply terminate the response.
+        If output has been written but not yet flushed, it will be discarded
+        and replaced with the error page.
+
+        Override `write_error()` to customize the error page that is returned.
+        Additional keyword arguments are passed through to `write_error`.
+        """
+        if self._headers_written:
+            gen_log.error("Cannot send error response after headers written")
+            if not self._finished:
+                self.finish()
+            return
+        self.clear()
+
+        # reason = None               # *** Incorrect line!
+        reason = kwargs.get('reason') # *** This is the corrected line.
+        if 'exc_info' in kwargs:
+            exception = kwargs['exc_info'][1]
+            if isinstance(exception, tornado.web.HTTPError) and exception.reason:
+                reason = exception.reason
+        self.set_status(status_code, reason=reason)
+        try:
+            self.write_error(status_code, **kwargs)
+        except Exception:
+            app_log.error("Uncaught exception in write_error", exc_info=True)
+        if not self._finished:
+            self.finish()
+

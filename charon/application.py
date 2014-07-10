@@ -6,7 +6,6 @@ import tornado
 import tornado.web
 import couchdb
 
-import charon
 from charon import constants
 from charon import utils
 from charon import uimodules

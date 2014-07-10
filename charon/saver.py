@@ -30,7 +30,7 @@ class Field(object):
         try:
             value = self.process(saver, value)
         except ValueError, msg:
-            raise ValueError("field {0}: {1}".format(self.key, msg))
+            raise ValueError("field '{0}': {1}".format(self.key, msg))
         if value == saver.doc.get(self.key):
             logging.debug("Field.store: '%s' value equal", self.key)
             return

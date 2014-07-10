@@ -147,7 +147,6 @@ class ApiNotify(ApiRequestHandler):
             self.send_error(400, reason=str(msg))
         else:
             self.set_status(202)
-            self.finish()
             try:
                 headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
                 data = dict(service='Charon')
