@@ -45,7 +45,7 @@ def test_libprep_create():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201, response
+    assert response.status_code == 201, response.reason
     libprep = response.json()
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
@@ -59,7 +59,7 @@ def test_libprep_modify():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201
+    assert response.status_code == 201, response.reason
     libprep = response.json()
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
@@ -71,9 +71,9 @@ def test_libprep_modify():
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)
-    assert response.status_code == 204, response
+    assert response.status_code == 204, response.reason
     response = session.get(libprep_url, headers=api_token)
-    assert response.status_code == 200, response
+    assert response.status_code == 200, response.reason
     libprep = response.json()
     assert libprep['status'] == 'aborted'
     # Try setting an invalid status
@@ -81,7 +81,7 @@ def test_libprep_modify():
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)
-    assert response.status_code == 400, response
+    assert response.status_code == 400, response.reason
 
 @nose.with_setup(my_setup, my_teardown)
 def test_libprep_create_collision():
@@ -90,7 +90,7 @@ def test_libprep_create_collision():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201, response
+    assert response.status_code == 201, response.reason
     libprep = response.json()
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
@@ -99,7 +99,7 @@ def test_libprep_create_collision():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 400, response
+    assert response.status_code == 400, response.reason
 
 @nose.with_setup(my_setup, my_teardown)
 def test_libprep_create_multiple():
@@ -108,7 +108,7 @@ def test_libprep_create_multiple():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201, response
+    assert response.status_code == 201, response.reason
     libprep = response.json()
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
@@ -117,7 +117,7 @@ def test_libprep_create_multiple():
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201, response
+    assert response.status_code == 201, response.reason
     libprep2 = response.json()
     assert libprep2['projectid'] == PROJECTID
     assert libprep2['sampleid'] == SAMPLEID
@@ -125,7 +125,7 @@ def test_libprep_create_multiple():
     assert libprep['_id'] != libprep2['_id']
     response = session.get(url('libpreps', PROJECTID, SAMPLEID),
                            headers=api_token)
-    assert response.status_code == 200, response
+    assert response.status_code == 200, response.reason
     data = response.json()
     assert 'libpreps' in data
     assert len(data['libpreps']) == 2
