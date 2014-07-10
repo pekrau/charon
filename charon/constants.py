@@ -2,7 +2,7 @@
 
 import re
 
-HIGH_CHAR = unichr(2**16)
+HIGH_CHAR = unichr(2**8)        # Used for string range searches in CouchDB.
 
 IUID_RX = re.compile(r'^[0-9a-z]{32}$')
 ID_RX = re.compile(r'^[a-z][-._a-z0-9]*$', re.IGNORECASE)
