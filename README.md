@@ -60,7 +60,7 @@ The development server is upgraded thus:
 
     $ pip install --upgrade --no-deps git+https://github.com/NationalGenomicsInfrastructure/charon
 
-The Tornado service is controlled by the upstart script `/etc/init/charon`.
+The Tornado service is controlled by the upstart script `/etc/init/charon.conf`.
 
 The Apache server handles the redirect from the domain name to the Tornado
 server which runs on port 8881. See `/etc/httpd/conf/httpd.conf`.

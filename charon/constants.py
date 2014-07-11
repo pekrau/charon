@@ -1,7 +1,6 @@
 " Charon: Various constants."
 
 import re
-import string
 
 # Used for CouchDB ranges.
 # For some incomprehensible reason, using unichr(2**8) does not work?
