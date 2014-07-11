@@ -23,10 +23,10 @@ if __name__ == '__main__':
     import sys
     import argparse
     parser = argparse.ArgumentParser(description='Initialize and load Charon database from dump file')
+    parser.add_argument('--force', action='store_true',
+                        help='force action, rather than ask for confirmation')
     parser.add_argument('filepath', type=str, nargs='?', default=None,
                         help='filepath for YAML settings file')
-    parser.add_argument('--force', dest='force', action='store_true',
-                        help='force action, rather than ask for confirmation')
     args = parser.parse_args()
     
     if not args.force:
