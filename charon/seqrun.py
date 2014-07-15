@@ -49,7 +49,7 @@ class SeqrunSaver(Saver):
 
     fields = [SeqrunidField('seqrunid'),
               SelectField('status', description='The status of the seqrun.',
-                          options=['new', 'ok', 'working', 'done', 'aborted']),
+                          options=['new', 'ok', 'working', 'Done', 'aborted']),
               Field('runid',
                     description='The flowcell+lane identifier.'),
               Field('alignment_status',
