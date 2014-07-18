@@ -49,12 +49,6 @@ class SampleSaver(Saver):
                     description='The secondary analysis status of the sample.'),
               Field('initial_qc',
                     description='Quality status of the received sample.'),
-              Field('library_preparation',
-                    description='Status of the library preparation.'),
-              Field('sequencing',
-                    description='Status of the sequencing.'),
-              Field('demultiplexing',
-                    description='Status of the demultiplexing.')
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):

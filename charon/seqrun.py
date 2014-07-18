@@ -52,8 +52,36 @@ class SeqrunSaver(Saver):
                           options=['new', 'ok', 'working', 'Done', 'aborted']),
               Field('runid',
                     description='The flowcell+lane identifier.'),
-              Field('alignment_status',
-                    description='Status of the alignment of data to the reference genome.'),
+              Field('mean_coverage',
+                    description='Mean coverage'),
+              Field('std_coverage',
+                    description='standard coverage.'),
+              Field('GC_percentage',
+                    description='percentage of G & C'),
+              Field('aligned_bases',
+                    description='Number of aligned bases'),
+              Field('mapped_bases',
+                    description='Number of mapped bases'),
+              Field('mapped_reads',
+                    description='Number of mapped reads'),
+              Field('reads',
+                    description='Number of reads'),
+              Field('sequenced_bases',
+                    description='Number of sequenced bases'),
+              Field('windows',
+                    description='Number of windows'),
+              Field('bam_file',
+                    description='path of the bam file'),
+              Field('output_file',
+                    description='path of the output file'),
+              Field('mean_mapping_quality',
+                    description='mean mapping quality'),
+              Field('bases_number',
+                    description='number of bases'),
+              Field('contigs_number',
+                    description='number of contigs'),
+              Field('mean autosome coverage',
+                    description='mean autosome coverage'),
               RangeFloatField('alignment_coverage', 
                               minimum=0.0,
                               description='The coverage of the reference'
@@ -224,7 +252,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
         else:
             try:
                 with self.saver(rqh=self, libprep=libprep) as saver:
-                    saver.store()
+                    saver.store(data=data)
                     seqrun = saver.doc
             except ValueError, msg:
                 raise tornado.web.HTTPError(400, reason=str(msg))
