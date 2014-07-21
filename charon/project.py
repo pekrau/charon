@@ -64,6 +64,7 @@ class Project(RequestHandler):
     def get(self, projectid):
         "Display the project information."
         project = self.get_project(projectid)
+        projectid=project['projectid']
         samples = self.get_samples(projectid)
         view = self.db.view('libprep/count')
         for sample in samples:
