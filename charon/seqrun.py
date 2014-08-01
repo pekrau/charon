@@ -13,6 +13,7 @@ from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 from .saver import *
 
+from .sample import SampleSaver
 
 class SeqrunidField(Field):
     "The unique integer identifier for the seqrun within the libprep."
@@ -48,8 +49,10 @@ class SeqrunSaver(Saver):
     doctype = constants.SEQRUN
 
     fields = [SeqrunidField('seqrunid'),
-              SelectField('status', description='The status of the seqrun.',
-                          options=['new', 'ok', 'working', 'Done', 'aborted']),
+              SelectField('sequencing_status', description='The status of the sequencing.',
+                          options=['New', 'Working', 'Done', 'Aborted']),
+              SelectField('alignment_status', description='The status of the alignment.',
+                          options=['New', 'Working', 'Done', 'Aborted']),
               Field('runid',
                     description='The flowcell+lane identifier.'),
               Field('seq_qc_flag',
@@ -84,8 +87,10 @@ class SeqrunSaver(Saver):
                     description='number of bases'),
               Field('contigs_number',
                     description='number of contigs'),
-              Field('mean autosome coverage',
+              Field('mean_autosome_coverage',
                     description='mean autosome coverage'),
+              FloatField('lanes',
+                    description='number of lanes'),
               RangeFloatField('alignment_coverage', 
                               minimum=0.0,
                               description='The coverage of the reference'
@@ -235,6 +240,36 @@ class ApiSeqrun(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
+                self.update_sample_cov(projectid,sampleid) 
+                
+    def update_sample_cov(self, projectid, sampleid):
+        """this calculates the total of each mean autosome coverage and updates sample leve.
+        This should be done every time a seqrun is updated/created"""
+        try:
+            seqruns = self.get_seqruns(projectid, sampleid)
+            totalcov=0
+            for seqrun in seqruns:
+                totalcov+=seqrun['mean_autosome_coverage']
+            
+            doc= self.get_sample(projectid, sampleid)
+
+            logging.info(doc)
+            doc['total_autosomal_coverage']=totalcov
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
+        except IOError, msg:
+            self.send_error(409, reason=str(msg))
+        else:
+            try:
+                with SampleSaver(doc=doc, rqh=self) as saver:
+                    saver.store(data=doc)#failing to provide data will end up in an empty record.
+            except ValueError, msg:
+                self.send_error(400, reason=str(msg))
+            except IOError, msg:
+                self.send_error(409, reason=str(msg))
+            else:
+                self.set_status(204)
+
 
 
 class ApiSeqrunCreate(ApiRequestHandler):
@@ -268,10 +303,43 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                        sampleid,
                                        libprepid,
                                        seqrun['seqrunid'])
+                self.update_sample_cov(projectid, sampleid)
                 self.set_header('Location', url)
                 self.set_status(201)
                 self.add_seqrun_links(seqrun)
                 self.write(seqrun)
+
+                
+    def update_sample_cov(self, projectid, sampleid):
+        """this calculates the total of each mean autosome coverage and updates sample leve.
+        This should be done every time a seqrun is updated/created"""
+            
+        try:
+            seqruns = self.get_seqruns(projectid, sampleid)
+            totalcov=0
+            for seqrun in seqruns:
+                totalcov+=seqrun['mean_autosome_coverage']
+            
+            doc= self.get_sample(projectid, sampleid)
+
+            logging.info(doc)
+            doc['total_autosomal_coverage']=totalcov
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
+        except IOError, msg:
+            self.send_error(409, reason=str(msg))
+        else:
+            try:
+                with SampleSaver(doc=doc, rqh=self) as saver:
+                    saver.store(data=doc)#failing to provide data will end up in an empty record.
+            except ValueError, msg:
+                self.send_error(400, reason=str(msg))
+            except IOError, msg:
+                self.send_error(409, reason=str(msg))
+            else:
+                self.set_status(201)
+
+
 
 
 class ApiProjectSeqruns(ApiRequestHandler):

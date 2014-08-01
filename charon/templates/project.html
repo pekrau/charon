@@ -74,6 +74,7 @@ Project {{ project['projectid'] }}
 	  <th># libpreps</th>
 	  <th># seqruns</th>
 	  <th>Modified</th>
+	  <th>total autosomal coverage</th>
 	</tr>
 
 	{% if samples %}
@@ -88,6 +89,7 @@ Project {{ project['projectid'] }}
 	  <td class="number">{{ sample['libpreps_count'] }}</td>
 	  <td class="number">{{ sample['seqruns_count'] }}</td>
 	  <td class="localtime">{{ sample['modified'] }}</td>
+	  <td >{{ sample['total_autosomal_coverage'] }}</td>
 	  <td>
 	    <form action="{{ reverse_url('sample_edit', sample['projectid'], sample['sampleid']) }}">
 	      {% module Submit('edit', slim=True) %}

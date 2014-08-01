@@ -84,7 +84,7 @@ Libprep
 	  <th>Status</th>
 	  <th>Run ID</th>
 	  <th>Alignment status</th>
-	  <th>Alignment coverage</th>
+	  <th>Mean autosome coverage</th>
 	</tr>
 
 	{% if seqruns %}
@@ -99,7 +99,7 @@ Libprep
 	  <td>{{ seqrun.get('runid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
 	  <td class="number">
-	    {{ seqrun.get('alignment_coverage') or '0.0' }}
+	    {{ seqrun.get('mean_autosome_coverage') or '0.0' }}
 	  </td>
 	  <td>
 	    <form action="{{ reverse_url('seqrun_edit', seqrun['projectid'], seqrun['sampleid'], seqrun['libprepid'], seqrun['seqrunid']) }}">
