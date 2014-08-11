@@ -249,7 +249,8 @@ class ApiSeqrun(ApiRequestHandler):
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
             for seqrun in seqruns:
-                totalcov+=seqrun['mean_autosome_coverage']
+                if seqrun['mean_autosome_coverage']:
+                    totalcov+=float(seqrun['mean_autosome_coverage'])
             
             doc= self.get_sample(projectid, sampleid)
 
@@ -318,7 +319,8 @@ class ApiSeqrunCreate(ApiRequestHandler):
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
             for seqrun in seqruns:
-                totalcov+=seqrun['mean_autosome_coverage']
+                if seqrun['mean_autosome_coverage']:
+                    totalcov+=float(seqrun['mean_autosome_coverage'])
             
             doc= self.get_sample(projectid, sampleid)
 
