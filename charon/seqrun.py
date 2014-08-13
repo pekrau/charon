@@ -50,9 +50,9 @@ class SeqrunSaver(Saver):
 
     fields = [SeqrunidField('seqrunid'),
               SelectField('sequencing_status', description='The status of the sequencing.',
-                          options=BASE_STATUS),
+                          options=constants.BASE_STATUS),
               SelectField('alignment_status', description='The status of the alignment.',
-                          options=BASE_STATUS),
+                          options=constants.BASE_STATUS),
               Field('runid',
                     description='The flowcell+lane identifier.'),
               Field('seq_qc_flag',
