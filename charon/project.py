@@ -46,12 +46,13 @@ class ProjectSaver(Saver):
     fields = [ProjectidField('projectid', title='Identifier'),
               ProjectnameField('name'),
               SelectField('status', description='The status of the project.',
-                          options=['new', 'open', 'closed', 'aborted']),
+                          options=PROJECT_STATUS),
               Field('pipeline',
                     description='Pipeline to use for project data analysis.'),
               Field('best_practice_analysis',
                     title='Best-practice analysis',
                     description='Status of best-practice analysis.'),
+              SelectField('sequencing_facility', description='The location of the samples', options=['NGI-S', 'NGI-U'])
               ]
 
 
