@@ -16,11 +16,6 @@ import charon
 from . import constants
 from . import settings
 
-BASE_STATUS=['NEW', 'RUNNING', 'DONE', 'FAILED']
-EXTENDED_STATUS=['NEW', 'RUNNING', 'DONE', 'COMPUTATION_FAILED', 'DATA_FAILED']
-GENO_STATUS=['ARRIVED', 'PROCESSED']
-PROJECT_STATUS=['NEW', 'OPEN', 'CLOSED', 'ABORTED']
-
 def load_settings(filepath=None):
     """Load and return the settings from the given settings file,
     or from the first existing file in a predefined list of filepaths.
