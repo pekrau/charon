@@ -23,6 +23,7 @@ class ApiRequestHandler(RequestHandler):
         super(ApiRequestHandler, self).prepare()
         self.check_api_access()
 
+    
     def check_api_access(self):
         """Check the API token given in the header.
         Return HTTP 401 if invalid or missing key."""

@@ -13,6 +13,7 @@ from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 from .saver import *
 
+from .sample import SampleSaver
 
 class SeqrunidField(Field):
     "The unique integer identifier for the seqrun within the libprep."
@@ -48,12 +49,48 @@ class SeqrunSaver(Saver):
     doctype = constants.SEQRUN
 
     fields = [SeqrunidField('seqrunid'),
-              SelectField('status', description='The status of the seqrun.',
-                          options=['new', 'ok', 'working', 'done', 'aborted']),
+              SelectField('sequencing_status', description='The status of the sequencing.',
+                          options=['New', 'Working', 'Done', 'Aborted']),
+              SelectField('alignment_status', description='The status of the alignment.',
+                          options=['New', 'Working', 'Done', 'Aborted']),
               Field('runid',
                     description='The flowcell+lane identifier.'),
-              Field('alignment_status',
-                    description='Status of the alignment of data to the reference genome.'),
+              Field('seq_qc_flag',
+                    description='QC flag of the sequencing process'),
+              Field('dem_qc_flag',
+                    description='QC flqg of the demultiplex run'),
+              Field('mean_coverage',
+                    description='Mean coverage'),
+              Field('std_coverage',
+                    description='standard coverage.'),
+              Field('GC_percentage',
+                    description='percentage of G & C'),
+              Field('aligned_bases',
+                    description='Number of aligned bases'),
+              Field('mapped_bases',
+                    description='Number of mapped bases'),
+              Field('mapped_reads',
+                    description='Number of mapped reads'),
+              Field('reads',
+                    description='Number of reads'),
+              Field('sequenced_bases',
+                    description='Number of sequenced bases'),
+              Field('windows',
+                    description='Number of windows'),
+              Field('bam_file',
+                    description='path of the bam file'),
+              Field('output_file',
+                    description='path of the output file'),
+              Field('mean_mapping_quality',
+                    description='mean mapping quality'),
+              Field('bases_number',
+                    description='number of bases'),
+              Field('contigs_number',
+                    description='number of contigs'),
+              Field('mean_autosome_coverage',
+                    description='mean autosome coverage'),
+              FloatField('lanes',
+                    description='number of lanes'),
               RangeFloatField('alignment_coverage', 
                               minimum=0.0,
                               description='The coverage of the reference'
@@ -203,6 +240,37 @@ class ApiSeqrun(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
+                self.update_sample_cov(projectid,sampleid) 
+                
+    def update_sample_cov(self, projectid, sampleid):
+        """this calculates the total of each mean autosome coverage and updates sample leve.
+        This should be done every time a seqrun is updated/created"""
+        try:
+            seqruns = self.get_seqruns(projectid, sampleid)
+            totalcov=0
+            for seqrun in seqruns:
+                if seqrun['mean_autosome_coverage']:
+                    totalcov+=float(seqrun['mean_autosome_coverage'])
+            
+            doc= self.get_sample(projectid, sampleid)
+
+            logging.info(doc)
+            doc['total_autosomal_coverage']=totalcov
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
+        except IOError, msg:
+            self.send_error(409, reason=str(msg))
+        else:
+            try:
+                with SampleSaver(doc=doc, rqh=self) as saver:
+                    saver.store(data=doc)#failing to provide data will end up in an empty record.
+            except ValueError, msg:
+                self.send_error(400, reason=str(msg))
+            except IOError, msg:
+                self.send_error(409, reason=str(msg))
+            else:
+                self.set_status(204)
+
 
 
 class ApiSeqrunCreate(ApiRequestHandler):
@@ -224,7 +292,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
         else:
             try:
                 with self.saver(rqh=self, libprep=libprep) as saver:
-                    saver.store()
+                    saver.store(data=data)
                     seqrun = saver.doc
             except ValueError, msg:
                 raise tornado.web.HTTPError(400, reason=str(msg))
@@ -236,10 +304,44 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                        sampleid,
                                        libprepid,
                                        seqrun['seqrunid'])
+                self.update_sample_cov(projectid, sampleid)
                 self.set_header('Location', url)
                 self.set_status(201)
                 self.add_seqrun_links(seqrun)
                 self.write(seqrun)
+
+                
+    def update_sample_cov(self, projectid, sampleid):
+        """this calculates the total of each mean autosome coverage and updates sample leve.
+        This should be done every time a seqrun is updated/created"""
+            
+        try:
+            seqruns = self.get_seqruns(projectid, sampleid)
+            totalcov=0
+            for seqrun in seqruns:
+                if seqrun['mean_autosome_coverage']:
+                    totalcov+=float(seqrun['mean_autosome_coverage'])
+            
+            doc= self.get_sample(projectid, sampleid)
+
+            logging.info(doc)
+            doc['total_autosomal_coverage']=totalcov
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
+        except IOError, msg:
+            self.send_error(409, reason=str(msg))
+        else:
+            try:
+                with SampleSaver(doc=doc, rqh=self) as saver:
+                    saver.store(data=doc)#failing to provide data will end up in an empty record.
+            except ValueError, msg:
+                self.send_error(400, reason=str(msg))
+            except IOError, msg:
+                self.send_error(409, reason=str(msg))
+            else:
+                self.set_status(201)
+
+
 
 
 class ApiProjectSeqruns(ApiRequestHandler):

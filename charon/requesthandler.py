@@ -81,9 +81,15 @@ class RequestHandler(tornado.web.RequestHandler):
         try:
             return self._projects[projectid]
         except KeyError:
-            return self.get_and_cache('project/projectid',
+            try:
+                return self.get_and_cache('project/projectid',
                                       projectid,
                                       self._projects)
+            except tornado.web.HTTPError:
+                return self.get_and_cache('project/name',
+                                      projectid,
+                                      self._projects)
+            
 
     def get_projects(self):
         "Get all projects."

@@ -14,13 +14,14 @@ class Field(object):
     type ='text'
 
     def __init__(self, key, title=None, description=None,
-                 mandatory=False, editable=True):
+                 mandatory=False, editable=True, default=None):
         assert key
         self.key = key
         self.title = title or key.capitalize().replace('_', ' ')
         self.description = description or self.__doc__
         self.mandatory = mandatory             # A non-None value is requried.
         self.editable = editable               # Changeable once set?
+        self.default=default
 
     def store(self, saver, data=None):
         """Check, convert and store the field value.
@@ -31,6 +32,8 @@ class Field(object):
             value = self.process(saver, value)
         except ValueError, msg:
             raise ValueError("field '{0}': {1}".format(self.key, msg))
+        if self.default is not None and value is None:
+            value=self.default
         if value == saver.doc.get(self.key):
             logging.debug("Field.store: '%s' value equal", self.key)
             return
