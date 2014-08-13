@@ -16,7 +16,6 @@ import charon
 from . import constants
 from . import settings
 
-
 def load_settings(filepath=None):
     """Load and return the settings from the given settings file,
     or from the first existing file in a predefined list of filepaths.

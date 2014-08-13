@@ -81,7 +81,7 @@ Libprep
       <table class="list">
 	<tr class="list">
 	  <th>Identifier</th>
-	  <th>Status</th>
+	  <th>Sequencing Status</th>
 	  <th>Run ID</th>
 	  <th>Alignment status</th>
 	  <th>Mean autosome coverage</th>
@@ -95,7 +95,7 @@ Libprep
 	      {{ seqrun['seqrunid'] }}
 	    </a>
 	  </td>
-	  <td>{{ seqrun.get('status') or '-' }}</td>
+	  <td>{{ seqrun.get('sequencing_status') or '-' }}</td>
 	  <td>{{ seqrun.get('runid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
 	  <td class="number">
