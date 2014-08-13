@@ -46,7 +46,7 @@ class ProjectSaver(Saver):
     fields = [ProjectidField('projectid', title='Identifier'),
               ProjectnameField('name'),
               SelectField('status', description='The status of the project.',
-                          options=PROJECT_STATUS),
+                          options=constants.PROJECT_STATUS),
               Field('pipeline',
                     description='Pipeline to use for project data analysis.'),
               Field('best_practice_analysis',
