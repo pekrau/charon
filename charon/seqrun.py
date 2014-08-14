@@ -58,7 +58,7 @@ class SeqrunSaver(Saver):
                     description='Number of mapped bases'),
               Field('mapped_reads',
                     description='Number of mapped reads'),
-              Field('reads',
+              FloatField('reads',
                     description='Number of reads'),
               Field('sequenced_bases',
                     description='Number of sequenced bases'),
@@ -231,18 +231,23 @@ class ApiSeqrun(ApiRequestHandler):
                 
     def update_sample_cov(self, projectid, sampleid):
         """this calculates the total of each mean autosome coverage and updates sample leve.
-        This should be done every time a seqrun is updated/created"""
+        This should be done every time a seqrun is updated/created
+        This also updated total_sequenced_reads"""
         try:
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
+            totalreads=0
             for seqrun in seqruns:
-                if seqrun['mean_autosome_coverage']:
+                if seqrun.get('mean_autosome_coverage'):
                     totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun.get('reads'):
+                    totalreads+=float(seqrun['reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
             logging.info(doc)
             doc['total_autosomal_coverage']=totalcov
+            doc['total_sequenced_reads']=totalreads
         except Exception, msg:
             self.send_error(400, reason=str(msg))
         except IOError, msg:
@@ -252,7 +257,7 @@ class ApiSeqrun(ApiRequestHandler):
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
             except ValueError, msg:
-                self.send_error(400, reason=str(msg))
+                self.send_error(400, reason=str("failed to update sample "+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
@@ -305,14 +310,17 @@ class ApiSeqrunCreate(ApiRequestHandler):
         try:
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
+            totalreads=0
             for seqrun in seqruns:
                 if seqrun['mean_autosome_coverage']:
                     totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun['reads']:
+                    totalreads+=float(seqrun['reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
-            logging.info(doc)
             doc['total_autosomal_coverage']=totalcov
+            doc['total_sequenced_reads']=totalreads
         except Exception, msg:
             self.send_error(400, reason=str(msg))
         except IOError, msg:
@@ -322,7 +330,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
             except ValueError, msg:
-                self.send_error(400, reason=str(msg))
+                self.send_error(400, reason=str("failed to update sample"+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
