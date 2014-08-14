@@ -98,7 +98,7 @@ def test_project_modify_status_field():
     assert response.status_code == 200, response
     olddata = response.json()
     assert olddata.get('status') != 'open'
-    data = dict(status='open')
+    data = dict(status='OPEN')
     response = session.put(url('project', PROJECTID),
                            data=json.dumps(data),
                            headers=api_token)
@@ -107,7 +107,7 @@ def test_project_modify_status_field():
     assert response.status_code == 200, response
     newdata = response.json()
     assert newdata['_rev'] != olddata['_rev'], 'new document revision'
-    assert newdata.get('status') == 'open', 'status must have been updated'
+    assert newdata.get('status') == 'OPEN', 'status must have been updated'
     data = dict(status='no-such-status-value')
     response = session.put(url('project', PROJECTID),
                            data=json.dumps(data),
