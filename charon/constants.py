@@ -9,6 +9,7 @@ HIGH_CHAR = 'ZZZZZZZZ'
 
 IUID_RX = re.compile(r'^[0-9a-z]{32}$')
 ID_RX = re.compile(r'^[a-z][-._a-z0-9]*$', re.IGNORECASE)
+RID_RX= re.compile(r'^[-._a-z0-9]*$', re.IGNORECASE)
 
 # Tornado server
 USER_COOKIE_NAME = 'charon_user'

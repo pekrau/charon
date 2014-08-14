@@ -19,6 +19,7 @@ if not BASE_URL: raise ValueError('no base URL')
 PROJECTID = 'P0'
 SAMPLEID = 'S1'
 LIBPREPID = 'A'
+SEQRUNID='1337_WORLD'
 
 api_token = {'X-Charon-API-token': API_TOKEN}
 session = requests.Session()
@@ -45,44 +46,44 @@ def my_teardown():
 @nose.with_setup(my_setup, my_teardown)
 def test_create_seqrun():
     "Create a seqrun in a libprep and manipulate it."
-    data = dict(status='initialized')
+    data = dict(sequencing_status='NEW', mean_autosome_coverage='0', seqrunid=SEQRUNID)
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201, response
+    assert response.status_code == 201, response.reason
     data = response.json()
     assert data['projectid'] == PROJECTID
     assert data['sampleid'] == SAMPLEID
     assert data['libprepid'] == LIBPREPID
-    assert data['seqrunid'] == 1, repr(data['seqrunid'])
-    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    assert data['seqrunid'] == SEQRUNID, repr(data['seqrunid'])
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            headers=api_token)
     assert response.status_code == 200, response
     assert data == response.json()
-    data = dict(status='done',
-                alignment_status='started',
+    data = dict(status='DONE',
+                alignment_status='RUNNING',
                 runid='123_xyz_qwerty')
-    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            data=json.dumps(data),
                            headers=api_token)
     assert response.status_code == 204, response
-    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            headers=api_token)
     newdata = response.json()
     assert data['runid'] == newdata['runid']
-    data = dict(status='done',
-                alignment_status='done',
+    data = dict(status='DONE',
+                alignment_status='DONE',
                 alignment_coverage=1.0)
-    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            data=json.dumps(data),
                            headers=api_token)
     assert response.status_code == 204, response
-    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            headers=api_token)
     newdata = response.json()
     assert data['alignment_coverage'] == newdata['alignment_coverage']
     data = dict(alignment_coverage=-1.0)
-    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, 1),
+    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            data=json.dumps(data),
                            headers=api_token)
     assert response.status_code == 400, response

@@ -15,32 +15,45 @@ from .saver import *
 
 from .sample import SampleSaver
 
-class SeqrunidField(Field):
-    "The unique integer identifier for the seqrun within the libprep."
+class SeqrunidField(IdField):
+    "The unique identifier for the seqrun within the project."
 
-    def __init__(self, key):
-        super(SeqrunidField, self).__init__(key,
-                                            mandatory=True,
-                                            editable=False)
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        if not constants.RID_RX.match(value):
+            raise ValueError('invalid identifier value (disallowed characters)')
+        key = saver.libprep['libprepid']+ value
+        view = saver.db.view('seqrun/seqrunid')
+        if len(list(view[key])) > 0:
+            raise ValueError('not unique')
 
-    def get(self, saver, data=None):
-        "Compute the value from the number of existing seqruns."
-        key = [saver['projectid'], saver['sampleid'], saver['libprepid']]
-        view = saver.db.view('seqrun/count')
-        try:
-            row = view[key].rows[0]
-        except IndexError:
-            return 1
-        else:
-            return row.value + 1
 
-    def html_create(self, entity=None):
-        "Return the field HTML input field for a create form."
-        return '[autoassigned]'
-
-    def html_edit(self, entity):
-        "Return the field HTML input field for an edit form."
-        return entity.get(self.key) or '-'
+#class SeqrunidField(Field):
+#    "The unique integer identifier for the seqrun within the libprep."
+#
+#    def __init__(self, key):
+#        super(SeqrunidField, self).__init__(key,
+#                                            mandatory=True,
+#                                            editable=False)
+#
+#    def get(self, saver, data=None):
+#        "Compute the value from the number of existing seqruns."
+#        key = [saver['projectid'], saver['sampleid'], saver['libprepid']]
+#        view = saver.db.view('seqrun/count')
+#        try:
+#            row = view[key].rows[0]
+#        except IndexError:
+#            return 1
+#        else:
+#            return row.value + 1
+#
+#    def html_create(self, entity=None):
+#        "Return the field HTML input field for a create form."
+#        return '[autoassigned]'
+#
+#    def html_edit(self, entity):
+#        "Return the field HTML input field for an edit form."
+#        return entity.get(self.key) or '-'
 
 
 class SeqrunSaver(Saver):

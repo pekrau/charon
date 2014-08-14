@@ -154,7 +154,6 @@ class RequestHandler(tornado.web.RequestHandler):
         """Get the libprep by the projectid, sampleid, libprepid and seqrunid.
         Raise HTTP 404 if no such seqrun."""
         try:
-            seqrunid = int(seqrunid)
             key = (projectid, sampleid, libprepid, seqrunid)
             return self._seqruns[key]
         except (ValueError, KeyError):
@@ -164,11 +163,11 @@ class RequestHandler(tornado.web.RequestHandler):
         """Get the seqruns for the libprep if libprepid given.
         For the entire sample if no libprepid.
         For the entire project if no sampleid."""
-        startkey = (projectid, sampleid, libprepid, 0)
+        startkey = (projectid, sampleid, libprepid, '')
         endkey = (projectid,
                   sampleid or constants.HIGH_CHAR,
                   libprepid or constants.HIGH_CHAR,
-                  1000000)
+                  constants.HIGH_CHAR)
         return [self.get_seqrun(*r.key) for r in
                 self.db.view('seqrun/seqrunid')[startkey:endkey]]
 
