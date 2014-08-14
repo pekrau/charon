@@ -232,3 +232,24 @@ class ApiSamples(ApiRequestHandler):
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
+
+
+class ApiSamplesNotDone(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    def get(self):
+        "Return a list of all undone samples."
+        samples= self.get_not_done_samples()
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
+
+class ApiSamplesNotDonePerProject(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    def get(self, projectid):
+        "Return a list of all undone samples."
+        samples= self.get_not_done_samples(projectid)
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
