@@ -182,6 +182,7 @@ class RequestHandler(tornado.web.RequestHandler):
             self._cache[item['_id']] = item
             return item
         else:
+            logging.error("{0} elements for key {1} ".format(len(rows), key))
             raise tornado.web.HTTPError(404, reason='no such item')
 
     def get_logs(self, id):

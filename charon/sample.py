@@ -47,6 +47,8 @@ class SampleSaver(Saver):
                     description='Quality status of the received sample.'),
               FloatField('total_autosomal_coverage',
                     description='Total of every autosomal coverage for each seqrun in each libprep.'),
+              FloatField('total_sequenced_reads',
+                    description='Total of all for each seqrun in each libprep.'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):
