@@ -36,7 +36,7 @@
 	{{ project['projectid'] }}
       </a>
     </td>
-    <td>{{ project['name'] }}</td>
+    <td>{{ project.get('name') or '-' }}</td>
     <td class="localtime">{{ project['modified'] }}</td>
   </tr>
   {% end %}
