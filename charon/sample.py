@@ -283,6 +283,11 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
 
         for sample in allsamples:
             try:
+                if not sample.get(data['sampleField']):
+                    #if the field in not in the db, just skip the doc
+                    continue
+                if type(sample.get(data['sampleField'])).__name__ != data['type']:
+                    raise TypeError('Given type does not match database type')
                 if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
                 #if eval(query):
                     samples.append(sample)
