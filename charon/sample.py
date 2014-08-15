@@ -257,7 +257,7 @@ class ApiSamplesNotDonePerProject(ApiRequestHandler):
 class ApiSamplesCustomQuery(ApiRequestHandler):
     """Access to all samples that match the given query. The query MUST be a dictionnary with
     the following keys : projectid, sampleField, operator, value, type.
-    ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'int'}"""
+    ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'float'}"""
 
     def get(self):
         "Return a list of all samples matching the query."
@@ -287,7 +287,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
                     #if the field in not in the db, just skip the doc
                     continue
                 if type(sample.get(data['sampleField'])).__name__ != data['type']:
-                    raise TypeError('Given type does not match database type')
+                    raise TypeError('Given type does not match database type {0}'.format(type(sample.get(data['sampleField'])).__name__))
                 if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
                 #if eval(query):
                     samples.append(sample)
