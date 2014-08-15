@@ -90,6 +90,23 @@ class RequestHandler(tornado.web.RequestHandler):
                                       projectid,
                                       self._projects)
             
+    def get_not_done_projects(self):
+        "Get projects that are not done."
+        all = [r.value for r in
+               self.db.view('project/not_done')]
+        return all
+
+    def get_not_done_samples(self, projectid=None):
+        "Get samples that are not done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/not_done') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/not_done')]
+
+        return all
+
 
     def get_projects(self):
         "Get all projects."
