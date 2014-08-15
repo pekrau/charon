@@ -257,7 +257,7 @@ class ApiSamplesNotDonePerProject(ApiRequestHandler):
 class ApiSamplesCustomQuery(ApiRequestHandler):
     """Access to all samples that match the given query. The query MUST be a dictionnary with
     the following keys : projectid, sampleField, operator, value, type.
-    ex : {'projectid':'P1711', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'int'}"""
+    ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'int'}"""
 
     def get(self):
         "Return a list of all samples matching the query."
@@ -283,8 +283,8 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
 
         for sample in allsamples:
             try:
-                #if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
-                if eval(query):
+                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
+                #if eval(query):
                     samples.append(sample)
             except Exception, msg:
                 self.send_error(400, reason=str(msg))
