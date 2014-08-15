@@ -91,6 +91,7 @@ handlers = \
      URL(r'/api/v1/projectsnotclosed', ApiProjectsNotDone, name='projects_not_done'),
      URL(r'/api/v1/samplesnotdone', ApiSamplesNotDone, name='samples_not_done'),
      URL(r'/api/v1/samplesnotdone/(?P<projectid>[^/]+)', ApiSamplesNotDonePerProject, name='samples_not_done'),
+     URL(r'/api/v1/customquery', ApiSamplesCustomQuery, name='custom_query'),
      ]
 
 

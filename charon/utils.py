@@ -176,8 +176,6 @@ def delete_libprep(db, libprep):
                 libprep['libprepid'], '')
     endkey = (libprep['projectid'], libprep['sampleid'],
               libprep['libprepid'], constants.HIGH_CHAR)
-    print startkey
-    print endkey
     view = db.view('seqrun/seqrunid', include_docs=True)
     seqruns = [r.doc for r in view[startkey:endkey]]
     for seqrun in seqruns:

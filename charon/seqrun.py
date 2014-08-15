@@ -59,7 +59,7 @@ class SeqrunSaver(Saver):
               Field('mapped_reads',
                     description='Number of mapped reads'),
               FloatField('reads',
-                    description='Number of reads'),
+                    description='Number of reads. Cannot be None, Must be at least 0'),
               Field('sequenced_bases',
                     description='Number of sequenced bases'),
               Field('windows',
@@ -74,14 +74,14 @@ class SeqrunSaver(Saver):
                     description='number of bases'),
               Field('contigs_number',
                     description='number of contigs'),
-              Field('mean_autosome_coverage',
-                    description='mean autosome coverage'),
+              Field('mean_autosomal_coverage',
+                    description='mean autosomal coverage'),
               FloatField('lanes',
                     description='number of lanes'),
               RangeFloatField('alignment_coverage', 
                               minimum=0.0,
                               description='The coverage of the reference'
-                              ' genome, in percent.'),
+                              ' genome, in percent. Cannot be None, Must be at least 0'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, libprep=None):
@@ -230,7 +230,7 @@ class ApiSeqrun(ApiRequestHandler):
                 self.update_sample_cov(projectid,sampleid) 
                 
     def update_sample_cov(self, projectid, sampleid):
-        """this calculates the total of each mean autosome coverage and updates sample leve.
+        """this calculates the total of each mean autosomalcoverage and updates sample leve.
         This should be done every time a seqrun is updated/created
         This also updated total_sequenced_reads"""
         try:
@@ -238,8 +238,8 @@ class ApiSeqrun(ApiRequestHandler):
             totalcov=0
             totalreads=0
             for seqrun in seqruns:
-                if seqrun.get('mean_autosome_coverage'):
-                    totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun.get('mean_autosomal_coverage'):
+                    totalcov+=float(seqrun['mean_autosomal_coverage'])
                 if seqrun.get('reads'):
                     totalreads+=float(seqrun['reads'])
             
@@ -249,7 +249,7 @@ class ApiSeqrun(ApiRequestHandler):
             doc['total_autosomal_coverage']=totalcov
             doc['total_sequenced_reads']=totalreads
         except Exception, msg:
-            self.send_error(400, reason=str(msg))
+            self.send_error(400, reason=str("Failed to update total_autosomal_coverage and total_sequenced_reads. Check that the reads field and the mean_autosomal_coverage field are not set to None"+msg))
         except IOError, msg:
             self.send_error(409, reason=str(msg))
         else:
@@ -304,7 +304,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
 
                 
     def update_sample_cov(self, projectid, sampleid):
-        """this calculates the total of each mean autosome coverage and updates sample leve.
+        """this calculates the total of each mean autosomal coverage and updates sample leve.
         This should be done every time a seqrun is updated/created"""
             
         try:
@@ -312,8 +312,8 @@ class ApiSeqrunCreate(ApiRequestHandler):
             totalcov=0
             totalreads=0
             for seqrun in seqruns:
-                if seqrun['mean_autosome_coverage']:
-                    totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun['mean_autosomal_coverage']:
+                    totalcov+=float(seqrun['mean_autosomal_coverage'])
                 if seqrun['reads']:
                     totalreads+=float(seqrun['reads'])
             
@@ -330,7 +330,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
             except ValueError, msg:
-                self.send_error(400, reason=str("failed to update sample"+msg))
+                self.send_error(400, reason=str("Failed to update total_autosomal_coverage and total_sequenced_reads. Check that the reads field and the mean_autosomal_coverage field are not set to None"+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
