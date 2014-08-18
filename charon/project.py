@@ -242,13 +242,22 @@ class ApiProjectCreate(ApiRequestHandler):
                 self.add_project_links(project)
                 self.write(project)
 
-
 class ApiProjects(ApiRequestHandler):
     "Access to all projects."
-
     def get(self):
         "Return a list of all projects."
         projects = self.get_projects()
+        for project in projects:
+            self.add_project_links(project)
+        self.write(dict(projects=projects))
+
+
+class ApiProjectsNotDone(ApiRequestHandler):
+    "Access to all projects that are not done."
+
+    def get(self):
+        "Return a list of all undone projects."
+        projects = self.get_not_done_projects()
         for project in projects:
             self.add_project_links(project)
         self.write(dict(projects=projects))

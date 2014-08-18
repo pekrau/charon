@@ -47,17 +47,17 @@ def test_sample_create():
 @nose.with_setup(my_setup, my_teardown)
 def test_sample_modify():
     "Create and modify a sample."
-    data = dict(sampleid=SAMPLEID, status='new')
+    data = dict(sampleid=SAMPLEID, status='NEW')
     response = session.post(url('sample', PROJECTID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201
+    assert response.status_code == 201, response.reason
     sample = response.json()
     assert sample['projectid'] == PROJECTID
     assert sample['sampleid'] == SAMPLEID
-    assert sample['status'] == 'new'
+    assert sample['status'] == 'NEW'
     sample_url = BASE_URL.rstrip('/') + response.headers['location']
-    data = dict(status='aborted')
+    data = dict(status='DATA_FAILED')
     response = session.put(sample_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -65,7 +65,7 @@ def test_sample_modify():
     response = session.get(sample_url, headers=api_token)
     assert response.status_code == 200, response
     sample = response.json()
-    assert sample['status'] == 'aborted'
+    assert sample['status'] == 'DATA_FAILED'
     data = dict(status='no-such-value')
     response = session.put(sample_url,
                            data=json.dumps(data),

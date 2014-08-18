@@ -41,7 +41,7 @@ def my_teardown():
 @nose.with_setup(my_setup, my_teardown)
 def test_libprep_create():
     "Create a libprep."
-    data = dict(libprepid=LIBPREPID)
+    data = dict(libprepid=LIBPREPID, status="NEW")
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
@@ -55,7 +55,7 @@ def test_libprep_create():
 def test_libprep_modify():
     "Create and modify a libprep."
     # Create the libprep, with status 'new'
-    data = dict(libprepid=LIBPREPID, status='new')
+    data = dict(libprepid=LIBPREPID, status='NEW')
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
@@ -64,10 +64,10 @@ def test_libprep_modify():
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
-    assert libprep['status'] == 'new'
+    assert libprep['status'] == 'NEW'
     libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     # Modify the libprep, setting status to 'aborted'
-    data = dict(status='aborted')
+    data = dict(status='FAILED')
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -75,7 +75,7 @@ def test_libprep_modify():
     response = session.get(libprep_url, headers=api_token)
     assert response.status_code == 200, response.reason
     libprep = response.json()
-    assert libprep['status'] == 'aborted'
+    assert libprep['status'] == 'FAILED'
     # Try setting an invalid status
     data = dict(status='no-such-status')
     response = session.put(libprep_url,

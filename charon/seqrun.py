@@ -15,32 +15,19 @@ from .saver import *
 
 from .sample import SampleSaver
 
-class SeqrunidField(Field):
-    "The unique integer identifier for the seqrun within the libprep."
+class SeqrunidField(IdField):
+    "The unique identifier for the seqrun within the project."
 
-    def __init__(self, key):
-        super(SeqrunidField, self).__init__(key,
-                                            mandatory=True,
-                                            editable=False)
+    def check_valid(self, saver, value):
+        "Also check uniqueness."
+        if not constants.RID_RX.match(value):
+            raise ValueError('invalid identifier value (disallowed characters)')
+        key = saver.libprep['libprepid']+ value
+        view = saver.db.view('seqrun/seqrunid')
+        if len(list(view[key])) > 0:
+            raise ValueError('not unique')
 
-    def get(self, saver, data=None):
-        "Compute the value from the number of existing seqruns."
-        key = [saver['projectid'], saver['sampleid'], saver['libprepid']]
-        view = saver.db.view('seqrun/count')
-        try:
-            row = view[key].rows[0]
-        except IndexError:
-            return 1
-        else:
-            return row.value + 1
 
-    def html_create(self, entity=None):
-        "Return the field HTML input field for a create form."
-        return '[autoassigned]'
-
-    def html_edit(self, entity):
-        "Return the field HTML input field for an edit form."
-        return entity.get(self.key) or '-'
 
 
 class SeqrunSaver(Saver):
@@ -71,8 +58,8 @@ class SeqrunSaver(Saver):
                     description='Number of mapped bases'),
               Field('mapped_reads',
                     description='Number of mapped reads'),
-              Field('reads',
-                    description='Number of reads'),
+              FloatField('reads',
+                    description='Number of reads. Cannot be None, Must be at least 0'),
               Field('sequenced_bases',
                     description='Number of sequenced bases'),
               Field('windows',
@@ -87,14 +74,14 @@ class SeqrunSaver(Saver):
                     description='number of bases'),
               Field('contigs_number',
                     description='number of contigs'),
-              Field('mean_autosome_coverage',
-                    description='mean autosome coverage'),
+              Field('mean_autosomal_coverage',
+                    description='mean autosomal coverage'),
               FloatField('lanes',
                     description='number of lanes'),
               RangeFloatField('alignment_coverage', 
                               minimum=0.0,
                               description='The coverage of the reference'
-                              ' genome, in percent.'),
+                              ' genome, in percent. Cannot be None, Must be at least 0'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, libprep=None):
@@ -243,21 +230,26 @@ class ApiSeqrun(ApiRequestHandler):
                 self.update_sample_cov(projectid,sampleid) 
                 
     def update_sample_cov(self, projectid, sampleid):
-        """this calculates the total of each mean autosome coverage and updates sample leve.
-        This should be done every time a seqrun is updated/created"""
+        """this calculates the total of each mean autosomalcoverage and updates sample leve.
+        This should be done every time a seqrun is updated/created
+        This also updated total_sequenced_reads"""
         try:
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
+            totalreads=0
             for seqrun in seqruns:
-                if seqrun['mean_autosome_coverage']:
-                    totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun.get('mean_autosomal_coverage'):
+                    totalcov+=float(seqrun['mean_autosomal_coverage'])
+                if seqrun.get('reads'):
+                    totalreads+=float(seqrun['reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
             logging.info(doc)
             doc['total_autosomal_coverage']=totalcov
+            doc['total_sequenced_reads']=totalreads
         except Exception, msg:
-            self.send_error(400, reason=str(msg))
+            self.send_error(400, reason=str("Failed to update total_autosomal_coverage and total_sequenced_reads. Check that the reads field and the mean_autosomal_coverage field are not set to None"+msg))
         except IOError, msg:
             self.send_error(409, reason=str(msg))
         else:
@@ -265,7 +257,7 @@ class ApiSeqrun(ApiRequestHandler):
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
             except ValueError, msg:
-                self.send_error(400, reason=str(msg))
+                self.send_error(400, reason=str("failed to update sample "+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:
@@ -312,20 +304,23 @@ class ApiSeqrunCreate(ApiRequestHandler):
 
                 
     def update_sample_cov(self, projectid, sampleid):
-        """this calculates the total of each mean autosome coverage and updates sample leve.
+        """this calculates the total of each mean autosomal coverage and updates sample leve.
         This should be done every time a seqrun is updated/created"""
             
         try:
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0
+            totalreads=0
             for seqrun in seqruns:
-                if seqrun['mean_autosome_coverage']:
-                    totalcov+=float(seqrun['mean_autosome_coverage'])
+                if seqrun['mean_autosomal_coverage']:
+                    totalcov+=float(seqrun['mean_autosomal_coverage'])
+                if seqrun['reads']:
+                    totalreads+=float(seqrun['reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
-            logging.info(doc)
             doc['total_autosomal_coverage']=totalcov
+            doc['total_sequenced_reads']=totalreads
         except Exception, msg:
             self.send_error(400, reason=str(msg))
         except IOError, msg:
@@ -335,7 +330,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
             except ValueError, msg:
-                self.send_error(400, reason=str(msg))
+                self.send_error(400, reason=str("Failed to update total_autosomal_coverage and total_sequenced_reads. Check that the reads field and the mean_autosomal_coverage field are not set to None"+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
             else:

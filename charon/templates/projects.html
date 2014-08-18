@@ -38,7 +38,7 @@ Projects
 	{{ project['projectid'] }}
       </a>
     </td>
-    <td>{{ project['name'] }}</td>
+    <td>{{ project.get('name') or '-' }}</td>
     <td>{{ project.get('status') or '-' }}</td>
     <td class="number">{{ project['sample_count'] }}</td>
     <td class="number">{{ project['libprep_count'] }}</td>

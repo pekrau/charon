@@ -90,6 +90,23 @@ class RequestHandler(tornado.web.RequestHandler):
                                       projectid,
                                       self._projects)
             
+    def get_not_done_projects(self):
+        "Get projects that are not done."
+        all = [r.value for r in
+               self.db.view('project/not_done')]
+        return all
+
+    def get_not_done_samples(self, projectid=None):
+        "Get samples that are not done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/not_done') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/not_done')]
+
+        return all
+
 
     def get_projects(self):
         "Get all projects."
@@ -154,7 +171,6 @@ class RequestHandler(tornado.web.RequestHandler):
         """Get the libprep by the projectid, sampleid, libprepid and seqrunid.
         Raise HTTP 404 if no such seqrun."""
         try:
-            seqrunid = int(seqrunid)
             key = (projectid, sampleid, libprepid, seqrunid)
             return self._seqruns[key]
         except (ValueError, KeyError):
@@ -164,11 +180,11 @@ class RequestHandler(tornado.web.RequestHandler):
         """Get the seqruns for the libprep if libprepid given.
         For the entire sample if no libprepid.
         For the entire project if no sampleid."""
-        startkey = (projectid, sampleid, libprepid, 0)
+        startkey = (projectid, sampleid, libprepid, '')
         endkey = (projectid,
                   sampleid or constants.HIGH_CHAR,
                   libprepid or constants.HIGH_CHAR,
-                  1000000)
+                  constants.HIGH_CHAR)
         return [self.get_seqrun(*r.key) for r in
                 self.db.view('seqrun/seqrunid')[startkey:endkey]]
 
@@ -183,6 +199,7 @@ class RequestHandler(tornado.web.RequestHandler):
             self._cache[item['_id']] = item
             return item
         else:
+            logging.error("{0} elements for key {1} ".format(len(rows), key))
             raise tornado.web.HTTPError(404, reason='no such item')
 
     def get_logs(self, id):

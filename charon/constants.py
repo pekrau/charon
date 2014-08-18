@@ -9,6 +9,7 @@ HIGH_CHAR = 'ZZZZZZZZ'
 
 IUID_RX = re.compile(r'^[0-9a-z]{32}$')
 ID_RX = re.compile(r'^[a-z][-._a-z0-9]*$', re.IGNORECASE)
+RID_RX= re.compile(r'^[-._a-z0-9]*$', re.IGNORECASE)
 
 # Tornado server
 USER_COOKIE_NAME = 'charon_user'
@@ -32,8 +33,8 @@ APPROVED = 'approved'
 ACTIVE   = 'active'
 BLOCKED  = 'blocked'
 BASE_STATUS=['NEW', 'RUNNING', 'DONE', 'FAILED']
-EXTENDED_STATUS=['NEW', 'RUNNING', 'DONE', 'COMPUTATION_FAILED', 'DATA_FAILED']
+EXTENDED_STATUS=['NEW', 'RUNNING', 'DONE', 'COMPUTATION_FAILED', 'DATA_FAILED', 'IGNORE']
 GENO_STATUS=['ARRIVED', 'PROCESSED']
-PROJECT_STATUS=['NEW', 'OPEN', 'CLOSED', 'ABORTED']
+PROJECT_STATUS=['NEW', 'OPEN', 'SEQUENCED', 'CLOSED', 'ABORTED']
 
 

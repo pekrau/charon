@@ -47,6 +47,8 @@ class SampleSaver(Saver):
                     description='Quality status of the received sample.'),
               FloatField('total_autosomal_coverage',
                     description='Total of every autosomal coverage for each seqrun in each libprep.'),
+              FloatField('total_sequenced_reads',
+                    description='Total of all for each seqrun in each libprep.'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):
@@ -227,6 +229,69 @@ class ApiSamples(ApiRequestHandler):
     def get(self, projectid):
         "Return a list of all samples."
         samples = self.get_samples(projectid)
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
+
+
+class ApiSamplesNotDone(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    def get(self):
+        "Return a list of all undone samples."
+        samples= self.get_not_done_samples()
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
+
+class ApiSamplesNotDonePerProject(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    def get(self, projectid):
+        "Return a list of all undone samples."
+        samples= self.get_not_done_samples(projectid)
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
+
+class ApiSamplesCustomQuery(ApiRequestHandler):
+    """Access to all samples that match the given query. The query MUST be a dictionnary with
+    the following keys : projectid, sampleField, operator, value, type.
+    ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'float'}"""
+
+    def get(self):
+        "Return a list of all samples matching the query."
+        try:
+            data = json.loads(self.request.body)
+            if 'projectid' not in data:
+                raise KeyError('data given does not contain a projectid')
+            if 'sampleField' not in data:
+                raise KeyError('data given does not contain a sampleField')
+            if 'operator' not in data:
+                raise KeyError('data given does not contain an operator ')
+            if 'type' not in data:
+                raise KeyError('data given does not contain a type')
+            if 'value' not in data:
+                raise KeyError('data given does not contain a value')
+            if  data['operator'] not in ['==', '>', '<', '<=', '>=', 'is']:
+                raise ValueError('Unallowed operator : {0}'.format(data['operator']))
+            allsamples= self.get_samples(data['projectid'])
+            samples=[]
+            query="sample.get('"+data['sampleField']+"') "+data['operator']+" "+data['type']+"("+data['value']+")"
+        except Exception, msg:
+            self.send_error(400, reason=str(msg))
+
+        for sample in allsamples:
+            try:
+                if not sample.get(data['sampleField']):
+                    #if the field in not in the db, just skip the doc
+                    continue
+                if type(sample.get(data['sampleField'])).__name__ != data['type']:
+                    raise TypeError('Given type does not match database type {0}'.format(type(sample.get(data['sampleField'])).__name__))
+                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
+                    samples.append(sample)
+            except Exception, msg:
+                self.send_error(400, reason=str(msg))
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
