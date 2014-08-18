@@ -172,12 +172,12 @@ class FloatField(Field):
     type ='float'
 
     def __init__(self, key, title=None, description=None,
-                 mandatory=False, editable=True):
+                 mandatory=False, editable=True, default=None):
         super(FloatField, self).__init__(key,
                                            title=title,
                                            description=description,
                                            mandatory=mandatory,
-                                           editable=editable)
+                                           editable=editable, default=default)
 
     def process(self, saver, value):
         self.check_mandatory(saver, value)

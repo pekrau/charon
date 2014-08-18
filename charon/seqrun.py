@@ -58,8 +58,10 @@ class SeqrunSaver(Saver):
                     description='Number of mapped bases'),
               Field('mapped_reads',
                     description='Number of mapped reads'),
-              FloatField('reads',
-                    description='Number of reads. Cannot be None, Must be at least 0'),
+              FloatField('total_reads',
+                    description='Number of reads. Cannot be None, Must be at least 0', default=0),
+              FloatField('reads_per_lane',
+                  description='dictionnary of "<lane number>" : "<reads number>"' ),
               Field('sequenced_bases',
                     description='Number of sequenced bases'),
               Field('windows',
@@ -240,8 +242,8 @@ class ApiSeqrun(ApiRequestHandler):
             for seqrun in seqruns:
                 if seqrun.get('mean_autosomal_coverage'):
                     totalcov+=float(seqrun['mean_autosomal_coverage'])
-                if seqrun.get('reads'):
-                    totalreads+=float(seqrun['reads'])
+                if seqrun.get('total_reads'):
+                    totalreads+=float(seqrun['total_reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
@@ -314,8 +316,8 @@ class ApiSeqrunCreate(ApiRequestHandler):
             for seqrun in seqruns:
                 if seqrun['mean_autosomal_coverage']:
                     totalcov+=float(seqrun['mean_autosomal_coverage'])
-                if seqrun['reads']:
-                    totalreads+=float(seqrun['reads'])
+                if seqrun['total_reads']:
+                    totalreads+=float(seqrun['total_reads'])
             
             doc= self.get_sample(projectid, sampleid)
 

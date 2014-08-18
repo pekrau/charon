@@ -154,6 +154,7 @@ def delete_project(db, project):
     view = db.view('sample/sampleid', include_docs=True)
     samples = [r.doc for r in view[startkey:endkey]]
     for sample in samples:
+        print "deleting {0}".format(sample)
         delete_sample(db, sample)
     delete_logs(db, project['_id'])
     del db[project['_id']]
