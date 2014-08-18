@@ -60,7 +60,7 @@ class SeqrunSaver(Saver):
                     description='Number of mapped reads'),
               FloatField('total_reads',
                     description='Number of reads. Cannot be None, Must be at least 0', default=0),
-              FloatField('reads_per_lane',
+              Field('reads_per_lane',
                   description='dictionnary of "<lane number>" : "<reads number>"' ),
               Field('sequenced_bases',
                     description='Number of sequenced bases'),
