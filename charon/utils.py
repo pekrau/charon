@@ -149,7 +149,7 @@ def cmp_timestamp(i, j):
 
 def delete_project(db, project):
     "Delete the project and all its dependent entities."
-    startkey = (project['projectid'])
+    startkey = (project['projectid'], '')
     endkey = (project['projectid'], constants.HIGH_CHAR)
     view = db.view('sample/sampleid', include_docs=True)
     samples = [r.doc for r in view[startkey:endkey]]
@@ -162,7 +162,7 @@ def delete_project(db, project):
 def delete_sample(db, sample):
     "Delete the sample and all its dependent entities."
     delete_logs(db, sample['_id'])
-    startkey = (sample['projectid'], sample['sampleid'])
+    startkey = (sample['projectid'], sample['sampleid'], '')
     endkey = (sample['projectid'], sample['sampleid'], constants.HIGH_CHAR)
     view = db.view('libprep/libprepid', include_docs=True)
     libpreps = [r.doc for r in view[startkey:endkey]]
