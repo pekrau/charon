@@ -26,9 +26,6 @@ class Field(object):
     def store(self, saver, data=None):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
-        logging.debug(self.key)
-        logging.debug(saver.is_new())
-        logging.debug(self.editable)
         if not saver.is_new() and not self.editable: return
         value = self.get(saver, data=data)
         try:
