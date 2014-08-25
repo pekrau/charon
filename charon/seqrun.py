@@ -76,14 +76,14 @@ class SeqrunSaver(Saver):
                     description='number of bases'),
               Field('contigs_number',
                     description='number of contigs'),
-              Field('mean_autosomal_coverage',
-                    description='mean autosomal coverage'),
+              FloatField('mean_autosomal_coverage',
+                    description='mean autosomal coverage', default=0),
               FloatField('lanes',
                     description='number of lanes'),
-              RangeFloatField('alignment_coverage', 
-                              minimum=0.0,
-                              description='The coverage of the reference'
-                              ' genome, in percent. Cannot be None, Must be at least 0'),
+              #RangeFloatField('alignment_coverage', 
+              #                minimum=0.0,
+              #                description='The coverage of the reference'
+              #                ' genome, in percent. Cannot be None, Must be at least 0'),
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, libprep=None):
