@@ -26,6 +26,9 @@ class Field(object):
     def store(self, saver, data=None):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
+        logging.debug(self.key)
+        logging.debug(saver.is_new())
+        logging.debug(self.editable)
         if not saver.is_new() and not self.editable: return
         value = self.get(saver, data=data)
         try:
@@ -43,7 +46,8 @@ class Field(object):
 
     def get(self, saver, data=None):
         "Obtain the value from data, if given, else from HTML form parameter."
-        if data is None:
+        #logging.debug("get {0} -> {1} / {2}".format(self.key, data.get(self.key), saver.rqh.get_argument(self.key, default=None)))
+        if data == None or key in data:
             return saver.rqh.get_argument(self.key, default=None)
         else:
             return data.get(self.key)
@@ -112,7 +116,7 @@ class SelectField(Field):
 
     def get(self, saver, data=None):
         "Obtain the value from data, if given, else from HTML form parameter."
-        if data is None:
+        if data == None or key in data :
             value = saver.rqh.get_argument(self.key, default=None)
             if value == self.none_value:
                 return None
@@ -172,12 +176,12 @@ class FloatField(Field):
     type ='float'
 
     def __init__(self, key, title=None, description=None,
-                 mandatory=False, editable=True):
+                 mandatory=False, editable=True, default=None):
         super(FloatField, self).__init__(key,
                                            title=title,
                                            description=description,
                                            mandatory=mandatory,
-                                           editable=editable)
+                                           editable=editable, default=default)
 
     def process(self, saver, value):
         self.check_mandatory(saver, value)
