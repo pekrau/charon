@@ -247,9 +247,9 @@ class ApiSeqrun(ApiRequestHandler):
             
             doc= self.get_sample(projectid, sampleid)
 
-            logging.info(doc)
             doc['total_autosomal_coverage']=totalcov
             doc['total_sequenced_reads']=totalreads
+            logging.info(doc)
         except Exception, msg:
             self.send_error(400, reason=str("Failed to update total_autosomal_coverage and total_sequenced_reads. Check that the reads field and the mean_autosomal_coverage field are not set to None"+msg))
         except IOError, msg:
@@ -308,7 +308,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
     def update_sample_cov(self, projectid, sampleid):
         """this calculates the total of each mean autosomal coverage and updates sample leve.
         This should be done every time a seqrun is updated/created"""
-            
+        logging.debug('Updating total_sequenced_reads and total_autosomal_coverage of sample {0}'.format(sampleid))    
         try:
             seqruns = self.get_seqruns(projectid, sampleid)
             totalcov=0

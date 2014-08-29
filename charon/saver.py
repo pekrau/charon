@@ -22,13 +22,11 @@ class Field(object):
         self.mandatory = mandatory             # A non-None value is requried.
         self.editable = editable               # Changeable once set?
         self.default=default
+        self.none_value=u'None'
 
     def store(self, saver, data=None):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
-        logging.debug(self.key)
-        logging.debug(saver.is_new())
-        logging.debug(self.editable)
         if not saver.is_new() and not self.editable: return
         value = self.get(saver, data=data)
         try:
@@ -46,11 +44,18 @@ class Field(object):
 
     def get(self, saver, data=None):
         "Obtain the value from data, if given, else from HTML form parameter."
-        #logging.debug("get {0} -> {1} / {2}".format(self.key, data.get(self.key), saver.rqh.get_argument(self.key, default=None)))
-        if data == None or key in data:
-            return saver.rqh.get_argument(self.key, default=None)
+        if data is None :
+            value = saver.rqh.get_argument(self.key, default=None)
+            if value == self.none_value:
+                return None
+            else:
+                return value
         else:
-            return data.get(self.key)
+            try:
+                return data[self.key]
+            except KeyError:
+                return saver.get(self.key)
+
 
     def process(self, saver, value):
         """Check validity and return converted to the appropriate type.
@@ -104,7 +109,7 @@ class IdField(Field):
 class SelectField(Field):
     "Select one of a set of values."
 
-    none_value = '[none]'
+    none_value = u'None'
 
     def __init__(self, key, title=None, description=None,
                  mandatory=False, editable=True, options=[]):
@@ -116,18 +121,22 @@ class SelectField(Field):
 
     def get(self, saver, data=None):
         "Obtain the value from data, if given, else from HTML form parameter."
-        if data == None or key in data :
+        if data is None :
             value = saver.rqh.get_argument(self.key, default=None)
             if value == self.none_value:
                 return None
             else:
                 return value
         else:
-            return data.get(self.key)
+            try:
+                return data[self.key]
+            except KeyError:
+                return saver.get(self.key)
+
 
     def check_valid(self, saver, value):
         "Check that the value, if provided, is valid."
-        if value is None: return
+        if value is None or value ==self.none_value: return
         if value not in self.options:
             logging.debug("invalid select value: %s", value)
             raise ValueError('invalid value; not among options for select')
