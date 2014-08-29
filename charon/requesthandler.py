@@ -112,20 +112,26 @@ class RequestHandler(tornado.web.RequestHandler):
         "Get all projects."
         all = [self.get_project(r.key) for r in
                self.db.view('project/projectid')]
-        view = self.db.view('sample/count')
+        view1 = self.db.view('sample/count')
+        view2 = self.db.view('sample/count_done')
+        view3 = self.db.view('libprep/count', group_level=1)
         for project in all:
             try:
-                row = view[project['projectid']].rows[0]
+                row = view1[project['projectid']].rows[0]
             except IndexError:
                 project['sample_count'] = 0
             else:
                 project['sample_count'] = row.value
-        view = self.db.view('libprep/count', group_level=1)
-        for project in all:
+            try:
+                row = view2[project['projectid']].rows[0]
+            except IndexError:
+                project['sample_count_done'] = 0
+            else:
+                project['sample_count_done'] = row.value
             startkey = [project['projectid']]
             endkey = [project['projectid'], constants.HIGH_CHAR]
             try:
-                row = view[startkey:endkey].rows[0]
+                row = view3[startkey:endkey].rows[0]
             except IndexError:
                 project['libprep_count'] = 0
             else:
