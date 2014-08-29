@@ -46,7 +46,8 @@ class SampleSaver(Saver):
               Field('lims_initial_qc',
                     description='Quality status of the received sample.'),
               FloatField('total_autosomal_coverage',
-                    description='Total of every autosomal coverage for each seqrun in each libprep.'),
+                    description='Total of every autosomal coverage for each seqrun in each libprep.', 
+                    default=0.0),
               FloatField('total_sequenced_reads',
                     description='Total of all for each seqrun in each libprep.'),
               ]
@@ -284,7 +285,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
         for sample in allsamples:
             try:
                 if not sample.get(data['sampleField']):
-                    #if the field in not in the db, just skip the doc
+                    #if the field is not in the db, just skip the doc
                     continue
                 if type(sample.get(data['sampleField'])).__name__ != data['type']:
                     raise TypeError('Given type does not match database type {0}'.format(type(sample.get(data['sampleField'])).__name__))
