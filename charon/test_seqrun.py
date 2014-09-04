@@ -46,7 +46,7 @@ def my_teardown():
 @nose.with_setup(my_setup, my_teardown)
 def test_create_seqrun():
     "Create a seqrun in a libprep and manipulate it."
-    data = dict(sequencing_status='NEW', mean_autosome_coverage='0', seqrunid=SEQRUNID)
+    data = dict(sequencing_status='NEW', mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
                             headers=api_token)
@@ -73,7 +73,7 @@ def test_create_seqrun():
     assert data['runid'] == newdata['runid']
     data = dict(status='DONE',
                 alignment_status='DONE',
-                alignment_coverage=1.0)
+                mean_autosomal_coverage=1.0)
     response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            data=json.dumps(data),
                            headers=api_token)
@@ -81,9 +81,4 @@ def test_create_seqrun():
     response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            headers=api_token)
     newdata = response.json()
-    assert data['alignment_coverage'] == newdata['alignment_coverage']
-    data = dict(alignment_coverage=-1.0)
-    response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
-                           data=json.dumps(data),
-                           headers=api_token)
-    assert response.status_code == 400, response
+    assert data['mean_autosomal_coverage'] == newdata['mean_autosomal_coverage']
