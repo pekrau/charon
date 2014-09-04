@@ -52,6 +52,9 @@ class ProjectSaver(Saver):
               Field('best_practice_analysis',
                     title='Best-practice analysis',
                     description='Status of best-practice analysis.'),
+              Field('library_type',
+                    title='Library type',
+                    description='Lims Library construction method'),
               SelectField('sequencing_facility', description='The location of the samples', options=['NGI-S', 'NGI-U'])
               ]
 
