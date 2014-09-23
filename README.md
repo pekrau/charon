@@ -101,6 +101,6 @@ The production server is currently started manually by Per Kraulis under
 the account genomics.www using the following command:
 
     $ cd /usr/lib/python2.6/site-packages/charon
-    $ sudo -u genomics.www python2.6 app_charon.py /var/local/charon/tools.yaml &
+    $ sudo -b -u genomics.www python2.6 app_charon.py /var/local/charon/tools.yaml
 
 *Yes, this is awful!* But the /etc/init.d stuff has not been written yet...
