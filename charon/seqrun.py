@@ -22,7 +22,7 @@ class SeqrunidField(IdField):
         "Also check uniqueness."
         if not constants.RID_RX.match(value):
             raise ValueError('invalid identifier value (disallowed characters)')
-        key = saver.libprep['libprepid']+ value
+        key = (saver.project['projectid'], saver.sample['sampleid'], saver.libprep['libprepid'], value)
         view = saver.db.view('seqrun/seqrunid')
         if len(list(view[key])) > 0:
             raise ValueError('not unique')
