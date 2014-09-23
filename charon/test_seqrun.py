@@ -82,3 +82,9 @@ def test_create_seqrun():
                            headers=api_token)
     newdata = response.json()
     assert data['mean_autosomal_coverage'] == newdata['mean_autosomal_coverage']
+
+    data = dict(sequencing_status='NEW', mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
+    response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
+                            data=json.dumps(data),
+                            headers=api_token)
+    assert response.status_code == 400, response.reason
