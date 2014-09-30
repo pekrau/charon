@@ -51,31 +51,40 @@ DEMULTIPLEX={'666' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
 
 def main(options):
     if options.dummy:
-        projs=['A.Wedell_13_03', 'G.Grigelioniene_14_01', 'M.Kaller_14_05', 'M.Kaller_14_06', 'M.Kaller_14_08']
+        projs=['A.Wedell_13_03', 'G.Grigelioniene_14_01']
         for p in projs:
-            cleanCharon(p, options)
             data=prepareData(p)
             writeProjectData(data, options)
         addFakeData(options)
-    elif options.all:
+    if options.all:
         projs=findprojs('all')
-        for p in projs:
-            cleanCharon(p, options)
-            data=prepareData(p)
+        for pname, pid in projs:
+            cleanCharon(pid, options)
+            data=prepareData(pname)
             writeProjectData(data, options)
-
     elif options.new:
         projs=findprojs('all')
-        for p in projs:
-            newdata=prepareData(p)
+        for pname, pid in projs:
+            newdata=prepareData(pname)
             olddata=getCompleteProject(newdata['projectid'], options)
             compareOldAndNew(olddata, newdata, options)
+
+    elif options.clean:
+        session = requests.Session()
+        headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
+        rq=session.get('{0}/api/v1/projects'.format(options.url), headers=headers)
+        projects=rq.json()
+        projs=[p['projectid'] for p in projects['projects']]
+        for p in projs:
+            cleanCharon(p, options)
+    elif options.delproj:
+        cleanCharon(options.delproj, options)
         
 def compareOldAndNew(old, new, options):
     autoupdate=False
     if old == None:
         writeProjectData(new, options)
-        print "updating {}".format(old)
+        print "updating {}".format(new['projectid'])
     else:
         newsamples=new['samples']
         oldsamples=old['samples']
@@ -93,14 +102,14 @@ def compareOldAndNew(old, new, options):
                 seqruns=lib.pop('seqruns')
 
                 if autoupdate or libid not in oldsamples[sampleid]['libs']:  
-                    print "updating {} {}".format(sampleid, libid)
+                    print "updating {0} {1}".format(sampleid, libid)
                     writeToCharon(json.dumps(lib),'{0}/api/v1/libprep/{1}/{2}'.format(options.url, new['projectid'], sampleid), options)
                     autoupdate=True
 
                 for seqrunid in seqruns:
                     seqrun=seqruns[seqrunid]
                     if autoupdate or seqrunid not in oldsamples[sampleid]['libs'][libid]['seqruns']:
-                        print "updating {} {} {}".format(sampleid, libid, seqrunid)
+                        print "updating {0} {1} {2}".format(sampleid, libid, seqrunid)
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
 
 
@@ -129,13 +138,19 @@ def getCompleteProject(projectid, options):
             project['samples'][sample['sampleid']]=sample
 
         return project
+    else:
+        print rq.status_code
+        print rq.reason
     return None
         
 def findprojs(key):
     if key == 'all':
         udf={'Bioinformatic QC':'WG re-seq (IGN)'}
         projects=lims.get_projects(udf=udf)
-        return [p.name for p in projects]
+        return [(p.name, p.id) for p in projects]
+    else:
+        projects=lims.get_projects(name=key)
+        return [(p.name, p.id) for p in projects]
 
 def updateCharon(jsonData, url, options):
     if options.fake:
@@ -155,7 +170,7 @@ def updateCharon(jsonData, url, options):
             elif r.status_code==409:
                 print "Document is being updated"
             else:
-                print "Unkown error : {} {}".format(r.status_code, r.text)
+                print "Unknown error : {} {}".format(r.status_code, r.text)
  
 def writeToCharon(jsonData, url, options):
     if options.fake:
@@ -353,12 +368,13 @@ def procHistory(proc, samplename):
                 break # breaks the for artifacts if we matched the current one
     return hist 
 
-def cleanCharon(pname,options):
+def cleanCharon(pid,options):
+    if options.verbose:
+        print "removing project {0}".format(pid)
     session = requests.Session()
     headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
-    projects=lims.get_projects(name = pname)
   
-    r=session.delete(options.url+'/api/v1/project/'+projects[0].id, headers=headers)
+    r=session.delete(options.url+'/api/v1/project/'+pid, headers=headers)
     if options.verbose:
         if r.status_code==204:
             print "delete went ok"
@@ -379,10 +395,14 @@ if __name__ == '__main__':
             help="don't actually do anything with the db, but print what will be uploaded")
     parser.add_option("-p", "--project", dest="proj", default=None, 
             help="-p <projectname> will try to upload the given project to charon")
+    parser.add_option("-r", "--remove", dest="delproj", default=None, 
+            help="-r <projectname> will try to remove the given project to charon")
     parser.add_option("-a", "--all", dest="all", default=False, action="store_true", 
             help="Try to upload all IGN projects. This will wipe the current information stored in Charon")
     parser.add_option("-n", "--new", dest="new", default=False, action="store_true", 
             help="Try to upload new IGN projects. This will NOT erase the current information stored in Charon")
+    parser.add_option("-c", "--clean", dest="clean", default=False, action="store_true", 
+            help="This will erase the current information stored in Charon")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", 
             help="prints results for everything that is going on")
     (options, args) = parser.parse_args()
