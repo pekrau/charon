@@ -79,8 +79,8 @@ if __name__ == '__main__':
     except IndexError:
         utils.load_settings()
     db = utils.get_db()
-    if len(sys.argv) == 2:
-        filename = sys.argv[1]
+    if len(sys.argv) == 3:
+        filename = sys.argv[2]
     else:
         filename = 'dump.tar.gz'
     count_items, count_files = dump(db, filename)

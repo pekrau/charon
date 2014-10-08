@@ -206,7 +206,7 @@ class RequestHandler(tornado.web.RequestHandler):
             return item
         else:
             logging.error("{0} elements for key {1} ".format(len(rows), key))
-            raise tornado.web.HTTPError(404, reason='no such item')
+            raise tornado.web.HTTPError(404, reason='{0} elements for key {1}'.format(len(rows), key))
 
     def get_logs(self, id):
         "Return the log documents for the given doc id."
