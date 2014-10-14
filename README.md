@@ -37,39 +37,36 @@ in the standard Python distribution.
 The development server is at http://charon-dev.scilifelab.se/ .
 It is currently reachable only from within SciLifeLab Stockholm.
 
-### Database wipe every weekend! ###
+Charon-dev is deployed as Hiseq boinfo, in an anaconda virtual anvironment named "charon_env"
+The logfile is located within the repo (~/opt/charon/charon/charon.log)
 
-Please note that the CouchDB databases on tools-dev are all wiped clean
-and reloaded from tools every weekend. Since there currently is no data
-in the Charon database on tools, the tools-dev Charon instance gets
-totally wiped out. Not even the design documents are spared.
+To update Charon, move to the repo and execute "git pull". If the modifications are not 
+automatically reloaded by Tornado (a change in the configuration files, for instance)
+kill the current charon process, and start it again. 
 
-To handle this, I currently manually dump and reload the Charon database,
-on Friday afternoon and Monday morning, respectively:
+Note that the working directory needs to be the one containing "app_charon.py".
+The configuration file "tools-dev.yaml" is located there as well. It's not saved on github.
 
-    $ python dump.py
+We should be getting an upstart configuration to do that properly soon.
 
-    $ python init_database.py # Answer 'y' to the question.
+### Couchdb Replication ###
 
-### Installation ###
+The tables from the production couchdb server are replicated dailyto the dev server.
+This should have been deactivated for Charon, but if that is switched on again for
+whatever reason, Charon-dev WILL fail, since we will get more than one document with the same key.
 
-The development server is installed as an ordinary Python package in
-`/usr/lib/python2.6/site-packages/charon` . The controlling configuration
-file `tools-dev.yaml` (which is not part of the GitHub stuff) is located there.
-I have set the owner of that directory to `per.kraulis` to make it
-simpler for me... 
+### Backup plan ###
+On a daily basis, the content of couchdb is dumped to the disk. If something goes wrong,
+it is possible to reinitialise the database with the dumps.
+>dump.py
+    dumps the current state of the database into dump.tar.gz
+>python init_database.py 
+    tries to upload the dump.tar.gz to the database
 
-The development server is upgraded thus:
-
-    $ pip install --upgrade --no-deps git+https://github.com/NationalGenomicsInfrastructure/charon
-
-The Tornado service is controlled by the upstart script `/etc/init/charon.conf`.
+### Other notes ###
 
 The Apache server handles the redirect from the domain name to the Tornado
 server which runs on port 8881. See `/etc/httpd/conf/httpd.conf`.
-
-The log file written by the Tornado server currently goes to
-the install directory.
 
 ## Production server ##
 
@@ -83,24 +80,26 @@ The production server is upgraded in a similar way as the development server.
 
 The source code used in production is located in:
 
-    /usr/lib/python2.6/site-packages/charon
+    ~/anaconda/envs/charon_env/lib/python2.6/site-packages/charon
 
 The configuration file tools.yaml is located in:
 
-    /var/local/charon
+    ~/opt/charon/charon
 
 The log file charon.log is located in:
 
-    /var/log/charon
+    ~/opt/charon/charon
 
+This is due to the fact that hiseq.bioinfo does not belong to a froup allowed to write in /var/log
 The production server is upgraded thus:
 
-    $ pip install --upgrade --no-deps git+https://github.com/pekrau/charon
+    $ source ~/anaconda/bin/activate charon_env
+    $ cd ~/opt/charon;git pull; python setup.py install
 
-The production server is currently started manually by Per Kraulis under
-the account genomics.www using the following command:
+The production server is currently started manually by hiseq.bioinfo 
 
-    $ cd /usr/lib/python2.6/site-packages/charon
-    $ sudo -b -u genomics.www python2.6 app_charon.py /var/local/charon/tools.yaml
+    $ source ~/anaconda/bin/activate charon_env
+    $ cd ~/opt/charon/charon
+    $ python app_charon.py tools.yaml
 
-*Yes, this is awful!* But the /etc/init.d stuff has not been written yet...
+
