@@ -55,7 +55,9 @@ class ProjectSaver(Saver):
               Field('library_type',
                     title='Library type',
                     description='Lims Library construction method'),
-              SelectField('sequencing_facility', description='The location of the samples', options=['NGI-S', 'NGI-U'])
+              SelectField('sequencing_facility',
+                          options=['NGI-S', 'NGI-U'],
+                          description='The location of the samples')
               ]
 
 

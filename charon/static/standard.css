@@ -32,6 +32,8 @@ form {padding: 0;
       margin: 0;
      }
 
+div.actions form { padding-top: 0.5em;}
+
 button img {vertical-align: middle; }
 
 button.invisible {border:none;
@@ -96,6 +98,7 @@ div.content {width: 75%;
 	     padding-left: 1em;
 	     margin-left: 1em;
 	    }
+div.actions form { padding-top: 0.5em;}
 
 td.spacer1 {padding-right: 1em; }
 td.spacer3 {padding-right: 3em; }

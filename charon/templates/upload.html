@@ -1,0 +1,186 @@
+{# Upload page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Upload data from CSV file
+{% end %}
+
+{% block title %}
+{% module Icon('upload') %}
+Upload data from CSV file
+{% end %}
+
+{% block content %}
+
+<p>
+Upload data in the form of a Comma-Separated Values (CSV) file,
+commonly produced from an Excel spreadsheet.
+</p>
+
+{% if message %}
+<p class="pre bold">{{ message }}</p>
+{% end %}
+
+{% if error %}
+<h4 class="error">Errors</h4>
+<p class="pre error">{{ error }}</p>
+{% end %}
+
+<form action="{{ reverse_url('upload_projects') }}"
+      method="POST"
+      enctype="multipart/form-data">
+
+  <fieldset>
+    <legend>Create new project(s) and their samples.</legend>
+
+    <table class="fields">
+
+      <tr>
+	<th>CSV file</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td><input type="file" name="csvfile"></td>
+	<td class="description">
+	  CSV file containing new project(s) and samples within them.
+	  <br>
+	  <table class="list">
+	    <tr class="list">
+	      <th>Column</th>
+	      <th>Title</th>
+	      <th>Content</th>
+	    </tr>
+	    <tr>
+	      <td>1</td>
+	      <td>Project</td>
+	      <td>Project identifier</td>
+	    </tr>
+	    <tr>
+	      <td>2</td>
+	      <td>Sample</td>
+	      <td>Sample identifier</td>
+	    </tr>
+	  </table>
+	</td>
+      </tr>
+
+      <tr>
+	<th>Header line</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td>
+	  <input type="radio" name="header_line" value="false" checked> None (0)
+	  <br>
+	  <input type="radio" name="header_line" value="true"> One (1)
+	</td>
+	<td class="description">
+	  Does the CSV file contain a header line? If it does, the
+	  titles must agree with those specified above.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Really add?</th>
+	<td></td>
+	<td>
+	  <input type="checkbox" name="add" value="true">
+	  Add the data into the database.
+	</td>
+	<td class="description">
+	  The data will always be checked for validity, but it will be
+	  added only if this box is ticked.
+	</td>
+      </tr>
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('upload') %}
+	</td>
+      </tr>
+
+    </table>
+
+   </fieldset>
+
+</form>
+
+<br>
+
+<form action="{{ reverse_url('upload_samples') }}"
+      method="POST"
+      enctype="multipart/form-data">
+
+  <fieldset>
+    <legend>Create new samples within existing project(s).</legend>
+
+    <table class="fields">
+
+      <tr>
+	<th>CSV file</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td><input type="file" name="csvfile"></td>
+	<td class="description">
+	  CSV file containing new samples.
+	  <br>
+	  <table class="list">
+	    <tr class="list">
+	      <th>Column</th>
+	      <th>Title</th>
+	      <th>Content</th>
+	    </tr>
+	    <tr>
+	      <td>1</td>
+	      <td>Project</td>
+	      <td>Project identifier</td>
+	    </tr>
+	    <tr>
+	      <td>2</td>
+	      <td>Sample</td>
+	      <td>Sample identifier</td>
+	    </tr>
+	  </table>
+	</td>
+      </tr>
+
+      <tr>
+	<th>Header line</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td>
+	  <input type="radio" name="header_line" value="false" checked> None (0)
+	  <br>
+	  <input type="radio" name="header_line" value="true"> One (1)
+	</td>
+	<td class="description">
+	  Does the CSV file contain a header line? If it does, the
+	  titles must agree with those specified above.
+	</td>
+      </tr>
+
+      <tr>
+	<th>Really add?</th>
+	<td></td>
+	<td>
+	  <input type="checkbox" name="add" value="true">
+	  Add the data into the database.
+	</td>
+	<td class="description">
+	  The data will always be checked for validity, but it will be
+	  added only if this box is ticked.
+	</td>
+      </tr>
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('upload') %}
+	</td>
+      </tr>
+
+    </table>
+
+   </fieldset>
+
+</form>
+
+{% end %}

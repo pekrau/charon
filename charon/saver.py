@@ -28,23 +28,23 @@ class Field(object):
         """Check, convert and store the field value.
         If data is None, then obtain the value from HTML form parameter."""
         if not saver.is_new() and not self.editable: return
+        logging.debug("Field.store(%s)", data)
         value = self.get(saver, data=data)
         try:
             value = self.process(saver, value)
         except ValueError, msg:
             raise ValueError("field '{0}': {1}".format(self.key, msg))
         if self.default is not None and value is None:
-            value=self.default
+            value = self.default
         if value == saver.doc.get(self.key):
             logging.debug("Field.store: '%s' value equal", self.key)
             return
         saver.doc[self.key] = value
         saver.changed[self.key] = value
-        logging.debug("Field.store: '%s', %s", self.key, value)
 
     def get(self, saver, data=None):
         "Obtain the value from data, if given, else from HTML form parameter."
-        if data is None :
+        if data is None:
             value = saver.rqh.get_argument(self.key, default=None)
             if value == self.none_value:
                 return None
@@ -55,7 +55,6 @@ class Field(object):
                 return data[self.key]
             except KeyError:
                 return saver.get(self.key)
-
 
     def process(self, saver, value):
         """Check validity and return converted to the appropriate type.
@@ -102,6 +101,7 @@ class IdField(Field):
     
     def check_valid(self, saver, value):
         "Only allow a subset of ordinary ASCII characters."
+        logging.debug('IdField.check_valid')
         if not constants.ID_RX.match(value):
             raise ValueError('invalid identifier value (disallowed characters)')
 
