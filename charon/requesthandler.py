@@ -47,24 +47,37 @@ class RequestHandler(tornado.web.RequestHandler):
         return url
 
     def get_current_user(self):
-        "Get the currently logged-in user."
+        """Get the currently logged-in user.
+        Send to login page if none."""
         try:
             status = self._user.get('status')
         except AttributeError:
             email = self.get_secure_cookie(constants.USER_COOKIE_NAME)
-            if not email:
-                return None
-            try:
-                user = self.get_user(email)
-            except tornado.web.HTTPError:
-                return None
-            if user.get('status') != constants.ACTIVE:
-                return None
-            self._user = user
+            if email:
+                try:
+                    user = self.get_user(email)
+                except tornado.web.HTTPError:
+                    return None
+                if user.get('status') != constants.ACTIVE:
+                    return None
+                self._user = user
+            else:
+                try:
+                    api_token = self.request.headers['X-Charon-API-token']
+                    rows = list(self.db.view('user/api_token')[api_token])
+                    if len(rows) != 1: raise KeyError
+                    user = self.get_user(rows[0].value)
+                    if user.get('status') != constants.ACTIVE: raise KeyError
+                except KeyError:
+                    return None
+                else:
+                    logging.debug("API token user '%s'", user['email'])
+                    self._user = user
         else:
             if status != constants.ACTIVE:
                 self.set_secure_cookie(constants.USER_COOKIE_NAME, '')
-                self._user = None
+                del self._user
+                return None
         return self._user
 
     def get_user(self, email):

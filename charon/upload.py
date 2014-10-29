@@ -38,6 +38,7 @@ class UploadRequestHandler(RequestHandler):
         self.errors = []
         self.messages = ["Data from file {}".format(data['filename'])]
         infile = cStringIO.StringIO(data['body'])
+        logging.debug(data['body'])
         dialect = csv.Sniffer().sniff(infile.read(1024))
         infile.seek(0)
         reader = csv.reader(infile, dialect)
@@ -126,6 +127,7 @@ class UploadProjects(UploadRequestHandler):
     @tornado.web.authenticated
     def post(self):
         "Check and optionally add data from CSV file."
+        logging.debug("UploadProjects post")
         self.read_records(project=0, sample=1)
         self.projects = dict()
         for pos, row in enumerate(self.rows):
