@@ -9,12 +9,12 @@ from genologics.config import BASEURI, USERNAME, PASSWORD
 from datetime import date
 import scilifelab.log
 import yaml
-import inspect
 import requests
 import json
 from types import *
 import logging
 import pdb
+import datetime
 
 lims = Lims(BASEURI, USERNAME, PASSWORD)
 INITIALQC ={'63' : 'Quant-iT QC (DNA) 4.0',
@@ -47,7 +47,7 @@ SEQUENCING = {'38' : 'Illumina Sequencing (Illumina SBS) 4.0',
     '46' : 'MiSeq Run (MiSeq) 4.0'}
 WORKSET = {'204' : 'Setup Workset/Plate'}
 SUMMARY = {'356' : 'Project Summary 1.3'}
-DEMULTIPLEX={'666' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
+DEMULTIPLEX={'13' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
 
 def main(options):
     if options.dummy:
@@ -79,12 +79,15 @@ def main(options):
             cleanCharon(p, options)
     elif options.delproj:
         cleanCharon(options.delproj, options)
+    elif options.stress:
+        stressTest(options)
+
         
 def compareOldAndNew(old, new, options):
     autoupdate=False
     if old == None:
         writeProjectData(new, options)
-        print "updating {}".format(new['projectid'])
+        logging.info("updating {}".format(new['projectid']))
     else:
         newsamples=new['samples']
         oldsamples=old['samples']
@@ -93,7 +96,7 @@ def compareOldAndNew(old, new, options):
             libs=sample.pop('libs')
 
             if sampleid not in oldsamples:
-                print "updating {}".format(sampleid)
+                logging.info("updating {}".format(sampleid))
                 writeToCharon(json.dumps(sample),'{0}/api/v1/sample/{1}'.format(options.url, new['projectid']), options)
                 autoupdate=True
                 
@@ -109,7 +112,7 @@ def compareOldAndNew(old, new, options):
                 for seqrunid in seqruns:
                     seqrun=seqruns[seqrunid]
                     if autoupdate or seqrunid not in oldsamples[sampleid]['libs'][libid]['seqruns']:
-                        print "updating {0} {1} {2}".format(sampleid, libid, seqrunid)
+                        logging.info("updating {0} {1} {2}".format(sampleid, libid, seqrunid))
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
 
 
@@ -139,8 +142,8 @@ def getCompleteProject(projectid, options):
 
         return project
     else:
-        print rq.status_code
-        print rq.reason
+        logging.error(rq.status_code)
+        logging.error(rq.reason)
     return None
         
 def findprojs(key):
@@ -161,16 +164,16 @@ def updateCharon(jsonData, url, options):
         headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
         r=session.put(url, headers=headers, data=jsonData)
         if options.verbose:
-            print url
-            print jsonData
+            logging,info(url)
+            logging.info(jsonData)
             if r.status_code==201:
-                print "update ok"
+                logging.info("update ok")
             elif r.status_code==400:
-                print "input data is wrong, {}".format(r.reason)
+                logging.error("input data is wrong, {}".format(r.reason))
             elif r.status_code==409:
-                print "Document is being updated"
+                logging.error("Document is being updated")
             else:
-                print "Unknown error : {} {}".format(r.status_code, r.text)
+                logging.error("Unknown error : {} {}".format(r.status_code, r.text))
  
 def writeToCharon(jsonData, url, options):
     if options.fake:
@@ -183,7 +186,7 @@ def writeToCharon(jsonData, url, options):
         if options.verbose:
             print url
             print jsonData
-            if r.status_code==204:
+            if r.status_code in [201, 204]:
                 print "update ok"
             elif r.status_code==400:
                 print "input data is wrong, {}".format(r.reason)
@@ -320,7 +323,7 @@ def prepareData(projname):
                                 total_reads=0
                                 reads_per_lane={}
                                 for da in demarts:
-                                    if da.qc_flag in ['PASSED', 'FAILED']:
+                                    if da.qc_flag in ['PASSED', 'FAILED'] and "# Reads" in da.udf:
                                         ph=procHistory(da.parent_process, sample.name)
                                         if sa.parent_process.id in ph:
                                             sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['demux_qc_flag']=da.qc_flag
@@ -373,19 +376,79 @@ def procHistory(proc, samplename):
                 break # breaks the for artifacts if we matched the current one
     return hist 
 
+def stressTest(options):
+    testprojects=[]
+    print "#"*10
+    print "Start : {0}".format(datetime.datetime.now().isoformat())
+    print "#"*10
+    for n in xrange(1,options.stress+1):
+        d=genFakeFroject(n, 'TEST_{0}'.format(n),201, 1, 1)
+        writeProjectData(d, options)
+        testprojects.append('TEST_{0}'.format(n))
+
+    print "#"*10
+    print "{0} :Done uploading. Querying...".format(datetime.datetime.now().isoformat())
+    print "#"*10
+    for p in testprojects:
+        print getCompleteProject(p, options)
+
+    print "#"*10
+    print "{0} : Queries are done. Deleting ...".format(datetime.datetime.now().isoformat())
+    print "#"*10
+    for p in testprojects:
+        cleanCharon(p, options)
+
+
+def genFakeFroject(number,name,samplesnb, libsnb, seqrunsnb):
+    data={}
+    data['projectid']='TEST_{0}'.format(number)
+    data['name']=name
+    data['pipeline']="TEST"
+    data['sequencing_facility']="NGI-S"
+    data['library_type']="TEST"
+    data['best_practice_analysis']="TEST"
+    data['status']='CLOSED' 
+    data['samples']={}
+    for s in xrange(1,samplesnb):
+        sampinfo={ 'sampleid' : "TEST_{0}_{1}".format(number,s), 'received' : datetime.datetime.today().strftime("%Y-%m-%d"), "total_autosomal_coverage" : "0", "libs":{}}
+        alphaindex=65
+        for l in xrange(1,libsnb):
+            sampinfo['libs'][chr(alphaindex)]={}
+            sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
+            sampinfo['libs'][chr(alphaindex)]['status']="NEW"
+            sampinfo['libs'][chr(alphaindex)]['limsid']=l
+            sampinfo['libs'][chr(alphaindex)]['seqruns']={}
+            for r in xrange(1, seqrunsnb):
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]={}
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['seqrunid']="TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex), r)
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['mean_autosomal_coverage']=0
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['sequencing_status']="DONE"
+                #the qc flag is on the input artifact of the sequencing run
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['seq_qc_flag']="PASSED"
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['total_reads']=0
+
+            alphaindex+=1
+        data['samples']["TEST_{0}_{1}".format(number,s)]=sampinfo
+        
+        
+    return(data)
+    
+
+
+
 def cleanCharon(pid,options):
     if options.verbose:
-        print "removing project {0}".format(pid)
+        logging.info("removing project {0}".format(pid))
     session = requests.Session()
     headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
   
     r=session.delete(options.url+'/api/v1/project/'+pid, headers=headers)
     if options.verbose:
         if r.status_code==204:
-            print "delete went ok"
+            logging.info("delete went ok")
         else:
-            print r.status_code
-            print r.reason
+            logging.error(r.status_code)
+            logging.error(r.reason)
 
 if __name__ == '__main__':
     usage = "Usage:       python acheron.py [options]"
@@ -410,6 +473,8 @@ if __name__ == '__main__':
             help="This will erase the current information stored in Charon")
     parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", 
             help="prints results for everything that is going on")
+    parser.add_option("-s", "--stress", type="int",dest="stress", default=0,
+            help="-s N : stresses charon with N projects")
     (options, args) = parser.parse_args()
         
     if not options.token :
