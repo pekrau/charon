@@ -169,6 +169,15 @@ class ApiLibprep(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
+    def delete(self, projectid):
+        """NOTE: This is for unit test purposes only!
+        Delete the libprepand all of its dependent entities.
+        Returns HTTP 204 "No Content"."""
+        libprep= self.get_libprep(projectid, sampleid, libprepid)
+        if not libprep: return
+        utils.delete_libprep(self.db, libprep)
+        logging.debug("deleted libprep {0}, {1}, {2}", projectid, sampleid, libprepid)
+        self.set_status(204)
 
 
 class ApiLibprepCreate(ApiRequestHandler):

@@ -33,6 +33,18 @@ def my_teardown():
     session.delete(url('project', PROJECTID), headers=api_token)
 
 @nose.with_setup(my_setup, my_teardown)
+def test_sample_deletion():
+    data = dict(sampleid=SAMPLEID)
+    response = session.post(url('sample', PROJECTID),
+                            data=json.dumps(data),
+                            headers=api_token)
+    assert response.status_code == 201, response
+    sample_url = BASE_URL.rstrip('/') + response.headers['location']
+    response = session.delete(sample_url,
+                           headers=api_token)
+    assert response.status_code == 204 
+
+@nose.with_setup(my_setup, my_teardown)
 def test_sample_create():
     "Create a sample."
     data = dict(sampleid=SAMPLEID)

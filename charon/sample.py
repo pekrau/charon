@@ -186,6 +186,16 @@ class ApiSample(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
+    
+    def delete(self, projectid, sampleid):
+        """NOTE: This is for unit test purposes only!
+        Delete the sample and all of its dependent entities.
+        Returns HTTP 204 "No Content"."""
+        sample= self.get_sample(projectid, sampleid)
+        if not sample: return
+        utils.delete_sample(self.db, sample)
+        logging.debug("deleted sample {0}, {1}".format(projectid, sampleid))
+        self.set_status(204)
 
 
 class ApiSampleCreate(ApiRequestHandler):
