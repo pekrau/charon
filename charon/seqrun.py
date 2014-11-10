@@ -235,10 +235,10 @@ class ApiSeqrun(ApiRequestHandler):
         """NOTE: This is for unit test purposes only!
         Delete the libprepand all of its dependent entities.
         Returns HTTP 204 "No Content"."""
-        seqrun= self.get_seqrun(projectid, sampleid, libprepid, seqrun)
+        seqrun= self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
         if not seqrun: return
         utils.delete_seqrun(self.db, seqrun)
-        logging.debug("deleted seqrun {0}, {1}, {2}", projectid, sampleid, libprepid, seqrun)
+        logging.debug("deleted seqrun {0}, {1}, {2}", projectid, sampleid, libprepid, seqrunid)
         self.set_status(204)
                 
     def update_sample_cov(self, projectid, sampleid):

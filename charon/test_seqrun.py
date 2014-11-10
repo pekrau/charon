@@ -97,7 +97,7 @@ def test_delete_seqrun():
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
                             headers=api_token)
-    assert response.status_code == 201
+    assert response.status_code == 201, response.reason
     seqrun_url= BASE_URL.rstrip('/') + response.headers['location']
     response = session.delete(seqrun_url, headers=api_token)
-    assert response.status_code == 204
+    assert response.status_code == 204, response.reason

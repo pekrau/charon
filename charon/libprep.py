@@ -169,7 +169,7 @@ class ApiLibprep(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
-    def delete(self, projectid):
+    def delete(self, projectid, sampleid, libprepid):
         """NOTE: This is for unit test purposes only!
         Delete the libprepand all of its dependent entities.
         Returns HTTP 204 "No Content"."""
