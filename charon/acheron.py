@@ -86,7 +86,7 @@ def compareOldAndNew(old, new, options):
     autoupdate=False
     if old == None:
         writeProjectData(new, options)
-        logging.info("updating {}".format(new['projectid']))
+        logging.info("updating {0}".format(new['projectid']))
     else:
         newsamples=new['samples']
         oldsamples=old['samples']
