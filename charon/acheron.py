@@ -7,7 +7,6 @@ from genologics.entities import *
 from genologics.lims import *
 from genologics.config import BASEURI, USERNAME, PASSWORD
 from datetime import date
-import scilifelab.log
 import yaml
 import requests
 import json
@@ -382,7 +381,7 @@ def stressTest(options):
     print "Start : {0}".format(datetime.datetime.now().isoformat())
     print "#"*10
     for n in xrange(1,options.stress+1):
-        d=genFakeFroject(n, 'TEST_{0}'.format(n),201, 1, 1)
+        d=genFakeFroject(n, 'TEST_{0}'.format(n),200, 1, 1)
         writeProjectData(d, options)
         testprojects.append('TEST_{0}'.format(n))
 
@@ -409,16 +408,16 @@ def genFakeFroject(number,name,samplesnb, libsnb, seqrunsnb):
     data['best_practice_analysis']="TEST"
     data['status']='CLOSED' 
     data['samples']={}
-    for s in xrange(1,samplesnb):
+    for s in xrange(1,samplesnb+1):
         sampinfo={ 'sampleid' : "TEST_{0}_{1}".format(number,s), 'received' : datetime.datetime.today().strftime("%Y-%m-%d"), "total_autosomal_coverage" : "0", "libs":{}}
         alphaindex=65
-        for l in xrange(1,libsnb):
+        for l in xrange(1,libsnb+1):
             sampinfo['libs'][chr(alphaindex)]={}
             sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
             sampinfo['libs'][chr(alphaindex)]['status']="NEW"
             sampinfo['libs'][chr(alphaindex)]['limsid']=l
             sampinfo['libs'][chr(alphaindex)]['seqruns']={}
-            for r in xrange(1, seqrunsnb):
+            for r in xrange(1, seqrunsnb+1):
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]={}
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['seqrunid']="TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex), r)
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['mean_autosomal_coverage']=0
