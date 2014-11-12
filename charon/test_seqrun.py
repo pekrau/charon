@@ -43,6 +43,7 @@ def my_teardown():
     session.delete(url('project', PROJECTID), headers=api_token)
 
 
+
 @nose.with_setup(my_setup, my_teardown)
 def test_create_seqrun():
     "Create a seqrun in a libprep and manipulate it."
@@ -88,3 +89,15 @@ def test_create_seqrun():
                             data=json.dumps(data),
                             headers=api_token)
     assert response.status_code == 400, response.reason
+
+@nose.with_setup(my_setup, my_teardown)
+def test_delete_seqrun():
+
+    data = dict(sequencing_status='NEW', mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
+    response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
+                            data=json.dumps(data),
+                            headers=api_token)
+    assert response.status_code == 201, response.reason
+    seqrun_url= BASE_URL.rstrip('/') + response.headers['location']
+    response = session.delete(seqrun_url, headers=api_token)
+    assert response.status_code == 204, response.reason

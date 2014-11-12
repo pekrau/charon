@@ -52,6 +52,17 @@ def test_libprep_create():
     assert libprep['libprepid'] == LIBPREPID
 
 @nose.with_setup(my_setup, my_teardown)
+def test_librep_delete():
+    data = dict(libprepid=LIBPREPID, status='NEW')
+    response = session.post(url('libprep', PROJECTID, SAMPLEID),
+                            data=json.dumps(data),
+                            headers=api_token)
+    
+    assert response.status_code == 201, response.reason
+    libprep_url = BASE_URL.rstrip('/') + response.headers['location']
+    response=session.delete(libprep_url, headers=api_token)
+    assert response.status_code == 204, response.reason 
+@nose.with_setup(my_setup, my_teardown)
 def test_libprep_modify():
     "Create and modify a libprep."
     # Create the libprep, with status 'new'
