@@ -2,6 +2,8 @@
 
 import logging
 import json
+import csv
+import cStringIO
 
 import tornado.web
 import couchdb
@@ -12,6 +14,7 @@ from . import utils
 from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 from .saver import *
+from .sample import SampleSaver
 
 
 class ProjectidField(IdField):
@@ -59,6 +62,58 @@ class ProjectSaver(Saver):
                           options=['NGI-S', 'NGI-U'],
                           description='The location of the samples')
               ]
+
+
+class UploadSamplesMixin(object):
+    "Mixin providing a method to upload samples from a CSV file."
+
+    def upload_samples(self, project):
+        "Upload samples from file provided via HTML form field."
+        samples = []
+        try: 
+            data = self.request.files['csvfile'][0]
+        except (KeyError, IndexError):
+            raise tornado.web.HTTPError(400, reason='no CSV file uploaded')
+        self.messages = ["Data from file {}".format(data['filename'])]
+        self.errors = []
+        samples_set = set()
+        view = self.db.view('sample/sampleid',
+                            startkey=[project['projectid'], ''],
+                            endkey=[project['projectid'], constants.HIGH_CHAR])
+        for row in view:
+            assert row.key[1] not in samples_set, 'sampleid multiple times?'
+            samples_set.add(row.key[1])
+        reader = csv.reader(cStringIO.StringIO(data['body']))
+        # First get all new sampleids, and check uniqueness
+        for pos, record in enumerate(reader):
+            try:
+                sampleid = record[0].strip()
+                if not sampleid:
+                    raise IndexError
+                if sampleid in samples_set:
+                    raise KeyError
+                samples_set.add(sampleid)
+                samples.append(sampleid)
+            except IndexError:
+                self.errors.append("line {}: empty record".format(pos))
+            except KeyError:
+                self.errors.append("line {}: non-unique sampleid {}".
+                                   format(pos, sampleid))
+            if len(self.errors) > 10:
+                self.errors.append('too many errors, giving up...')
+                break
+        if self.errors:
+            self.messages.append('No samples added.')
+        else:
+            # Add samples when no previous errors
+            for pos, sampleid in enumerate(samples):
+                try:
+                    with SampleSaver(rqh=self, project=project) as saver:
+                        data = dict(sampleid=sampleid)
+                        saver.store(data=data)
+                except (IOError, ValueError), msg:
+                    self.errors.append("line {}: {}".format(pos, str(msg)))
+            self.messages.append("{} samples added".format(len(samples)))
 
 
 class Project(RequestHandler):
@@ -157,6 +212,30 @@ class ProjectEdit(RequestHandler):
             self.redirect(url)
 
 
+class ProjectUpload(UploadSamplesMixin, RequestHandler):
+    "Upload samples into the project."
+
+    @tornado.web.authenticated
+    def get(self, projectid):
+        "Display the project samples upload form."
+        project = self.get_project(projectid)
+        self.render('project_upload.html',
+                    project=project,
+                    message=self.get_argument('message', None),
+                    error=self.get_argument('error', None))
+
+    @tornado.web.authenticated
+    def post(self, projectid):
+        "Edit the project with the given form data."
+        self.check_xsrf_cookie()
+        project = self.get_project(projectid)
+        self.upload_samples(project)
+        url = self.get_absolute_url('project_upload', project['projectid'],
+                                    message='\n'.join(self.messages),
+                                    error='\n'.join(self.errors))
+        self.redirect(url)
+
+
 class Projects(RequestHandler):
     "List all projects."
 
@@ -166,11 +245,12 @@ class Projects(RequestHandler):
         self.render('projects.html', projects=projects)
 
 
-class ApiProject(ApiRequestHandler):
+class ApiProject(UploadSamplesMixin, ApiRequestHandler):
     "Access a project."
 
     saver = ProjectSaver
 
+    # Do not use authentication decorator; do not send to login page, but fail.
     def get(self, projectid):
         """Return the project data as JSON.
         Return HTTP 404 if no such project."""
@@ -179,7 +259,18 @@ class ApiProject(ApiRequestHandler):
         self.add_project_links(project)
         self.write(project)
 
-    def put(self, projectid):
+    # Do not use authentication decorator; do not send to login page, but fail.
+    def post(self, projectid): 
+        "Upload a CSV file containing identifiers of samples to create."
+        self.upload_samples
+        project = self.get_project(projectid)
+        self.upload_samples(project)
+        self.write(dict(errors=self.errors, messages=self.messages))
+        if self.errors:
+            self.set_status(400)
+
+    # Do not use authentication decorator; do not send to login page, but fail.
+    def put(self, projectid): 
         """Update the project with the given JSON data.
         Return HTTP 204 "No Content" when successful.
         Return HTTP 400 if the input data is invalid.
@@ -205,6 +296,7 @@ class ApiProject(ApiRequestHandler):
             else:
                 self.set_status(204)
 
+    # Do not use authentication decorator; do not send to login page, but fail.
     def delete(self, projectid):
         """NOTE: This is for unit test purposes only!
         Delete the project and all of its dependent entities.
@@ -221,6 +313,7 @@ class ApiProjectCreate(ApiRequestHandler):
 
     saver = ProjectSaver
 
+    # Do not use authentication decorator; do not send to login page, but fail.
     def post(self):
         """Create a project.
         Return HTTP 201, project URL in header "Location", and project data.
@@ -249,6 +342,8 @@ class ApiProjectCreate(ApiRequestHandler):
 
 class ApiProjects(ApiRequestHandler):
     "Access to all projects."
+
+    # Do not use authentication decorator; do not send to login page, but fail.
     def get(self):
         "Return a list of all projects."
         projects = self.get_projects()
@@ -260,6 +355,7 @@ class ApiProjects(ApiRequestHandler):
 class ApiProjectsNotDone(ApiRequestHandler):
     "Access to all projects that are not done."
 
+    # Do not use authentication decorator; do not send to login page, but fail.
     def get(self):
         "Return a list of all undone projects."
         projects = self.get_not_done_projects()
