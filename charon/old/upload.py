@@ -26,6 +26,7 @@ class Upload(RequestHandler):
 
 
 class UploadRequestHandler(RequestHandler):
+    "Base upload handler."
 
     def read_records(self, **columns):
         """Get the input CSV file data.
@@ -42,26 +43,32 @@ class UploadRequestHandler(RequestHandler):
         dialect = csv.Sniffer().sniff(infile.read(1024))
         infile.seek(0)
         reader = csv.reader(infile, dialect)
-        header_line = utils.to_bool(self.get_argument('header_line',False))
-        if header_line:
+        header_line = self.get_header_line(reader)
+        if header_line is None:
+            self.messages.append('No header line')
+            self.columns = columns
+            self.offset = 1
+        else:
             self.messages.append('Header line present')
-            header = reader.next()
             self.columns = dict()
             for key in columns:
                 key = key.lower()
-                for pos, name in enumerate(header):
+                for pos, name in enumerate(header_line):
                     if key == name.lower():
                         self.columns[key] = pos
                         break
                 else:
                     self.columns[key] = columns[key]
             self.offset = 2
-        else:
-            self.messages.append('No header line')
-            self.columns = columns
-            self.offset = 1
         self.rows = list(reader)
         self.messages.append("{} data records in file".format(len(self.rows)))
+
+    def get_header_line(self, reader):
+        "Return the header line, if there is supposed to be one."
+        if utils.to_bool(self.get_argument('header_line',False)):
+            return reader.next()
+        else:
+            return None
 
     def get_new_project(self, pos, row):
         "Check and return the identifier for a new project. None if error."
@@ -77,14 +84,11 @@ class UploadRequestHandler(RequestHandler):
         except ValueError:
             self.errors.append("row {}: invalid project identifier '{}'".
                           format(pos+self.offset, projectid))
-        except tornado.web.HTTPError:
+        except tornado.web.HTTPError: # Correct! No such project exists.
             return projectid
         else:
             self.errors.append("row {}: project identifier '{}' already exists".
                           format(pos+self.offset, projectid))
-
-    def add_new_project(self, pos, row):
-        "Add the new project and return the entity."
 
     def get_new_sample(self, pos, row, projectid):
         "Check and return the identifier for a new sample. None if error."
@@ -119,6 +123,47 @@ class UploadRequestHandler(RequestHandler):
         self.redirect(self.get_absolute_url('upload',
                                             message='\n'.join(self.messages),
                                             error='\n'.join(self.errors)))
+
+
+class UploadSamplesheetUppsala(UploadRequestHandler):
+    "Upload an Illumina samplesheet as defined in Uppsala."
+
+    @tornado.web.authenticated
+    def post(self):
+        "Check and optionally add data from samplesheet CSV file."
+        logging.debug("UploadProjects post")
+        # No need to pass column definitions; always header line in samplesheet.
+        self.read_records()
+        self.projects = dict()
+        for pos, row in enumerate(self.rows):
+            projectid = self.get_new_project(pos, row)
+            if not projectid: continue
+            self.projects.setdefault(projectid, set())
+            self.get_new_sample(pos, row, projectid)
+
+    def get_header_line(self, reader):
+        "There is always a header line in a samplesheet file."
+        return reader.next()
+
+    def get_new_project(self, pos, row):
+        "Check and return the identifier for a new project. None if error."
+        try:
+            projectid = row[self.columns['sampleproject']].strip()
+            if not projectid: raise IndexError
+            if not constants.ID_RX.match(projectid): raise ValueError
+            if projectid.lower() == 'project': raise ValueError
+            self.get_project(projectid)
+        except IndexError:
+            self.errors.append("row {}: no project identifier".format(
+                    pos+self.offset))
+        except ValueError:
+            self.errors.append("row {}: invalid project identifier '{}'".
+                          format(pos+self.offset, projectid))
+        except tornado.web.HTTPError: # Correct! No such project exists.
+            return projectid
+        else:
+            self.errors.append("row {}: project identifier '{}' already exists".
+                          format(pos+self.offset, projectid))
 
 
 class UploadProjects(UploadRequestHandler):

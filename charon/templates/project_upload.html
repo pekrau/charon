@@ -1,0 +1,82 @@
+{# Upload samples into a project page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Upload samples into project {{ project['projectid'] }}
+{% end %}
+
+{% block title %}
+{% module Icon('upload') %}
+Upload samples into project
+{% module Icon('project') %}
+{{ project['projectid'] }}
+{% end %}
+
+{% block content %}
+
+<p>
+  Upload samples in the form of a Comma-Separated Values (CSV) file,
+  commonly produced from an Excel spreadsheet.
+  <ol>
+    <li>
+      Currently, only sample identifiers are uploaded from the first
+      column in the CSV file. Any other columns are ignored.
+    <li>
+      The CSV file must <strong>not</strong> contain a header record.
+  </ol>
+</p>
+
+{% if message %}
+<p class="pre bold">{{ message }}</p>
+{% end %}
+
+{% if error %}
+<h4 class="error">Errors</h4>
+<p class="pre error">{{ error }}</p>
+{% end %}
+
+<form action="{{ reverse_url('project_upload', project['projectid']) }}"
+      method="POST"
+      enctype="multipart/form-data">
+  {% module xsrf_form_html() %}
+
+  <fieldset>
+    <legend>Create new samples within the project.</legend>
+
+    <table class="fields">
+
+      <tr>
+	<th>Project</th>
+	<td></td>
+	<td>
+	  <a href="{{ reverse_url('project', project['projectid']) }}">
+	    {{ project['projectid'] }}
+	  </a>
+	</td>
+      </tr>
+
+      <tr>
+	<th>CSV file</th>
+	<td>{% module Icon('mandatory') %}</td>
+	<td><input type="file" name="csvfile"></td>
+	<td class="description">
+	  CSV file containing new samples, one per line.
+	</td>
+      </tr>
+
+      <tr>
+	<th></th>
+	<td></td>
+	<td>
+	  {% module Submit('upload') %}
+	</td>
+      </tr>
+
+    </table>
+
+   </fieldset>
+
+</form>
+
+{% end %}

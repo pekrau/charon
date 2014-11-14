@@ -158,6 +158,7 @@ class ApiSample(ApiRequestHandler):
 
     saver = SampleSaver
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def get(self, projectid, sampleid):
         """Return the sample data as JSON.
         Return HTTP 404 if no such sample or project."""
@@ -166,6 +167,7 @@ class ApiSample(ApiRequestHandler):
         self.add_sample_links(sample)
         self.write(sample)
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def put(self, projectid, sampleid):
         """Update the sample with the given JSON data.
         Return HTTP 204 "No Content".
@@ -187,6 +189,7 @@ class ApiSample(ApiRequestHandler):
             else:
                 self.set_status(204)
     
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def delete(self, projectid, sampleid):
         """NOTE: This is for unit test purposes only!
         Delete the sample and all of its dependent entities.
@@ -203,6 +206,7 @@ class ApiSampleCreate(ApiRequestHandler):
 
     saver = SampleSaver
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def post(self, projectid):
         """Create a sample within a project.
         Return HTTP 201, sample URL in header "Location", and sample data.
@@ -237,6 +241,7 @@ class ApiSampleCreate(ApiRequestHandler):
 class ApiSamples(ApiRequestHandler):
     "Access to all samples in a project."
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def get(self, projectid):
         "Return a list of all samples."
         samples = self.get_samples(projectid)
@@ -248,6 +253,7 @@ class ApiSamples(ApiRequestHandler):
 class ApiSamplesNotDone(ApiRequestHandler):
     "Access to all samples that are not done."
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def get(self):
         "Return a list of all undone samples."
         samples= self.get_not_done_samples()
@@ -255,9 +261,11 @@ class ApiSamplesNotDone(ApiRequestHandler):
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
 
+
 class ApiSamplesNotDonePerProject(ApiRequestHandler):
     "Access to all samples that are not done."
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def get(self, projectid):
         "Return a list of all undone samples."
         samples= self.get_not_done_samples(projectid)
@@ -265,11 +273,13 @@ class ApiSamplesNotDonePerProject(ApiRequestHandler):
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
 
+
 class ApiSamplesCustomQuery(ApiRequestHandler):
     """Access to all samples that match the given query. The query MUST be a dictionnary with
     the following keys : projectid, sampleField, operator, value, type.
     ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'float'}"""
 
+    # Do not use authenticaton decorator; do not send to login page, but fail.
     def get(self):
         "Return a list of all samples matching the query."
         try:

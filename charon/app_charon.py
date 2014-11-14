@@ -18,7 +18,6 @@ from charon.sample import *
 from charon.libprep import *
 from charon.seqrun import *
 from charon.api import *
-from charon.upload import *
 
 
 class Dummy(RequestHandler):
@@ -34,6 +33,7 @@ handlers = \
      URL(r'/project', ProjectCreate, name='project_create'),
      URL(r'/project/([^/]+)', Project, name='project'),
      URL(r'/project/([^/]+)/edit', ProjectEdit, name='project_edit'),
+     URL(r'/project/([^/]+)/upload', ProjectUpload, name='project_upload'),
      URL(r'/projects', Projects, name='projects'),
      URL(r'/sample/([^/]+)', SampleCreate, name='sample_create'),
      URL(r'/sample/([^/]+)/([^/]+)', Sample, name='sample'),
@@ -49,9 +49,6 @@ handlers = \
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)/edit',
          SeqrunEdit, name='seqrun_edit'),
      URL(r'/search', Search, name='search'),
-     URL(r'/upload', Upload, name='upload'),
-     URL(r'/upload/projects', UploadProjects, name='upload_projects'),
-     URL(r'/upload/samples', UploadSamples, name='upload_samples'),
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
      URL(constants.LOGIN_URL, Login, name='login'),
