@@ -36,7 +36,7 @@ class SeqrunSaver(Saver):
     doctype = constants.SEQRUN
 
     fields = [SeqrunidField('seqrunid'),
-              Field('lane_sequencing_status', description='The status of the sequencing for each lane.',),
+              Field('lane_sequencing_status', description='The status of the sequencing for each lane.'),
               SelectField('alignment_status', description='The status of the alignment.',
                           options=constants.EXTENDED_STATUS),
               Field('runid',
