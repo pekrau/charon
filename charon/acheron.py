@@ -191,7 +191,7 @@ def updateCharon(jsonData, url, options):
         if options.verbose:
             logging.info(url)
             logging.info(jsonData)
-            if r.status_code==201 or r.status_code=204:
+            if r.status_code==201 or r.status_code==204:
                 logging.info("update ok")
             elif r.status_code==400:
                 logging.error("input data is wrong, {}".format(r.reason))
