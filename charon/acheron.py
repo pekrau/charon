@@ -1,3 +1,5 @@
+
+from __future__ import print_function
 import sys
 import os
 import codecs
@@ -68,6 +70,13 @@ def main(options):
             olddata=getCompleteProject(newdata['projectid'], options)
             compareOldAndNew(olddata, newdata, options)
 
+    elif options.proj:
+        projs=findprojs(options.proj)
+        for pname, pid in projs:
+            cleanCharon(pid, options)
+            data=prepareData(pname)
+            writeProjectData(data, options)
+
     elif options.clean:
         session = requests.Session()
         headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
@@ -104,7 +113,7 @@ def compareOldAndNew(old, new, options):
                 seqruns=lib.pop('seqruns')
 
                 if autoupdate or libid not in oldsamples[sampleid]['libs']:  
-                    print "updating {0} {1}".format(sampleid, libid)
+                    print("updating {0} {1}".format(sampleid, libid))
                     writeToCharon(json.dumps(lib),'{0}/api/v1/libprep/{1}/{2}'.format(options.url, new['projectid'], sampleid), options)
                     autoupdate=True
 
@@ -114,6 +123,15 @@ def compareOldAndNew(old, new, options):
                         logging.info("updating {0} {1} {2}".format(sampleid, libid, seqrunid))
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
 
+def isDiff(dict1, dict2, var_keys):
+    """returns true if dict1 and dict2 have different values in one of the var_keys, but the SAME values in all the other keys"""
+    diff=False
+    for key in dict1.keys():
+        if key in var_keys and dict1.get(key) != dict2.get(key):
+            diff=True
+        if not key in var_keys and dict1.get(key) != dict2.get(key):
+            return False
+    return diff
 
 def getCompleteProject(projectid, options):
     session = requests.Session()
@@ -140,9 +158,6 @@ def getCompleteProject(projectid, options):
             project['samples'][sample['sampleid']]=sample
 
         return project
-    else:
-        logging.error(rq.status_code)
-        logging.error(rq.reason)
     return None
         
 def findprojs(key):
@@ -156,8 +171,8 @@ def findprojs(key):
 
 def updateCharon(jsonData, url, options):
     if options.fake:
-        print "data {}".format(jsonData)
-        print "url {}".format(url)
+        print( "data {0}".format(jsonData))
+        print( "url {0}".format(url))
     else:
         session = requests.Session()
         headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
@@ -172,27 +187,27 @@ def updateCharon(jsonData, url, options):
             elif r.status_code==409:
                 logging.error("Document is being updated")
             else:
-                logging.error("Unknown error : {} {}".format(r.status_code, r.text))
+                logging.error("Unknown error : {0} {0}".format(r.status_code, r.text))
  
 def writeToCharon(jsonData, url, options):
     if options.fake:
-        print "data {}".format(jsonData)
-        print "url {}".format(url)
+        print( "data {0}".format(jsonData))
+        print( "url {0}".format(url))
     else:
         session = requests.Session()
         headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
         r=session.post(url, headers=headers, data=jsonData)
         if options.verbose:
-            print url
-            print jsonData
+            print( url)
+            print( jsonData)
             if r.status_code in [201, 204]:
-                print "update ok"
+                print( "update ok")
             elif r.status_code==400:
-                print "input data is wrong, {}".format(r.reason)
+                print( "input data is wrong, {}".format(r.reason))
             elif r.status_code==409:
-                print "Document is being updated"
+                print( "Document is being updated")
             else:
-                print "Unkown error : {} {}".format(r.status_code, r.text)
+                print( "Unkown error : {} {}".format(r.status_code, r.text))
  
 def writeProjectData(data, options):
     project=data
@@ -220,16 +235,16 @@ def addFakeData(options):
     #adds seqrun data for a.wedell_13_03
 
     url=options.url+"/api/v1/seqrun/P567/P567_101/A"
-    data='{"sequencing_status": "DONE", "demux_qc_flag": "PASSED", "seqrunid": "130611_SN7001298_0148_AH0CCVADXX","seq_qc_flag": "PASSED", "mean_autosomal_coverage": 0, "total_reads": 693366930.0}'
+    data='{"sequencing_status": {1:"PASSED"}, "seqrunid": "130611_SN7001298_0148_AH0CCVADXX","mean_autosomal_coverage": 0, "total_reads": 693366930.0}'
     writeToCharon(data, url, options)
-    data='{"sequencing_status": "DONE", "demux_qc_flag": "PASSED", "seqrunid": "130612_D00134_0019_AH056WADXX","seq_qc_flag": "PASSED", "mean_autosomal_coverage": 0, "total_reads": 606139580.0}'
+    data='{"sequencing_status": {1:"PASSED"}, "seqrunid": "130612_D00134_0019_AH056WADXX", "mean_autosomal_coverage": 0, "total_reads": 606139580.0}'
     writeToCharon(data, url,options )
     url=options.url+"/api/v1/seqrun/P567/P567_102/A"
-    data='{"sequencing_status": "DONE", "demux_qc_flag": "PASSED","seqrunid": "130627_D00134_0023_AH0JYUADXX", "seq_qc_flag": "PASSED", "mean_autosomal_coverage": 0, "total_reads": 292171094.0}'
+    data='{"sequencing_status": {1:"PASSED"}, "seqrunid": "130627_D00134_0023_AH0JYUADXX",  "mean_autosomal_coverage": 0, "total_reads": 292171094.0}'
     writeToCharon(data, url, options)
-    data='{"sequencing_status": "DONE", "demux_qc_flag": "PASSED","seqrunid": "130701_SN7001298_0152_AH0J92ADXX", "seq_qc_flag": "PASSED", "mean_autosomal_coverage": 0, "total_reads": 365307556.0}'
+    data='{"sequencing_status": {1:"PASSED"}, "seqrunid": "130701_SN7001298_0152_AH0J92ADXX",  "mean_autosomal_coverage": 0, "total_reads": 365307556.0}'
     writeToCharon(data, url, options)
-    data='{"sequencing_status": "DONE", "demux_qc_flag": "PASSED","seqrunid": "130701_SN7001298_0153_BH0JMGADXX", "seq_qc_flag": "PASSED", "mean_autosomal_coverage": 0, "total_reads": 356267058.0}    '
+    data='{"sequencing_status": {1:"PASSED"}, "seqrunid": "130701_SN7001298_0153_BH0JMGADXX",  "mean_autosomal_coverage": 0, "total_reads": 356267058.0}    '
     writeToCharon(data, url, options)
 
 
@@ -241,7 +256,7 @@ def prepareData(projname):
     try:
         proj=projs[0]
     except TypeError:
-        print "No such project"
+        print( "No such project")
         raise TypeError
     else:
 
@@ -249,34 +264,13 @@ def prepareData(projname):
         data['name']=proj.name
         data['pipeline']="NGI"
         data['sequencing_facility']="NGI-S"
-        data['library_type']=proj.udf['Library construction method']
         data['best_practice_analysis']="IGN"
-        if 'All samples sequenced' in proj.udf:
-            data['status']='SEQUENCED'
-        elif  'Samples received' in proj.udf:
-            data['status']='OPEN'
-        elif 'Sample information received' in proj.udf:
-            data['status']='OPEN'
-        else :
-            data['status']='NEW' 
-
+        data['status']='OPEN'
         data['samples']={}
         samples=lims.get_samples(projectlimsid=proj.id)    
         for sample in samples:
             sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, "total_autosomal_coverage" : "0"}
-            artf=lims.get_artifacts(process_type=INITIALQC.values(),sample_name=sample.name, qc_flag='FAILED')
-            artp=lims.get_artifacts(process_type=INITIALQC.values(),sample_name=sample.name, qc_flag='PASSED')
-            #if we have artifacts that say passed
-            if len(artp)>0:
-                sampinfo['lims_initial_qc']="Passed"
-
-            for art in artf:
-                #for each artifact that says failed
-                if art.parent_process.type not in [a.parent_process.type for a in artp]:
-                    #if the failed artifact process has been done again, and passed
-                    # I am not checking dates on the assumption that we don't do again processes that pass qc 
-                    sampinfo['lims_initial_qc']="Failed"
-           #even when you want a process, it is easier to use getartifact, because you can filter by sample 
+            #even when you want a process, it is easier to use getartifact, because you can filter by sample 
             libstart=lims.get_artifacts(process_type=PREPSTART.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
             libset=set()
@@ -290,55 +284,39 @@ def prepareData(projname):
             sampinfo['libs']={}
             #get pools
             seqarts=lims.get_artifacts(process_type=SEQSTART.values(), sample_name=sample.name, type='Analyte')
+            seqevents=lims.get_processes(type=SEQUENCING.values(), projectname=proj.name)
 
             alphaindex=65
             for lib in libs: 
                 
                 sampinfo['libs'][chr(alphaindex)]={}
                 sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
-                sampinfo['libs'][chr(alphaindex)]['status']="NEW"
                 sampinfo['libs'][chr(alphaindex)]['limsid']=lib.id
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 
-                for sa in seqarts:
-                    #get sequencing processes
-                    seqevents=lims.get_processes(type=SEQUENCING.values(), projectname=proj.name,inputartifactlimsid=sa.id)
-                    for se in seqevents:
-                        if lib.id in procHistory(se, sample.name):
-                            #if this sequencing happened after the given lib
-                            #print se.id
-                            if 'Run ID' in se.udf:
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]={}
-                                #short seqrunid is the first and last part of the run id concatenated with a _
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['seqrunid']=se.udf['Run ID']
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['mean_autosomal_coverage']=0
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['sequencing_status']="DONE"
-                                #the qc flag is on the input artifact of the sequencing run
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['seq_qc_flag']=sa.qc_flag
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['total_reads']=0
+                for se in seqevents:
+                    if lib.id in procHistory(se, sample.name) and 'Run ID' in se.udf:
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]={}
+                        #short seqrunid is the first and last part of the run id concatenated with a _
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['seqrunid']=se.udf['Run ID']
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['mean_autosomal_coverage']=0
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['total_reads']=0
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['sequencing_status']={}
+                        for sa in se.all_inputs():
+                            if sample.name in [s.name for s in sa.samples]and sa.type=="Analyte":
+                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['sequencing_status'][sa.location[1]]=sa.qc_flag
                                 #get the artifacts generated by the demultiplexing (qc values are on them)
-                                demarts=lims.get_artifacts(process_type=DEMULTIPLEX.values(), sample_name=sample.name)
-
-                                total_reads=0
-                                reads_per_lane={}
-                                for da in demarts:
-                                    if da.qc_flag in ['PASSED', 'FAILED'] and "# Reads" in da.udf:
-                                        ph=procHistory(da.parent_process, sample.name)
-                                        if sa.parent_process.id in ph:
-                                            sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['demux_qc_flag']=da.qc_flag
-                                            total_reads+=da.udf['# Reads']
-
-                                sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['total_reads']=total_reads
- 
-
+                    else:
+                        print(lib.id)
+                        print(procHistory)
 
                 alphaindex+=1
-                #print "In sample {}".format(sample.name)
-                #print "Seqrun {}".format(oneseqrun.id)
-                #print "Libs {}".format([lib.id for lib in libs])
-                #print oneseqrun.input_per_sample(sample.name)[0].id
-                #print "History {}".format (h.history) 
-                #print "====="
+                #print( "In sample {}".format(sample.name))
+                #print( "Seqrun {}".format(oneseqrun.id))
+                #print( "Libs {}".format([lib.id for lib in libs]))
+                #print( oneseqrun.input_per_sample(sample.name)[0].id)
+                #print( "History {}".format (h.history) )
+                #print( "=====")
             data['samples'][sample.name]=sampinfo
 
     return data
@@ -348,7 +326,10 @@ def procHistory(proc, samplename):
     processes=[]
     artifacts = lims.get_artifacts(sample_name = samplename, type = 'Analyte')
     not_done=True
-    starting_art=proc.input_per_sample(samplename)[0].id
+    try:
+        starting_art=proc.input_per_sample(samplename)[0].id
+    except:
+        return []
     while not_done:
         logging.info ("looking for ",(starting_art))
         not_done=False 
@@ -377,23 +358,31 @@ def procHistory(proc, samplename):
 
 def stressTest(options):
     testprojects=[]
-    print "#"*10
-    print "Start : {0}".format(datetime.datetime.now().isoformat())
-    print "#"*10
+    print( "#"*10)
+    print( "Start : {0}".format(datetime.datetime.now().isoformat()))
+    print( "#"*10)
     for n in xrange(1,options.stress+1):
-        d=genFakeFroject(n, 'TEST_{0}'.format(n),200, 1, 1)
-        writeProjectData(d, options)
+    #    d=genFakeFroject(n, 'TEST_{0}'.format(n),200, 1, 1)
+    #    writeProjectData(d, options)
         testprojects.append('TEST_{0}'.format(n))
 
-    print "#"*10
-    print "{0} :Done uploading. Querying...".format(datetime.datetime.now().isoformat())
-    print "#"*10
+    print( "#"*10)
+    print( "{0} :Done uploading. Querying...".format(datetime.datetime.now().isoformat()))
+    print( "#"*10)
+    i=0
     for p in testprojects:
-        print getCompleteProject(p, options)
+        i+=1
+        if (i%100==0):
+            print(("\n"))
+        try:
+            getCompleteProject(p, options)
+            print(".", end='')
+        except requests.exceptions.ConnectionError as e:
+            print ("\nF {0} : {1}".format(p, e))
 
-    print "#"*10
-    print "{0} : Queries are done. Deleting ...".format(datetime.datetime.now().isoformat())
-    print "#"*10
+    print( "#"*10)
+    print( "{0} : Queries are done. Deleting ...".format(datetime.datetime.now().isoformat()))
+    print( "#"*10)
     for p in testprojects:
         cleanCharon(p, options)
 
@@ -404,7 +393,6 @@ def genFakeFroject(number,name,samplesnb, libsnb, seqrunsnb):
     data['name']=name
     data['pipeline']="TEST"
     data['sequencing_facility']="NGI-S"
-    data['library_type']="TEST"
     data['best_practice_analysis']="TEST"
     data['status']='CLOSED' 
     data['samples']={}
@@ -414,16 +402,13 @@ def genFakeFroject(number,name,samplesnb, libsnb, seqrunsnb):
         for l in xrange(1,libsnb+1):
             sampinfo['libs'][chr(alphaindex)]={}
             sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
-            sampinfo['libs'][chr(alphaindex)]['status']="NEW"
-            sampinfo['libs'][chr(alphaindex)]['limsid']=l
             sampinfo['libs'][chr(alphaindex)]['seqruns']={}
             for r in xrange(1, seqrunsnb+1):
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]={}
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['seqrunid']="TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex), r)
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['mean_autosomal_coverage']=0
-                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['sequencing_status']="DONE"
+                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['sequencing_status']={1:"DONE"}
                 #the qc flag is on the input artifact of the sequencing run
-                sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['seq_qc_flag']="PASSED"
                 sampinfo['libs'][chr(alphaindex)]['seqruns']["TESTFC_{0}_{1}_{2}_{3}".format(number,s,chr(alphaindex),r)]['total_reads']=0
 
             alphaindex+=1
@@ -477,10 +462,10 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
         
     if not options.token :
-        print "No valid token found in arg or in environment. Exiting."
+        print( "No valid token found in arg or in environment. Exiting.")
         sys.exit(-1)
     if not options.url:
-        print "No valid url found in arg or in environment. Exiting."
+        print( "No valid url found in arg or in environment. Exiting.")
         sys.exit(-1)
 
     main(options)
