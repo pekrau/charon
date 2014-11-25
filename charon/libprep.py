@@ -32,7 +32,7 @@ class LibprepSaver(Saver):
     doctype = constants.LIBPREP
 
     fields = [LibprepidField('libprepid', title='Identifier'),
-              SelectField('QC_ANALYSIS', description='The status of the libprep\'s analysis.',
+            SelectField('qc', description='The status of the libprep\'s analysis.',
                           options=constants.BASE_STATUS),
               ]
 

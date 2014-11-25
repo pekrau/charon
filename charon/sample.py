@@ -35,15 +35,22 @@ class SampleSaver(Saver):
               SelectField('analysis_status',
                           description='The status of the sample\'s analysis .',
                           options=constants.ANALYSIS_STATUS),
-              SelectField('qc_status', title='QC',
+              SelectField('status', title='status',
+                    description='The internal status of the sample.', options=constants.SEQUENCING_STATUS),
+              SelectField('qc', title='QC',
                     description='The quality control status of the sample\'s analysis.', options=constants.EXTENDED_STATUS),
               SelectField('genotyping_status',
                     description='The genotyping status of the sample.', options=constants.GENO_STATUS),
               FloatField('total_autosomal_coverage',
                     description='Total of every autosomal coverage for each seqrun in each libprep.', 
                     default=0.0),
+              FloatField('target_coverage',
+                    description='Target coverage for the current sample.', 
+                    default=30.0),
               FloatField('total_sequenced_reads',
                     description='Total of all for each seqrun in each libprep.'),
+              SelectField('type', description='Identifies cancer samples.', options=constants.SAMPLE_TYPES),
+              Field('pair', description='Identifies related samples.')
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):

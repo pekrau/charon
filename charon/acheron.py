@@ -280,7 +280,7 @@ def prepareData(projname):
         data['samples']={}
         samples=lims.get_samples(projectlimsid=proj.id)    
         for sample in samples:
-            sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, "total_autosomal_coverage" : "0"}
+            sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, 'status' : 'NEW', 'total_autosomal_coverage' : "0"}
             #even when you want a process, it is easier to use getartifact, because you can filter by sample 
             libstart=lims.get_artifacts(process_type=PREPSTART.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
@@ -295,6 +295,8 @@ def prepareData(projname):
             sampinfo['libs']={}
             #get pools
             seqevents=lims.get_processes(type=SEQUENCING.values(), projectname=proj.name)
+            if seqevents:
+                sampinfo['status']='NEW'
             alphaindex=65
             for lib in libs: 
                 sampinfo['libs'][chr(alphaindex)]={}

@@ -39,8 +39,6 @@ class SeqrunSaver(Saver):
               Field('lane_sequencing_status', description='The status of the sequencing for each lane.'),
               SelectField('alignment_status', description='The status of the alignment.',
                           options=constants.EXTENDED_STATUS),
-              Field('runid',
-                    description='The flowcell+lane identifier.'),
               FloatField('total_reads',
                     description='Number of reads. Cannot be None, Must be at least 0', default=0),
               FloatField('mean_autosomal_coverage',
