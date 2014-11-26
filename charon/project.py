@@ -52,14 +52,13 @@ class ProjectSaver(Saver):
                           options=constants.PROJECT_STATUS),
               Field('pipeline',
                     description='Pipeline to use for project data analysis.'),
+              Field('reference',
+                    description='Reference sequence to be used'),
               Field('best_practice_analysis',
                     title='Best-practice analysis',
                     description='Status of best-practice analysis.'),
-              Field('library_type',
-                    title='Library type',
-                    description='Lims Library construction method'),
               SelectField('sequencing_facility',
-                          options=['NGI-S', 'NGI-U'],
+                          options=constants.SEQ_FACILITIES,
                           description='The location of the samples')
               ]
 
