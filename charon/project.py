@@ -73,7 +73,7 @@ class UploadSamplesMixin(object):
             data = self.request.files['csvfile'][0]
         except (KeyError, IndexError):
             raise tornado.web.HTTPError(400, reason='no CSV file uploaded')
-        self.messages = ["Data from file {}".format(data['filename'])]
+        self.messages = ["Data from file {0}".format(data['filename'])]
         self.errors = []
         samples_set = set()
         view = self.db.view('sample/sampleid',
@@ -94,9 +94,9 @@ class UploadSamplesMixin(object):
                 samples_set.add(sampleid)
                 samples.append(sampleid)
             except IndexError:
-                self.errors.append("line {}: empty record".format(pos))
+                self.errors.append("line {0}: empty record".format(pos))
             except KeyError:
-                self.errors.append("line {}: non-unique sampleid {}".
+                self.errors.append("line {0}: non-unique sampleid {1}".
                                    format(pos, sampleid))
             if len(self.errors) > 10:
                 self.errors.append('too many errors, giving up...')
@@ -111,8 +111,8 @@ class UploadSamplesMixin(object):
                         data = dict(sampleid=sampleid)
                         saver.store(data=data)
                 except (IOError, ValueError), msg:
-                    self.errors.append("line {}: {}".format(pos, str(msg)))
-            self.messages.append("{} samples added".format(len(samples)))
+                    self.errors.append("line {0}: {1}".format(pos, str(msg)))
+            self.messages.append("{0} samples added".format(len(samples)))
 
 
 class Project(RequestHandler):
