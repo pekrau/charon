@@ -80,8 +80,6 @@ Project {{ project['projectid'] }}
 	  <th>Total autosomal coverage</th>
 	  <th>Target coverage</th>
 	  <th>Total sequenced reads</th>
-	  <th>Type</th>
-	  <th>Pair</th>
 	  <th># libpreps</th>
 	  <th># seqruns</th>
 	  <th>Modified</th>
@@ -99,12 +97,9 @@ Project {{ project['projectid'] }}
 	  <td>{{ sample.get('analysis_status') or '-' }}</td>
 	  <td>{{ sample.get('qc') or '-' }}</td>
 	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
-	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
 	  <td >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
 	  <td>{{ sample.get('target_coverage') or '-' }}</td>
 	  <td>{{ sample.get('total_sequenced_reads') or '-' }}</td>
-	  <td>{{ sample.get('type') or '-' }}</td>
-	  <td>{{ sample.get('pair') or '-' }}</td>
 	  <td class="number">{{ sample['libpreps_count'] }}</td>
 	  <td class="number">{{ sample['seqruns_count'] }}</td>
 	  <td class="localtime">{{ sample['modified'] }}</td>
