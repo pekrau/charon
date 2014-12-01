@@ -74,10 +74,17 @@ Project {{ project['projectid'] }}
 	<tr class="list">
 	  <th>Identifier</th>
 	  <th>Status</th>
+	  <th>Analysis Status</th>
+	  <th>QC</th>
+	  <th>Genotyping status</th>
+	  <th>Total autosomal coverage</th>
+	  <th>Target coverage</th>
+	  <th>Total sequenced reads</th>
+	  <th>Type</th>
+	  <th>Pair</th>
 	  <th># libpreps</th>
 	  <th># seqruns</th>
 	  <th>Modified</th>
-	  <th>total autosomal coverage</th>
 	</tr>
 
 	{% if samples %}
@@ -89,10 +96,18 @@ Project {{ project['projectid'] }}
 	    </a>
 	  </td>
 	  <td>{{ sample.get('status') or '-' }}</td>
+	  <td>{{ sample.get('analysis_status') or '-' }}</td>
+	  <td>{{ sample.get('qc') or '-' }}</td>
+	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
+	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
+	  <td >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
+	  <td>{{ sample.get('target_coverage') or '-' }}</td>
+	  <td>{{ sample.get('total_sequenced_reads') or '-' }}</td>
+	  <td>{{ sample.get('type') or '-' }}</td>
+	  <td>{{ sample.get('pair') or '-' }}</td>
 	  <td class="number">{{ sample['libpreps_count'] }}</td>
 	  <td class="number">{{ sample['seqruns_count'] }}</td>
 	  <td class="localtime">{{ sample['modified'] }}</td>
-	  <td >{{ sample['total_autosomal_coverage'] if sample['total_autosomal_coverage'] else '-'}}</td>
 	  <td>
 	    <form action="{{ reverse_url('sample_edit', sample['projectid'], sample['sampleid']) }}">
 	      {% module Submit('edit', slim=True) %}
