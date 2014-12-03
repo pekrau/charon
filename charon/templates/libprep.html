@@ -81,9 +81,8 @@ Libprep
       <table class="list">
 	<tr class="list">
 	  <th>Identifier</th>
-	  <th>Sequencing Status</th>
-	  <th>Run ID</th>
-	  <th>Alignment status</th>
+	  <th>Alignment Status</th>
+	  <th>Total Reads</th>
 	  <th>Mean autosomal coverage</th>
 	</tr>
 
@@ -95,9 +94,10 @@ Libprep
 	      {{ seqrun['seqrunid'] }}
 	    </a>
 	  </td>
-	  <td>{{ seqrun.get('sequencing_status') or '-' }}</td>
-	  <td>{{ seqrun.get('runid') or '-' }}</td>
 	  <td>{{ seqrun.get('alignment_status') or '-' }}</td>
+	  <td class="number">
+	    {{ seqrun.get('total_reads') or '0.0' }}
+	  </td>
 	  <td class="number">
 	    {{ seqrun.get('mean_autosomal_coverage') or '0.0' }}
 	  </td>
