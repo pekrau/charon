@@ -76,7 +76,7 @@ Sample
       <table class="list">
 	<tr class="list">
 	  <th>Identifier</th>
-	  <th>Status</th>
+	  <th>QC</th>
 	  <th># seqruns</th>
 	  <th>Modified</th>
 	</tr>
@@ -89,7 +89,7 @@ Sample
 	      {{ libprep['libprepid'] }}
 	      </a>
 	  </td>
-	  <td>{{ libprep.get('status') or '-' }}</td>
+	  <td>{{ libprep.get('qc') or '-' }}</td>
 	  <td class="number">{{ libprep['seqruns_count'] }}</td>
 	  <td class="localtime">{{ libprep['modified'] }}</td>
 	  <td>
