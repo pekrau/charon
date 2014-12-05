@@ -133,11 +133,11 @@ def to_bool(value):
 
 def log(db, doc, changed={}, current_user=None):
     "Create a log entry for the given document."
-    entry = {_id:get_iuid(),
-                doc:doc['_id'],
-                doctype:doc[constants.DB_DOCTYPE],
-                changed:changed,
-                timestamp:timestamp()}
+    entry = {'_id':get_iuid(),
+                'doc':doc['_id'],
+                'doctype':doc[constants.DB_DOCTYPE],
+                'changed':changed,
+                'timestamp':timestamp()}
     entry[constants.DB_DOCTYPE] = constants.LOG
     try:
         if current_user:
