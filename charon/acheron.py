@@ -128,8 +128,8 @@ def compareOldAndNew(old, new, options):
                     if autoupdate or seqrunid not in oldsamples[sampleid]['libs'][libid]['seqruns']:
                         logging.info("updating {0} {1} {2}".format(sampleid, libid, seqrunid))
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
-                    elif(seqrun['lane_sequencing_status']!= oldseqrun['lane_sequencing_status']):
-                        oldseqrun['lane_sequencing_status']=seqrun['lane_sequencing_status']
+                    elif(seqrun.get('lane_sequencing_status')!= oldseqrun.get('lane_sequencing_status')):
+                        oldseqrun['lane_sequencing_status']=seqrun.get('lane_sequencing_status')
                         updateCharon(json.dumps(oldseqrun), '{0}/api/v1/seqrun/{1}/{2}/{3}/{4}'.format(options.url, new['projectid'], sampleid, libid, seqrunid), options)
 
 
@@ -282,7 +282,7 @@ def prepareData(projname):
         for sample in samples:
             sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, 'status' : 'NEW', 'total_autosomal_coverage' : "0"}
             #even when you want a process, it is easier to use getartifact, because you can filter by sample 
-            libstart=lims.get_artifacts(process_type=PREPSTART.values(), sample_name=sample.name)
+            libstart=lims.get_artifacts(process_type=PREPEND.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
             libset=set()
             for art in libstart:
@@ -302,6 +302,10 @@ def prepareData(projname):
                 sampinfo['libs'][chr(alphaindex)]={}
                 sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
                 sampinfo['libs'][chr(alphaindex)]['limsid']=lib.id
+                sampinfo['libs'][chr(alphaindex)]['qc']="PASSED"
+                for art in lib.all_outputs():
+                    if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
+                        sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
                     if lib.id in procHistory(se, sample.name) and 'Run ID' in se.udf:
@@ -311,6 +315,7 @@ def prepareData(projname):
                         sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['mean_autosomal_coverage']=0
                         sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['total_reads']=0
                         sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['lane_sequencing_status']={}
+                        sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['alignment_status']="NOT_RUNNING"
                         for sa in se.all_inputs():
                             if sample.name in [s.name for s in sa.samples] and sa.type=="Analyte":
                                 sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]['lane_sequencing_status'][sa.location[1]]=sa.qc_flag
