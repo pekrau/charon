@@ -34,6 +34,7 @@ handlers = \
      URL(r'/project/([^/]+)', Project, name='project'),
      URL(r'/project/([^/]+)/edit', ProjectEdit, name='project_edit'),
      URL(r'/project/([^/]+)/upload', ProjectUpload, name='project_upload'),
+     URL(r'/project/([^/]+)/update', ProjectUpdate, name='project_update'),
      URL(r'/projects', Projects, name='projects'),
      URL(r'/sample/([^/]+)', SampleCreate, name='sample_create'),
      URL(r'/sample/([^/]+)/([^/]+)', Sample, name='sample'),

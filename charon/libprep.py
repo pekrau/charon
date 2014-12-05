@@ -175,7 +175,8 @@ class ApiLibprep(ApiRequestHandler):
         libprep= self.get_libprep(projectid, sampleid, libprepid)
         if not libprep: return
         utils.delete_libprep(self.db, libprep)
-        logging.debug("deleted libprep {0}, {1}, {2}", projectid, sampleid, libprepid)
+        logging.debug("deleted libprep {0}, {1}, {2}",
+                      projectid, sampleid, libprepid)
         self.set_status(204)
 
 
