@@ -64,7 +64,10 @@ class ProjectSaver(Saver):
 
 
 class UploadSamplesMixin(object):
-    "Mixin providing a method to upload samples from a CSV file."
+    """Mixin providing a method to upload samples from a CSV file.
+    Samples are created, not updated.
+    The input is sample identifiers only.
+    """
 
     def upload_samples(self, project):
         "Upload samples from file provided via HTML form field."
@@ -80,8 +83,12 @@ class UploadSamplesMixin(object):
                             startkey=[project['projectid'], ''],
                             endkey=[project['projectid'], constants.HIGH_CHAR])
         for row in view:
-            assert row.key[1] not in samples_set, 'sampleid multiple times?'
-            samples_set.add(row.key[1])
+            sampleid = row.key[1]
+            if sampleid in samples_set:
+                self.errors.append("sampleid '{0}' defined multiple times?".
+                                   format(sampleid))
+            else:
+                samples_set.add(sampleid)
         reader = csv.reader(cStringIO.StringIO(data['body']))
         # First get all new sampleids, and check uniqueness
         for pos, record in enumerate(reader):
@@ -94,10 +101,10 @@ class UploadSamplesMixin(object):
                 samples_set.add(sampleid)
                 samples.append(sampleid)
             except IndexError:
-                self.errors.append("line {0}: empty record".format(pos))
+                self.errors.append("line {0}: empty record".format(pos+1))
             except KeyError:
                 self.errors.append("line {0}: non-unique sampleid {1}".
-                                   format(pos, sampleid))
+                                   format(pos+1, sampleid))
             if len(self.errors) > 10:
                 self.errors.append('too many errors, giving up...')
                 break
@@ -111,8 +118,83 @@ class UploadSamplesMixin(object):
                         data = dict(sampleid=sampleid)
                         saver.store(data=data)
                 except (IOError, ValueError), msg:
-                    self.errors.append("line {0}: {1}".format(pos, str(msg)))
+                    self.errors.append("line {0}: {1}".format(pos+1, str(msg)))
             self.messages.append("{0} samples added".format(len(samples)))
+
+
+class UpdateSamplesMixin(object):
+    """Mixin providing a method to update sample information from a CSV file.
+    Samples are updated, not created.
+    The input must contain the sample identifier.
+    All other columns (fields) are optional.
+    """
+
+    def update_samples(self, project):
+        "Update samples from a file provided via HTML form field."
+        try: 
+            data = self.request.files['csvfile'][0]
+        except (KeyError, IndexError):
+            raise tornado.web.HTTPError(400, reason='no CSV file uploaded')
+        self.messages = ["Data from file {0}".format(data['filename'])]
+        self.errors = []
+        reader = csv.reader(cStringIO.StringIO(data['body']))
+        # Header: get positions of fields
+        header = reader.next()
+        lookup = dict()
+        for field in SampleSaver.fields:
+            try:
+                lookup[field.key] = header.index(field.key)
+            except ValueError:
+                if field.key == 'sampleid':
+                    self.errors.append("column 'sampleid' is missing")
+        rows = list(reader)
+        if 'sampleid' in lookup:
+            # First just check
+            for pos, row in enumerate(rows):
+                # Check that the sample identifiers match existing samples
+                try:
+                    sampleid = row[lookup['sampleid']].strip()
+                    if not sampleid: raise ValueError
+                except (IndexError, ValueError):
+                    self.errors.append("line {0}; no sampleid".format(pos+1))
+                    continue
+                try:
+                    sample = self.get_sample(project['projectid'], sampleid)
+                except tornado.web.HTTPError:
+                    self.errors.append("line {0}; no such sample '{1}'".
+                                       format(pos+1, sampleid))
+                    continue
+                # Collect update data for sample
+                data = dict()
+                for key, slot in lookup.iteritems():
+                    if key == 'sampleid': continue
+                    value = row[slot].strip()
+                    if not value: continue
+                    data[key] = value
+                # Check that update of sample is valid
+                try:
+                    with SampleSaver(rqh=self, doc=sample) as saver:
+                        saver.store(data=data, check_only=True)
+                except ValueError, msg:
+                    self.errors.append("row {0}; {1}".format(pos+1, str(msg)))
+        if self.errors:
+            self.messages.append('No samples added.')
+        else:
+            # And now actually do it...
+            for row in rows:
+                sampleid = row[lookup['sampleid']].strip()
+                sample = self.get_sample(project['projectid'], sampleid)
+                # Collect update data for sample
+                data = dict()
+                for key, slot in lookup.iteritems():
+                    if key == 'sampleid': continue
+                    value = row[slot].strip()
+                    if not value: continue
+                    data[key] = value
+                # Store it 
+                with SampleSaver(rqh=self, doc=sample) as saver:
+                    saver.store(data=data)
+            self.messages.append("{0} samples updated.".format(len(rows)))
 
 
 class Project(RequestHandler):
@@ -235,6 +317,35 @@ class ProjectUpload(UploadSamplesMixin, RequestHandler):
         self.redirect(url)
 
 
+class ProjectUpdate(UpdateSamplesMixin, RequestHandler):
+    """Update sample in the project.
+    Data from CSV file having headers which defined which field to update.
+    """
+
+    @tornado.web.authenticated
+    def get(self, projectid):
+        "Display the project samples update form."
+        project = self.get_project(projectid)
+        self.render('project_samples_update.html',
+                    project=project,
+                    samplesaver=SampleSaver,
+                    message=self.get_argument('message', None),
+                    error=self.get_argument('error', None))
+
+    @tornado.web.authenticated
+    def post(self, projectid):
+        "Edit the project with the given form data."
+        self.check_xsrf_cookie()
+        project = self.get_project(projectid)
+        self.update_samples(project)
+        url = self.get_absolute_url('project_update',
+                                    project['projectid'],
+                                    message='\n'.join(self.messages),
+                                    error='\n'.join(self.errors))
+        self.redirect(url)
+
+    
+
 class Projects(RequestHandler):
     "List all projects."
 
@@ -261,7 +372,6 @@ class ApiProject(UploadSamplesMixin, ApiRequestHandler):
     # Do not use authentication decorator; do not send to login page, but fail.
     def post(self, projectid): 
         "Upload a CSV file containing identifiers of samples to create."
-        self.upload_samples
         project = self.get_project(projectid)
         self.upload_samples(project)
         self.write(dict(errors=self.errors, messages=self.messages))
@@ -305,6 +415,21 @@ class ApiProject(UploadSamplesMixin, ApiRequestHandler):
         utils.delete_project(self.db, project)
         logging.debug("deleted project %s", projectid)
         self.set_status(204)
+
+
+class ApiProjectSamplesUpdate(UpdateSamplesMixin, ApiRequestHandler):
+    "Update samples in a project."
+
+    saver = ProjectSaver
+
+    # Do not use authentication decorator; do not send to login page, but fail.
+    def post(self, projectid): 
+        "Upload a CSV file containing identifiers of samples to create."
+        project = self.get_project(projectid)
+        self.update_samples(project)
+        self.write(dict(errors=self.errors, messages=self.messages))
+        if self.errors:
+            self.set_status(400)
 
 
 class ApiProjectCreate(ApiRequestHandler):

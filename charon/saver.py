@@ -24,9 +24,11 @@ class Field(object):
         self.default=default
         self.none_value=u'None'
 
-    def store(self, saver, data=None):
+    def store(self, saver, data=None, check_only=False):
         """Check, convert and store the field value.
-        If data is None, then obtain the value from HTML form parameter."""
+        If 'data' is None, then obtain the value from HTML form parameter.
+        If 'check_only' is True, then just do validity checking, no update.
+        """
         if not saver.is_new() and not self.editable: return
         logging.debug("Field.store(%s)", data)
         value = self.get(saver, data=data)
@@ -34,6 +36,7 @@ class Field(object):
             value = self.process(saver, value)
         except ValueError, msg:
             raise ValueError("field '{0}': {1}".format(self.key, msg))
+        if check_only: return
         if self.default is not None and value is None:
             value = self.default
         if value == saver.doc.get(self.key):
@@ -136,10 +139,11 @@ class SelectField(Field):
 
     def check_valid(self, saver, value):
         "Check that the value, if provided, is valid."
-        if value is None or value ==self.none_value: return
+        if value is None or value == self.none_value: return
         if value not in self.options:
             logging.debug("invalid select value: %s", value)
-            raise ValueError('invalid value; not among options for select')
+            raise ValueError("invalid value '{0}; not among options for select".
+                             format(value))
 
     def html_create(self):
         "Return the field HTML input field for a create form."
@@ -326,11 +330,13 @@ class Saver(object):
         "Is the entity new, i.e. not previously saved in the database?"
         return '_rev' not in self.doc
 
-    def store(self, data=None):
+    def store(self, data=None, check_only=False):
         """Given the fields, store the data items.
-        If data is None, then obtain the value from HTML form parameter."""
+        If data is None, then obtain the value from HTML form parameter.
+        If 'check_only' is True, then just do validity checking, no update.
+        """
         for field in self.fields:
-            field.store(self, data=data)
+            field.store(self, data=data, check_only=check_only)
 
     def finalize(self):
         "Perform any final modifications before saving the entity."

@@ -201,7 +201,8 @@ class ApiSeqrun(ApiRequestHandler):
         seqrun= self.get_seqrun(projectid, sampleid, libprepid, seqrunid)
         if not seqrun: return
         utils.delete_seqrun(self.db, seqrun)
-        logging.debug("deleted seqrun {0}, {1}, {2}", projectid, sampleid, libprepid, seqrunid)
+        logging.debug("deleted seqrun {0}, {1}, {2}",
+                      projectid, sampleid, libprepid, seqrunid)
         self.set_status(204)
                 
     def update_sample_cov(self, projectid, sampleid):

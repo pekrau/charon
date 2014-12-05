@@ -41,7 +41,7 @@ def my_teardown():
     session.delete(url('project', PROJECTID), headers=api_token)
 
 @nose.with_setup(my_setup, my_teardown)
-def test_upload_projects_new_samples():
+def test_upload_project_new_samples():
     "Upload a CSV file with new samples. NOTE: Use POST to project API URL."
     # Add new samples
     files = dict(csvfile=('new_samples.csv', NEW_SAMPLES))

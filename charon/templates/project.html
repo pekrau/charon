@@ -18,6 +18,9 @@ Project {{ project['projectid'] }}
 <form action="{{ reverse_url('sample_create', project['projectid']) }}">
   {% module Submit('create', title='Create sample') %}
 </form>
+<form action="{{ reverse_url('project_update', project['projectid']) }}">
+  {% module Submit('update', title='Update samples') %}
+</form>
 <form action="{{ reverse_url('project_upload', project['projectid']) }}">
   {% module Submit('upload', title='Upload samples') %}
 </form>
