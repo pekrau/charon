@@ -43,9 +43,9 @@ def load_settings(filepath=None):
         settings.update(yaml.safe_load(infile))
     # Set logging state
     if settings.get('LOGGING_DEBUG'):
-        kwargs = dict(level=logging.DEBUG)
+        kwargs = {level=logging.DEBUG}
     else:
-        kwargs = dict(level=logging.INFO)
+        kwargs = {level=logging.INFO}
     try:
         kwargs['format'] = settings['LOGGING_FORMAT']
     except KeyError:
@@ -131,13 +131,13 @@ def to_bool(value):
     value = value.lower()
     return value in ['true', 'yes'] or value[0] in ['t', 'y']
 
-def log(db, doc, changed=dict(), current_user=None):
+def log(db, doc, changed={}, current_user=None):
     "Create a log entry for the given document."
-    entry = dict(_id=get_iuid(),
-                 doc=doc['_id'],
-                 doctype=doc[constants.DB_DOCTYPE],
-                 changed=changed,
-                 timestamp=timestamp())
+    entry = {_id:get_iuid(),
+                doc:doc['_id'],
+                doctype:doc[constants.DB_DOCTYPE],
+                changed:changed,
+                timestamp:timestamp()}
     entry[constants.DB_DOCTYPE] = constants.LOG
     try:
         if current_user:
