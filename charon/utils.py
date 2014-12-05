@@ -43,9 +43,9 @@ def load_settings(filepath=None):
         settings.update(yaml.safe_load(infile))
     # Set logging state
     if settings.get('LOGGING_DEBUG'):
-        kwargs = {level=logging.DEBUG}
+        kwargs = {'level':logging.DEBUG}
     else:
-        kwargs = {level=logging.INFO}
+        kwargs = {'level':logging.INFO}
     try:
         kwargs['format'] = settings['LOGGING_FORMAT']
     except KeyError:
