@@ -37,9 +37,9 @@ in the standard Python distribution.
 The development server is at http://charon-dev.scilifelab.se/ .
 It is currently reachable only from within SciLifeLab Stockholm.
 
-Charon-dev is deployed under the use account **hiseq.bioinfo**, in an
-anaconda virtual anvironment named "charon_env". The logfile is located
-within the repo (~/opt/charon/charon/charon.log)
+Charon-dev is deployed under the user account **hiseq.bioinfo**, in an
+anaconda virtual anvironment named `charon_env`. The logfile is located
+within the repo at `~/opt/charon/charon/charon.log`.
 
 To update Charon, move to the repo and execute `git pull`. If the
 modifications are not automatically reloaded by Tornado (a change in
@@ -54,8 +54,8 @@ We should be getting an upstart configuration to do that properly soon.
 
 ### Couchdb Replication ###
 
-The tables from the production couchdb server are replicated dailyto
-the dev server.  This should have been deactivated for Charon, but if
+The tables from the production couchdb server are replicated daily to
+the dev server.  This should be deactivated for Charon, but if
 that is switched on again for whatever reason, Charon-dev **will**
 fail, since we will get more than one document with the same key.
 
@@ -86,7 +86,9 @@ The production server is upgraded in a similar way as the development server.
 
 ### Service setup ###
 
-The source code used in production is located in:
+Do the following as user `hiseq.bioinfo`.
+
+ The source code used in production is located in:
 
     ~/anaconda/envs/charon_env/lib/python2.6/site-packages/charon
 
