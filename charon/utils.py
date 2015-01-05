@@ -137,7 +137,6 @@ def log(db, doc, changed={}, current_user=None):
                 'doc':doc['_id'],
                 'doctype':doc[constants.DB_DOCTYPE],
                 'changed':changed,
-                'timestamp':timestamp()}
     entry[constants.DB_DOCTYPE] = constants.LOG
     try:
         if current_user:
