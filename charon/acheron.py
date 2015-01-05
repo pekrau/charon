@@ -33,7 +33,8 @@ PREPSTART = {    '117' : 'Applications Generic Process',
     '33' : 'Fragment DNA (TruSeq DNA) 4.0'
             }
 PREPEND = {'157': 'Applications Finish Prep',
-    '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0'
+    '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
+    '666' : 'Library Pooling (Finished Libraries) 4.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
@@ -308,6 +309,8 @@ def prepareData(projname):
                         sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
+                    if 'Comments' in se.udf and se.udf['Comments']=="HiSeq X testrun. /CN":
+                        se.udf['Run ID']='141204_ST-E00201_0013_AH0075CCXX'
                     if lib.id in procHistory(se, sample.name) and 'Run ID' in se.udf:
                         sampinfo['libs'][chr(alphaindex)]['seqruns'][se.udf['Run ID']]={}
                         #short seqrunid is the first and last part of the run id concatenated with a _
