@@ -219,7 +219,7 @@ class ApiSeqrun(ApiRequestHandler):
             update=False
 
         if update:
-            doc['analysis_status']='ANALYSED'
+            doc['analysis_status']='ANALYZED'
             try:
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
@@ -319,7 +319,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
             update=False
 
         if update:
-            doc['analysis_status']='ANALYSED'
+            doc['analysis_status']='ANALYZED'
             try:
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
