@@ -219,7 +219,7 @@ class ApiSeqrun(ApiRequestHandler):
             update=False
 
         if update:
-            doc['analysis_status']='ANALYSED'
+            doc['analysis_status']='ANALYZED'
             try:
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
@@ -319,7 +319,7 @@ class ApiSeqrunCreate(ApiRequestHandler):
             update=False
 
         if update:
-            doc['analysis_status']='ANALYSED'
+            doc['analysis_status']='ANALYZED'
             try:
                 with SampleSaver(doc=doc, rqh=self) as saver:
                     saver.store(data=doc)#failing to provide data will end up in an empty record.
@@ -327,7 +327,6 @@ class ApiSeqrunCreate(ApiRequestHandler):
                 self.send_error(400, reason=str("failed to update sample "+msg))
             except IOError, msg:
                 self.send_error(409, reason=str(msg))
-            else:
                 
     def update_sample_cov(self, projectid, sampleid):
         """this calculates the total of each mean autosomal coverage and updates sample leve.
