@@ -125,8 +125,8 @@ def compareOldAndNew(old, new, options):
 
                 for seqrunid in seqruns:
                     seqrun=seqruns[seqrunid]
-                    oldseqrun=oldsamples[sampleid]['libs'][libid]['seqruns'][seqrunid]
-                    if autoupdate or seqrunid not in oldsamples[sampleid]['libs'][libid]['seqruns']:
+                    oldseqrun=oldsamples[sampleid]['libs'][libid]['seqruns'].get(seqrunid)
+                    if autoupdate or not oldseqrun:
                         logging.info("updating {0} {1} {2}".format(sampleid, libid, seqrunid))
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
                     elif(seqrun.get('lane_sequencing_status')!= oldseqrun.get('lane_sequencing_status')):
