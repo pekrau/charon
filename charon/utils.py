@@ -11,6 +11,7 @@ import unicodedata
 import tornado.web
 import couchdb
 import yaml
+import requests
 
 import charon
 from . import constants
@@ -99,16 +100,16 @@ def get_db():
         raise KeyError("CouchDB database '%s' does not exist" %
                        settings['DB_DATABASE'])
 
-def get_iuid():
-    "Return a unique instance identifier."
-    return uuid.uuid4().hex
-
 def get_versions():
     "Get version numbers for software components as list of tuples."
     return [('Charon', charon.__version__),
             ('tornado', tornado.version),
             ('CouchDB server', settings['DB_SERVER_VERSION']),
             ('CouchDB module', couchdb.__version__)]
+
+def get_iuid():
+    "Return a unique instance identifier."
+    return uuid.uuid4().hex
 
 def timestamp(days=None):
     """Current date and time (UTC) in ISO format, with millisecond precision.

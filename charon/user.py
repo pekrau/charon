@@ -31,30 +31,8 @@ class Login(RequestHandler):
     def post(self):
         self.check_xsrf_cookie()
         try:
-            email = self.get_argument('email')
-            if not email:
-                raise ValueError('no email given')
-            url = "{0}/{1}".format(settings['AUTH']['AUTH_HREF'],
-                                   urllib.quote(email))
-            password = self.get_argument('password')
-            if not password:
-                raise ValueError('no password given')
-            data = json.dumps(dict(password=password, service='Charon'))
-            headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
-            response = requests.post(url, data=data, headers=headers)
-            if response.status_code != requests.codes.ok:
-                raise ValueError(str(response.reason))
-            try:
-                user = self.get_user(email)
-            except tornado.web.HTTPError:
-                user = response.json()
-            else:
-                user.update(response.json())
-            with UserSaver(doc=user, rqh=self) as saver:
-                # All other changes already made.
-                if not user.get('api_token'):
-                    saver['api_token'] = utils.get_iuid()
-            self.set_secure_cookie(constants.USER_COOKIE_NAME, email)
+            self.authenticate_user(self.get_argument('email'),
+                                   self.get_argument('password'))
             url = self.get_argument('next', None)
             if not url:
                 url = self.reverse_url('home')
@@ -64,6 +42,36 @@ class Login(RequestHandler):
             self.render('login.html',
                         error=str(msg),
                         next=self.get_argument('next', None))
+
+    def authenticate_user(self, email, password):
+        """Authenticate the given email and password.
+        This is done by consulting the Userman web service.
+        Save or update the user in this database.
+        Raise ValueError if any error.
+        """
+        if not email:
+            raise ValueError('no email given')
+        if not password:
+            raise ValueError('no password given')
+        url = "{0}/{1}".format(settings['AUTH']['AUTH_HREF'],
+                               urllib.quote(email))
+        data = json.dumps(dict(password=password, service='Charon'))
+        headers = {'X-Userman-API-token': settings['AUTH']['API_TOKEN']}
+        response = requests.post(url, data=data, headers=headers)
+        if response.status_code != requests.codes.ok:
+            raise ValueError(str(response.reason))
+        try:
+            user = self.get_user(email)
+        except tornado.web.HTTPError:
+            user = response.json()
+        else:
+            user.update(response.json())
+        with UserSaver(doc=user, rqh=self) as saver:
+            # All other changes already made.
+            if not user.get('api_token'):
+                saver['api_token'] = utils.get_iuid()
+        self.set_secure_cookie(constants.USER_COOKIE_NAME, email,
+                               expires_days=settings['LOGIN_EXPIRES_DAYS'])
 
 
 class Logout(RequestHandler):
