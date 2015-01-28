@@ -179,7 +179,6 @@ def findprojs(key):
         projects.update(lims.get_projects(udf=udf))
         udf={'Sequencing platform':'HiSeq X'}
         projects.update(lims.get_projects(udf=udf))
-        print([(p.name, p.id) for p in projects])
         return [(p.name, p.id) for p in projects]
     else:
         projects=lims.get_projects(name=key)
