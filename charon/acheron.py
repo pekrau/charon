@@ -173,9 +173,12 @@ def getCompleteProject(projectid, options):
     return None
         
 def findprojs(key):
+    projects=set()
     if key == 'all':
         udf={'Bioinformatic QC':'WG re-seq (IGN)'}
-        projects=lims.get_projects(udf=udf)
+        projects.update(lims.get_projects(udf=udf))
+        udf={'Sequencing platform':'HiSeq X'}
+        projects.update(lims.get_projects(udf=udf))
         return [(p.name, p.id) for p in projects]
     else:
         projects=lims.get_projects(name=key)
