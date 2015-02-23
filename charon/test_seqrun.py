@@ -61,9 +61,9 @@ def test_create_seqrun():
                            headers=api_token)
     assert response.status_code == 200, response
     assert data == response.json()
-    data = dict(status='DONE',
-                alignment_status='RUNNING',
-                runid='123_xyz_qwerty')
+    data = dict(alignment_status='RUNNING',
+                seqrunid=SEQRUNID,
+                runid=SEQRUNID)
     response = session.put(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            data=json.dumps(data),
                            headers=api_token)
@@ -71,7 +71,8 @@ def test_create_seqrun():
     response = session.get(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID, SEQRUNID),
                            headers=api_token)
     newdata = response.json()
-    assert data['runid'] == newdata['runid']
+    assert data['seqrunid'] == newdata['seqrunid']
+    assert data['alignment_status'] == newdata['alignment_status']
     data = dict(status='DONE',
                 alignment_status='DONE',
                 mean_autosomal_coverage=1.0)
