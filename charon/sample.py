@@ -49,6 +49,8 @@ class SampleSaver(Saver):
                     default=30.0),
               FloatField('total_sequenced_reads',
                     description='Total of all for each seqrun in each libprep.'),
+              FloatField('requested_reads',
+                    description='Number of Million of reads requested by the user.'),
               SelectField('type', description='Identifies cancer samples.', options=constants.SAMPLE_TYPES),
               Field('pair', description='Identifies related samples.')
               ]
