@@ -264,6 +264,16 @@ class ApiSamplesNotDone(ApiRequestHandler):
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
 
+class ApiSamplesDone(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    # Do not use authenticaton decorator; do not send to login page, but fail.
+    def get(self):
+        "Return a list of all done samples."
+        samples= self.get_done_samples()
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
 
 class ApiSamplesNotDonePerProject(ApiRequestHandler):
     "Access to all samples that are not done."

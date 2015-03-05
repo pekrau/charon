@@ -395,3 +395,16 @@ class ApiLibprepSeqruns(ApiRequestHandler):
         for seqrun in seqruns:
             self.add_seqrun_links(seqrun)
         self.write(dict(seqruns=seqruns))
+
+class ApiSeqrunsDone(ApiRequestHandler):
+    "Accesses all seqruns either failed or analyzed"
+
+    def get(self):
+        seqruns=self.get_seqruns()
+        filtered_seqr=[]
+        for s in seqrun:
+            if seqrun.alignment_status in constants.EXTENDED_STATUS[2:3]:
+                filtered_seqr.append(s)
+
+        self.write(filtered_seqr)
+

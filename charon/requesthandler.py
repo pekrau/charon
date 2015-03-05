@@ -120,6 +120,18 @@ class RequestHandler(tornado.web.RequestHandler):
 
         return all
 
+    def get_done_samples(self, projectid=None):
+        "Get samples that are not done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/done') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/done')]
+
+        return all
+
+
 
     def get_projects(self):
         "Get all projects."
@@ -195,12 +207,12 @@ class RequestHandler(tornado.web.RequestHandler):
         except (ValueError, KeyError):
             return self.get_and_cache('seqrun/seqrunid', key, self._seqruns)
 
-    def get_seqruns(self, projectid, sampleid='', libprepid=''):
+    def get_seqruns(self, projectid='', sampleid='', libprepid=''):
         """Get the seqruns for the libprep if libprepid given.
         For the entire sample if no libprepid.
         For the entire project if no sampleid."""
         startkey = (projectid, sampleid, libprepid, '')
-        endkey = (projectid,
+        endkey = (projectid or constants.HIGH_CHAR,
                   sampleid or constants.HIGH_CHAR,
                   libprepid or constants.HIGH_CHAR,
                   constants.HIGH_CHAR)
