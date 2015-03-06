@@ -402,9 +402,9 @@ class ApiSeqrunsDone(ApiRequestHandler):
     def get(self):
         seqruns=self.get_seqruns()
         filtered_seqr=[]
-        for s in seqrun:
-            if seqrun.alignment_status in constants.EXTENDED_STATUS[2:3]:
+        for s in seqruns:
+            if s.get('alignment_status') in constants.EXTENDED_STATUS[2:3]:
                 filtered_seqr.append(s)
 
-        self.write(filtered_seqr)
+        self.write(json.dumps(filtered_seqr))
 

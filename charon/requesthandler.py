@@ -172,10 +172,10 @@ class RequestHandler(tornado.web.RequestHandler):
         except KeyError:
             return self.get_and_cache('sample/sampleid', key, self._samples)
 
-    def get_samples(self, projectid):
+    def get_samples(self, projectid=None):
         "Get all samples for the project."
-        startkey = (projectid, '')
-        endkey = (projectid, constants.HIGH_CHAR)
+        startkey = (projectid or '', '')
+        endkey = (projectid or constants.HIGH_CHAR, constants.HIGH_CHAR)
         return [self.get_sample(*r.key) for r in
                 self.db.view('sample/sampleid')[startkey:endkey]]
 

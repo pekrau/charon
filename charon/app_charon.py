@@ -31,6 +31,7 @@ URL = tornado.web.url
 handlers = \
     [URL(r'/', Home, name='home'),
      URL(r'/project', ProjectCreate, name='project_create'),
+     URL(r'/summary', Summary, name='summary'),
      URL(r'/project/([^/]+)', Project, name='project'),
      URL(r'/project/([^/]+)/edit', ProjectEdit, name='project_edit'),
      URL(r'/project/([^/]+)/upload', ProjectUpload, name='project_upload'),

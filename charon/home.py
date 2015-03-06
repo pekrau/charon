@@ -13,6 +13,33 @@ from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 
 
+class Summary(RequestHandler):
+
+    @tornado.web.authenticated
+    def get(self):
+        samples=self.get_samples()
+        tot=0;
+        ana=0
+        passed=0
+        failed=0
+        runn=0
+        for sample in samples:
+            tot+=1
+            if sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['DONE']:
+                ana+=1
+                passed+=1
+            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['FAILED']:
+                ana+=1
+                failed+=1
+            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['ONGOING']:
+                runn+=1
+
+
+
+        self.render('summary.html',samples_total=tot, samples_analyzed=ana,samples_passed=passed, samples_failed=failed, samples_running=runn)
+
+
+
 class Home(RequestHandler):
     "Home page: Form to login or link to create new account. Links to pages."
 
