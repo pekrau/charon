@@ -105,7 +105,7 @@ class IdField(Field):
     def check_valid(self, saver, value):
         "Only allow a subset of ordinary ASCII characters."
         logging.debug('IdField.check_valid')
-        if not constants.ID_RX.match(value):
+        if not constants.ALLOWED_ID_CHARS.match(value):
             raise ValueError('invalid identifier value (disallowed characters)')
 
 

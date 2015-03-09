@@ -66,7 +66,7 @@ def test_librep_delete():
 def test_libprep_modify():
     "Create and modify a libprep."
     # Create the libprep, with status 'new'
-    data = dict(libprepid=LIBPREPID, status='NEW')
+    data = dict(libprepid=LIBPREPID, qc='PASSED')
     response = session.post(url('libprep', PROJECTID, SAMPLEID),
                             data=json.dumps(data),
                             headers=api_token)
@@ -75,10 +75,10 @@ def test_libprep_modify():
     assert libprep['projectid'] == PROJECTID
     assert libprep['sampleid'] == SAMPLEID
     assert libprep['libprepid'] == LIBPREPID
-    assert libprep['status'] == 'NEW'
+    assert libprep['qc'] == 'PASSED'
     libprep_url = BASE_URL.rstrip('/') + response.headers['location']
     # Modify the libprep, setting status to 'aborted'
-    data = dict(status='FAILED')
+    data = dict(qc='FAILED')
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -86,9 +86,9 @@ def test_libprep_modify():
     response = session.get(libprep_url, headers=api_token)
     assert response.status_code == 200, response.reason
     libprep = response.json()
-    assert libprep['status'] == 'FAILED'
+    assert libprep['qc'] == 'FAILED'
     # Try setting an invalid status
-    data = dict(status='no-such-status')
+    data = dict(qc='no-such-status')
     response = session.put(libprep_url,
                            data=json.dumps(data),
                            headers=api_token)

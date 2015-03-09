@@ -12,6 +12,47 @@ from . import utils
 from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 
+import time
+
+class Summary(RequestHandler):
+
+    @tornado.web.authenticated
+    def get(self):
+        start=time.time()
+        samples=self.get_samples()
+        tot=0;
+        ana=0
+        passed=0
+        failed=0
+        runn=0
+        seq=0
+        sids=[]
+        total_cov=0
+        for sample in samples:
+            sids.append(sample.get("sampleid"))
+            cov=int(sample.get("total_autosomal_coverage", 0))
+            total_cov+=cov
+
+            tot+=1
+            if sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['DONE']:
+                ana+=1
+                passed+=1
+            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['FAILED']:
+                ana+=1
+                failed+=1
+            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['ONGOING']:
+                runn+=1
+
+        for sqr in self.get_seqruns():
+            if sqr.get("sampleid") in sids:
+                seq+=1
+                sids.remove(sqr.get("sampleid"))
+
+
+        hge=total_cov/30 
+        self.render('summary.html',samples_total=tot, samples_analyzed=ana,samples_passed=passed, samples_failed=failed, samples_running=runn, samples_sequenced=seq, hge=hge)
+
+
 
 class Home(RequestHandler):
     "Home page: Form to login or link to create new account. Links to pages."

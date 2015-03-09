@@ -31,6 +31,7 @@ URL = tornado.web.url
 handlers = \
     [URL(r'/', Home, name='home'),
      URL(r'/project', ProjectCreate, name='project_create'),
+     URL(r'/summary', Summary, name='summary'),
      URL(r'/project/([^/]+)', Project, name='project'),
      URL(r'/project/([^/]+)/edit', ProjectEdit, name='project_edit'),
      URL(r'/project/([^/]+)/upload', ProjectUpload, name='project_upload'),
@@ -91,8 +92,10 @@ handlers = \
      URL(r'/api/v1/logs/([a-f0-9]{32})', ApiLogs, name='api_logs'),
      URL(r'/api/v1/notify', ApiNotify, name='api_notify'),
      URL(r'/api/v1/projectsnotclosed', ApiProjectsNotDone, name='projects_not_done'),
+     URL(r'/api/v1/samplesdone', ApiSamplesDone, name='samples_done'),
      URL(r'/api/v1/samplesnotdone', ApiSamplesNotDone, name='samples_not_done'),
      URL(r'/api/v1/samplesnotdone/(?P<projectid>[^/]+)', ApiSamplesNotDonePerProject, name='samples_not_done_per_project'),
+     URL(r'/api/v1/seqrunsdone', ApiSeqrunsDone, name='seqruns_done'),
      URL(r'/api/v1/customquery', ApiSamplesCustomQuery, name='custom_query'),
      ]
 
