@@ -211,7 +211,7 @@ class RequestHandler(tornado.web.RequestHandler):
         """Get the seqruns for the libprep if libprepid given.
         For the entire sample if no libprepid.
         For the entire project if no sampleid."""
-        startkey = (projectid, sampleid, libprepid, '')
+        startkey = (projectid  or '', sampleid or '', libprepid or '', '')
         endkey = (projectid or constants.HIGH_CHAR,
                   sampleid or constants.HIGH_CHAR,
                   libprepid or constants.HIGH_CHAR,
