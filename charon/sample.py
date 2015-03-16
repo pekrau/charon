@@ -34,7 +34,7 @@ class SampleSaver(Saver):
     fields = [SampleidField('sampleid', title='Identifier'),
               SelectField('analysis_status',
                           description='The status of the sample\'s analysis .',
-                          options=constants.ANALYSIS_STATUS),
+                          options=constants.SEQRUN_ANALYSIS_STATUS.values()),
               SelectField('status', title='status',
                     description='The internal status of the sample.', options=constants.SEQUENCING_STATUS),
               SelectField('qc', title='QC',
