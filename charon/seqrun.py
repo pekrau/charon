@@ -241,10 +241,11 @@ class ApiSeqrun(ApiRequestHandler):
             totalcov=0
             totalreads=0
             for seqrun in seqruns:
-                if seqrun.get('mean_autosomal_coverage'):
-                    totalcov+=float(seqrun['mean_autosomal_coverage'])
-                if seqrun.get('total_reads'):
-                    totalreads+=float(seqrun['total_reads'])
+                if seqrun['alignment_status'] != constants.SEQRUN_ANALYSIS_STATUS['FAILED']:
+                    if seqrun.get('mean_autosomal_coverage'):
+                        totalcov+=float(seqrun['mean_autosomal_coverage'])
+                    if seqrun.get('total_reads'):
+                        totalreads+=float(seqrun['total_reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
