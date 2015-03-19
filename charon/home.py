@@ -14,43 +14,55 @@ from .api import ApiRequestHandler
 
 import time
 
+def sampleStats(samples, seqruns):
+    data={}
+    data['tot']=0;
+    data['ana']=0
+    data['passed']=0
+    data['failed']=0
+    data['runn']=0
+    data['seq']=0
+    data['sids']=[]
+    data['total_cov']=0
+    for sample in samples:
+        data['sids'].append(sample.get("sampleid"))
+        cov=int(sample.get("total_autosomal_coverage", 0))
+        data['total_cov']+=cov
+
+        data['tot']+=1
+        if sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['DONE']:
+            data['ana']+=1
+            data['passed']+=1
+        elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['FAILED']:
+            data['ana']+=1
+            data['failed']+=1
+        elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['ONGOING']:
+            data['runn']+=1
+
+    for sqr in seqruns:
+        if sqr.get("sampleid") in data['sids']:
+            data['seq']+=1
+            data['sids'].remove(sqr.get("sampleid"))
+
+
+    data['hge']=data['total_cov']/30 
+    return data
+
+
+class SummaryAPI(RequestHandler):
+    def get(self):
+        project_id=self.get_argument("projectid", default=None)
+        self.write(json.dumps(sampleStats(self.get_samples(projectid=project_id), self.get_seqruns(projectid=project_id))))    
+
+
 class Summary(RequestHandler):
 
     @tornado.web.authenticated
     def get(self):
-        start=time.time()
-        samples=self.get_samples()
-        tot=0;
-        ana=0
-        passed=0
-        failed=0
-        runn=0
-        seq=0
-        sids=[]
-        total_cov=0
-        for sample in samples:
-            sids.append(sample.get("sampleid"))
-            cov=int(sample.get("total_autosomal_coverage", 0))
-            total_cov+=cov
-
-            tot+=1
-            if sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['DONE']:
-                ana+=1
-                passed+=1
-            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['FAILED']:
-                ana+=1
-                failed+=1
-            elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['ONGOING']:
-                runn+=1
-
-        for sqr in self.get_seqruns():
-            if sqr.get("sampleid") in sids:
-                seq+=1
-                sids.remove(sqr.get("sampleid"))
-
-
-        hge=total_cov/30 
-        self.render('summary.html',samples_total=tot, samples_analyzed=ana,samples_passed=passed, samples_failed=failed, samples_running=runn, samples_sequenced=seq, hge=hge)
+        data=sampleStats(self.get_samples(), self.get_seqruns())
+        self.render('summary.html',samples_total=data['tot'], samples_analyzed=data['ana'],
+                samples_passed=data['passed'], samples_failed=data['failed'], 
+                samples_running=data['runn'], samples_sequenced=data['seq'], hge=data['hge'])
 
 
 

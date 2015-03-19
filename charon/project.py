@@ -8,16 +8,15 @@ import cStringIO
 import tornado.web
 import couchdb
 
-from . import constants
-from . import settings
-from . import utils
-from .requesthandler import RequestHandler
-from .api import ApiRequestHandler
-from .saver import *
-from .sample import SampleSaver
+import charon.constants as cst
+import charon.utils as utls
+import charon.saver as sav
+from charon.requesthandler import RequestHandler
+from charon.api import ApiRequestHandler
+from charon.sample import SampleSaver
 
 
-class ProjectidField(IdField):
+class ProjectidField(sav.IdField):
     "The unique identifier for the project, e.g. 'P1234'."
 
     def check_valid(self, saver, value):
@@ -28,7 +27,7 @@ class ProjectidField(IdField):
             raise ValueError('not unique')
 
 
-class ProjectnameField(NameField):
+class ProjectnameField(sav.NameField):
     """The name of the project, e.g. 'P.Kraulis_14_01'.
     Optional; must be unique if given."""
 
@@ -41,26 +40,26 @@ class ProjectnameField(NameField):
             raise ValueError('not unique')
 
 
-class ProjectSaver(Saver):
+class ProjectSaver(sav.Saver):
     "Saver and fields definitions for the project entity."
 
-    doctype = constants.PROJECT
+    doctype = cst.PROJECT
 
     fields = [ProjectidField('projectid', title='Identifier'),
               ProjectnameField('name'),
-              SelectField('status', description='The status of the project.',
-                          options=constants.PROJECT_STATUS.values()),
-              SelectField('delivery_status', description='The delivery status of the project.',
-                          options=constants.DELIVERY_STATUS.values()),
-              Field('pipeline',
+              sav.SelectField('status', description='The status of the project.',
+                          options=cst.PROJECT_STATUS.values()),
+              sav.SelectField('delivery_status', description='The delivery status of the project.',
+                          options=cst.DELIVERY_STATUS.values()),
+              sav.Field('pipeline',
                     description='Pipeline to use for project data analysis.'),
-              Field('reference',
+              sav.Field('reference',
                     description='Reference sequence to be used'),
-              Field('best_practice_analysis',
+              sav.Field('best_practice_analysis',
                     title='Best-practice analysis',
                     description='Status of best-practice analysis.'),
-              SelectField('sequencing_facility',
-                          options=constants.SEQ_FACILITIES,
+              sav.SelectField('sequencing_facility',
+                          options=cst.SEQ_FACILITIES,
                           description='The location of the samples')
               ]
 
@@ -83,7 +82,7 @@ class UploadSamplesMixin(object):
         samples_set = set()
         view = self.db.view('sample/sampleid',
                             startkey=[project['projectid'], ''],
-                            endkey=[project['projectid'], constants.HIGH_CHAR])
+                            endkey=[project['projectid'], cst.HIGH_CHAR])
         for row in view:
             sampleid = row.key[1]
             if sampleid in samples_set:
@@ -222,7 +221,7 @@ class Project(RequestHandler):
         for sample in samples:
             try:
                 startkey = [projectid, sample['sampleid']]
-                endkey = [projectid, sample['sampleid'], constants.HIGH_CHAR]
+                endkey = [projectid, sample['sampleid'], cst.HIGH_CHAR]
                 row = view[startkey:endkey].rows[0]
             except IndexError:
                 sample['seqruns_count'] = 0
@@ -414,7 +413,7 @@ class ApiProject(UploadSamplesMixin, ApiRequestHandler):
         Returns HTTP 204 "No Content"."""
         project = self.get_project(projectid)
         if not project: return
-        utils.delete_project(self.db, project)
+        utls.delete_project(self.db, project)
         logging.debug("deleted project %s", projectid)
         self.set_status(204)
 

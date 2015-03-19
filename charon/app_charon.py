@@ -31,7 +31,6 @@ URL = tornado.web.url
 handlers = \
     [URL(r'/', Home, name='home'),
      URL(r'/project', ProjectCreate, name='project_create'),
-     URL(r'/summary', Summary, name='summary'),
      URL(r'/project/([^/]+)', Project, name='project'),
      URL(r'/project/([^/]+)/edit', ProjectEdit, name='project_edit'),
      URL(r'/project/([^/]+)/upload', ProjectUpload, name='project_upload'),
@@ -50,6 +49,7 @@ handlers = \
          Seqrun, name='seqrun'),
      URL(r'/seqrun/([^/]+)/([^/]+)/([^/]+)/([^/]+)/edit',
          SeqrunEdit, name='seqrun_edit'),
+     URL(r'/summary', Summary, name='summary'),
      URL(r'/search', Search, name='search'),
      URL(r'/user/([^/]+)', User, name='user'),
      URL(r'/user/([^/]+)/token', UserApiToken, name='user_token'),
@@ -59,6 +59,7 @@ handlers = \
      URL(r'/version', Version, name='version'),
      URL(r'/apidoc', ApiDocumentation, name='apidoc'),
      URL(r'/api/v1', ApiHome, name='api_home'),
+     URL(r'/api/summary', SummaryAPI, name='spi_ummary'),
      URL(r'/api/v1/project', ApiProjectCreate, name='api_project_create'),
      URL(r'/api/v1/project/(?P<projectid>[^/]+)',
          ApiProject, name='api_project'),

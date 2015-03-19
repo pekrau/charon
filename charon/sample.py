@@ -200,7 +200,7 @@ class ApiSample(ApiRequestHandler):
         Returns HTTP 204 "No Content"."""
         sample= self.get_sample(projectid, sampleid)
         if not sample: return
-        utils.delete_sample(self.db, sample)
+        utls.delete_sample(self.db, sample)
         logging.debug("deleted sample {0}, {1}".format(projectid, sampleid))
         self.set_status(204)
 
