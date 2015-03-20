@@ -49,8 +49,10 @@ def sampleStats(samples, seqruns):
     return data
 
 
-class SummaryAPI(RequestHandler):
+class SummaryAPI(ApiRequestHandler):
+    """Summarizes data for the whole DB, or one project"""
     def get(self):
+      """returns stats from the DB as JSON data  """
         project_id=self.get_argument("projectid", default=None)
         self.write(json.dumps(sampleStats(self.get_samples(projectid=project_id), self.get_seqruns(projectid=project_id))))    
 
