@@ -36,7 +36,7 @@ class SummaryAPI(ApiRequestHandler):
     def get(self):
         """returns stats from the DB as JSON data  """
         project_id=self.get_argument("projectid", default=None)
-        self.write(json.dumps(sampleStats(self.get_samples(projectid=project_id), self.get_seqruns(projectid=project_id))))    
+        self.write(json.dumps(sampleStats(self)))    
 
 
 class Summary(RequestHandler):
