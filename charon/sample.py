@@ -275,6 +275,13 @@ class ApiSamplesDone(ApiRequestHandler):
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
+class SamplesDone(RequestHandler):
+    "displays a list of currently Analyzed samples"
+    def get(self):
+        samples=self.get_done_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples Analyzed successfully")
 
 class ApiSamplesNotDonePerProject(ApiRequestHandler):
     "Access to all samples that are not done."
@@ -287,6 +294,44 @@ class ApiSamplesNotDonePerProject(ApiRequestHandler):
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
 
+class ApiSamplesRunning(ApiRequestHandler):
+    "retuns a list of samples that are currently running"
+    def get(self):
+        self.write(json.dumps(self.get_running_samples(self.get_argument("projectid", None))))
+
+class SamplesRunning(RequestHandler):
+    "displays a list of currently running samples"
+    def get(self):
+        samples=self.get_running_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples Running")
+
+class ApiSamplesFailed(ApiRequestHandler):
+    "retuns a list of samples that are currently failed"
+    def get(self):
+        self.write(json.dumps(self.get_failed_samples(self.get_argument("projectid", None))))
+
+class SamplesFailed(RequestHandler):
+    "displays a list of currently Failed samples"
+    def get(self):
+        samples=self.get_failed_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples with Failed Analysis")
+
+class ApiSamplesDoneFailed(ApiRequestHandler):
+    "retuns a list of samples that are currently failed"
+    def get(self):
+        self.write(json.dumps(self.get_analyzed_failed_samples(self.get_argument("projectid", None))))
+
+class SamplesDoneFailed(RequestHandler):
+    "displays a list of Done and Failed samples"
+    def get(self):
+        samples=self.get_analyzed_failed_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples with Failed or Done Analysis")
 
 class ApiSamplesCustomQuery(ApiRequestHandler):
     """Access to all samples that match the given query. The query MUST be a dictionnary with
@@ -330,3 +375,6 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
+
+
+
