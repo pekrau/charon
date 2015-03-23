@@ -14,38 +14,20 @@ from .api import ApiRequestHandler
 
 import time
 
-def sampleStats(samples, seqruns):
+def sampleStats(handler):
     data={}
-    data['tot']=0;
-    data['ana']=0
-    data['passed']=0
-    data['failed']=0
-    data['runn']=0
-    data['seq']=0
-    data['sids']=[]
-    data['total_cov']=0
-    for sample in samples:
-        data['sids'].append(sample.get("sampleid"))
-        cov=int(sample.get("total_autosomal_coverage", 0))
-        data['total_cov']+=cov
+    view = handler.db.view('sample/summary_count')
+    data['tot'] = view['TOTAL'].rows[0].value
+    data['passed'] = view['ANALYZED'].rows[0].value
+    data['failed'] = view['FAILED'].rows[0].value
+    data['ana'] = data['passed'] + data['failed']
+    data['runn'] = view['UNDER_ANALYSIS'].rows[0].value
+    data['seq'] = view['SEQUENCED'].rows[0].value
 
-        data['tot']+=1
-        if sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['DONE']:
-            data['ana']+=1
-            data['passed']+=1
-        elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['FAILED']:
-            data['ana']+=1
-            data['failed']+=1
-        elif sample.get("analysis_status") == constants.SAMPLE_ANALYSIS_STATUS['ONGOING']:
-            data['runn']+=1
+    view = handler.db.view('sample/total_coverage')
+    data['cov'] = view['TOTAL'].rows[0].value
+    data['hge'] = int(data['cov'] / 30)
 
-    for sqr in seqruns:
-        if sqr.get("sampleid") in data['sids']:
-            data['seq']+=1
-            data['sids'].remove(sqr.get("sampleid"))
-
-
-    data['hge']=data['total_cov']/30 
     return data
 
 
@@ -61,7 +43,7 @@ class Summary(RequestHandler):
 
     @tornado.web.authenticated
     def get(self):
-        data=sampleStats(self.get_samples(), self.get_seqruns())
+        data=sampleStats(self)
         self.render('summary.html',samples_total=data['tot'], samples_analyzed=data['ana'],
                 samples_passed=data['passed'], samples_failed=data['failed'], 
                 samples_running=data['runn'], samples_sequenced=data['seq'], hge=data['hge'])
