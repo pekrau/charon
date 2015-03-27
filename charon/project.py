@@ -60,7 +60,9 @@ class ProjectSaver(sav.Saver):
                     description='Status of best-practice analysis.'),
               sav.SelectField('sequencing_facility',
                           options=cst.SEQ_FACILITIES,
-                          description='The location of the samples')
+                          description='The location of the samples'),
+              sav.Field('uppnex_id',
+                    description='Uppnex ID associated to the project')
               ]
 
 
