@@ -1,0 +1,31 @@
+{# Sample Subset page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Sample Subset
+{{ identifier }}
+{% end %}
+
+{% block title %}
+Sample Subset : {{ identifier }}
+{% end %}
+
+{% block actions %}
+{% end %}
+
+{% block content %}
+
+<table class='list'>
+
+  <tr><th>Project</th><th>Sample</th>
+  {% for sample in samples %}
+  <tr>
+      <td><a href="{{ reverse_url('project', sample['projectid']) }}">{{ sample['projectid'] }}</a></th>
+      <td><a href="{{ reverse_url('sample', sample['projectid'], sample['sampleid']) }}">{{ sample['sampleid'] }}</a></th>
+  </tr>
+  {% end %}
+
+</table>
+
+{% end %}

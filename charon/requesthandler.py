@@ -131,8 +131,38 @@ class RequestHandler(tornado.web.RequestHandler):
 
         return all
 
+    def get_running_samples(self, projectid=None):
+        "Get samples that are running."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/running') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/running')]
 
+        return all
 
+    def get_failed_samples(self, projectid=None):
+        "Get samples that are failed."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/failed') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/failed')]
+
+        return all
+
+    def get_analyzed_failed_samples(self, projectid=None):
+        "Get samples that are failed or done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/analyzed_failed') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/analyzed_failed')]
+
+        return all
     def get_projects(self):
         "Get all projects."
         all = [self.get_project(r.key) for r in
