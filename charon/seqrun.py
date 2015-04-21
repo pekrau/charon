@@ -43,8 +43,8 @@ class SeqrunSaver(Saver):
                     description='Number of reads. Cannot be None, Must be at least 0', default=0),
               FloatField('mean_autosomal_coverage',
                     description='mean autosomal coverage', default=0),
-              sav.SelectField('genotype_status',
-                    description='The genotyping status of the sample.', options=cst.GENO_STATUS.values()),
+              SelectField('genotype_status',
+                    description='The genotyping status of the sample.', options=constants.GENO_STATUS.values()),
               #RangeFloatField('alignment_coverage', 
               #                minimum=0.0,
               #                description='The coverage of the reference'
