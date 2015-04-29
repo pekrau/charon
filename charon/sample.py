@@ -42,6 +42,8 @@ class SampleSaver(sav.Saver):
                     description='The quality control status of the sample\'s analysis.', options=cst.SEQRUN_ANALYSIS_STATUS.values()),
               sav.SelectField('genotype_status',
                     description='The genotyping status of the sample.', options=cst.GENO_STATUS.values()),
+              sav.FloatField('genotype_concordance',
+                    description='The value of the genotyping concordance of the sample.', default=0.0),
               sav.FloatField('total_autosomal_coverage',
                     description='Total of every autosomal coverage for each seqrun in each libprep.', 
                     default=0.0),
