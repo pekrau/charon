@@ -164,9 +164,12 @@ class RequestHandler(tornado.web.RequestHandler):
 
         return all
     def get_projectids_from_sampleid(sampleid)
-        view1 = self.db.view('internal/sampleids_to_projectids',group_level=1)
-        pj_ids=view1[sampleid]
-        return pj_ids
+        pj_ids=[]
+        view1 = self.db.view('internal/sampleids_to_projectids')
+        rows=view1[sampleid]
+        for row in rows:
+            pj_ids.append(row.value)
+            return pj_ids
 
     def get_projects(self):
         "Get all projects."
