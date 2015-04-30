@@ -335,6 +335,15 @@ class SamplesDoneFailed(RequestHandler):
                     samples=samples,
                     identifier="Samples with Failed or Done Analysis")
 
+class ApiProjectsFromSampleIds(ApiRequestHandler):
+    "returns a list of project ids for the given sampleid"
+    def get(self, sampleid):
+        project_ids=self.get_projectids_from_sampleid(sampleid)
+        self.write(json.dumps(projectids))
+
+
+
+
 class ApiSamplesCustomQuery(ApiRequestHandler):
     """Access to all samples that match the given query. The query MUST be a dictionnary with
     the following keys : projectid, sampleField, operator, value, type.
