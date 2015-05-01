@@ -68,6 +68,7 @@ handlers = \
      URL(r'/api/v1/project/(?P<projectid>[^/]+)',
          ApiProject, name='api_project'),
      URL(r'/api/v1/projects', ApiProjects, name='api_projects'),
+     URL(r'/api/v1/projectidsfromsampleid/(?P<sampleid>[^/]+)', ApiProjectsFromSampleIds, name='api_projectidsfromsampleid'),
      URL(r'/api/v1/sample/(?P<projectid>[^/]+)',
          ApiSampleCreate, name='api_sample_create'),
      URL(r'/api/v1/sample/(?P<projectid>[^/]+)/(?P<sampleid>[^/]+)',

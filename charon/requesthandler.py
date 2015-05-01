@@ -163,6 +163,14 @@ class RequestHandler(tornado.web.RequestHandler):
                    self.db.view('sample/analyzed_failed')]
 
         return all
+    def get_projectids_from_sampleid(self, sampleid):
+        pj_ids=[]
+        view1 = self.db.view('internal/sampleids_to_projectids')
+        rows=view1[sampleid]
+        for row in rows:
+            pj_ids.append(row.value)
+            return pj_ids
+
     def get_projects(self):
         "Get all projects."
         all = [self.get_project(r.key) for r in
