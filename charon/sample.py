@@ -34,7 +34,7 @@ class SampleSaver(sav.Saver):
               sav.SelectField('analysis_status',
                           description='The status of the sample\'s analysis .',
                           options=cst.SAMPLE_ANALYSIS_STATUS.values()),
-              sav.SelectField('delivery_status', title='delivery_status',
+              sav.SelectField('delivery_status', title='Delivery status',
                     description='The delivery status of the sample.', options=cst.DELIVERY_STATUS.values()),
               sav.SelectField('status', title='status',
                     description='The internal status of the sample.', options=cst.SEQUENCING_STATUS.values()),
