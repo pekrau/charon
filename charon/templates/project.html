@@ -79,6 +79,7 @@ Project {{ project['projectid'] }}
 	  <th>Status</th>
 	  <th>Analysis Status</th>
 	  <th>Genotyping status</th>
+	  <th>Delivery Status</th>
 	  <th>Total autosomal coverage</th>
 	  <th>Target coverage</th>
 	  <th>Total sequenced reads</th>
@@ -98,6 +99,7 @@ Project {{ project['projectid'] }}
 	  <td>{{ sample.get('status') or '-' }}</td>
 	  <td>{{ sample.get('analysis_status') or '-' }}</td>
 	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
+	  <td>{{ sample.get('delivery_status') or '-' }}</td>
 	  <td >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
 	  <td>{{ sample.get('target_coverage') or '-' }}</td>
 	  <td>{{ sample.get('total_sequenced_reads') or '-' }}</td>
