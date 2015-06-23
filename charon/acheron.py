@@ -34,7 +34,8 @@ PREPSTART = {    '117' : 'Applications Generic Process',
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
-    '666' : 'Library Pooling (Finished Libraries) 4.0'
+    '666' : 'Library Pooling (Finished Libraries) 4.0',
+    '716':'Library Pooling (HiSeq X) 1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
@@ -317,7 +318,8 @@ def prepareData(projname):
                 sampinfo['libs'][chr(alphaindex)]['qc']="PASSED"
                 for art in lib.all_outputs():
                     if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
-                        sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
+                        if art.qc_flag == 'FAILED':
+                            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
                     if 'Comments' in se.udf and se.udf['Comments']=="HiSeq X testrun. /CN":
