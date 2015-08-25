@@ -1,0 +1,25 @@
+{# Projects page. #}
+
+{% extends "base.html" %}
+
+{% block head_title %}
+Analysis summary
+{% end %}
+
+{% block title %}
+{% module Icon('project', title='Projects', label=True) %}
+{% end %}
+
+{% block content %}
+
+<table class="list">
+  <tr><th>Total number of samples</th><td>{{ samples_total}}</td></tr>
+  <tr><th><a href="/samplesdonefailed">Samples Analyzed</a></th><td>{{ samples_analyzed}}</td></tr>
+  <tr><th><a href="/samplesdone">Samples Passed</a></th><td>{{ samples_passed}}</td></tr>
+  <tr><th><a href="/samplesfailed">Samples Failed</a></th><td>{{ samples_failed}}</td></tr>
+  <tr><th><a href="/samplesrunning">Samples Running</a></th><td>{{ samples_running}}</td></tr>
+  <tr><th>Samples Sequenced</th><td>{{ samples_sequenced}}</td></tr>
+  <tr><th>Human Genome Equivalent</th><td>{{ hge}}</td></tr>
+</table>
+
+{% end %}

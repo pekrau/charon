@@ -12,6 +12,75 @@ from . import utils
 from .requesthandler import RequestHandler
 from .api import ApiRequestHandler
 
+import time
+
+def sampleStats(handler, projectid=None):
+    data={}
+    if projectid:
+        total=projectid+"_TOTAL"
+        passed=projectid+"_ANALYZED"
+        failed=projectid+"_FAILED"
+        running=projectid+"_UNDER_ANALYSIS"
+        sequenced=projectid+"_SEQUENCED"
+        coverage=projectid+"_TOTAL_COV"
+    else:
+        total="TOTAL"
+        passed="ANALYZED"
+        failed="FAILED"
+        running="UNDER_ANALYSIS"
+        sequenced="SEQUENCED"
+        coverage="TOTAL_COV"
+
+    view = handler.db.view('sample/summary_count')
+    try:
+        data['tot'] = view[total].rows[0].value
+    except (KeyError, IndexError):
+        data['tot']=0
+    try:
+        data['passed'] = view[passed].rows[0].value
+    except (KeyError, IndexError):
+        data['passed']=0
+    try:
+        data['failed'] = view[failed].rows[0].value
+    except (KeyError, IndexError):
+        data['failed']=0
+    data['ana'] = data['passed'] + data['failed']
+    try:
+        data['runn'] = view[running].rows[0].value
+    except (KeyError, IndexError):
+        data['runn']=0
+    try:
+        data['seq'] = view[sequenced].rows[0].value
+    except (KeyError, IndexError):
+        data['seq']=0
+    try:
+        data['cov'] = view[coverage].rows[0].value
+    except (KeyError, IndexError):
+        data['cov']=0
+    data['hge'] = int(data['cov'] / 30)
+
+    return data
+
+
+class SummaryAPI(ApiRequestHandler):
+    """Summarizes data for the whole DB, or one project"""
+    def get(self):
+        """returns stats from the DB as JSON data  """
+        project_id=self.get_argument("projectid", default=None)
+        self.write(json.dumps(sampleStats(self, project_id)))    
+
+
+class Summary(RequestHandler):
+
+    @tornado.web.authenticated
+    def get(self):
+        project_id=self.get_argument("projectid", default=None)
+        data=sampleStats(self, project_id)
+        self.render('summary.html',samples_total=data['tot'], samples_analyzed=data['ana'],
+                samples_passed=data['passed'], samples_failed=data['failed'], 
+                samples_running=data['runn'], samples_sequenced=data['seq'], hge=data['hge'])
+
+
 
 class Home(RequestHandler):
     "Home page: Form to login or link to create new account. Links to pages."

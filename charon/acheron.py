@@ -34,7 +34,8 @@ PREPSTART = {    '117' : 'Applications Generic Process',
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
-    '666' : 'Library Pooling (Finished Libraries) 4.0'
+    '666' : 'Library Pooling (Finished Libraries) 4.0',
+    '716':'Library Pooling (HiSeq X) 1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
@@ -46,7 +47,9 @@ SEQSTART = {'23':'Cluster Generation (Illumina SBS) 4.0',
 DILSTART = {'40' : 'Library Normalization (MiSeq) 4.0',
     '39' : 'Library Normalization (Illumina SBS) 4.0'}
 SEQUENCING = {'38' : 'Illumina Sequencing (Illumina SBS) 4.0',
-    '46' : 'MiSeq Run (MiSeq) 4.0'}
+    '46' : 'MiSeq Run (MiSeq) 4.0',
+    '999': 'Illumina Sequencing (HiSeq X) 1.0', 
+    }
 WORKSET = {'204' : 'Setup Workset/Plate'}
 SUMMARY = {'356' : 'Project Summary 1.3'}
 DEMULTIPLEX={'13' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
@@ -88,6 +91,8 @@ def main(options):
             cleanCharon(p, options)
     elif options.delproj:
         cleanCharon(options.delproj, options)
+    elif options.delsamp:
+        delSample(options.delsamp, options)
     elif options.stress:
         stressTest(options)
 
@@ -173,9 +178,12 @@ def getCompleteProject(projectid, options):
     return None
         
 def findprojs(key):
+    projects=set()
     if key == 'all':
         udf={'Bioinformatic QC':'WG re-seq (IGN)'}
-        projects=lims.get_projects(udf=udf)
+        projects.update(lims.get_projects(udf=udf))
+        udf={'Sequencing platform':'HiSeq X'}
+        projects.update(lims.get_projects(udf=udf))
         return [(p.name, p.id) for p in projects]
     else:
         projects=lims.get_projects(name=key)
@@ -278,10 +286,14 @@ def prepareData(projname):
         data['sequencing_facility']="NGI-S"
         data['best_practice_analysis']="whole_genome_reseq"
         data['status']='OPEN'
+        if 'Uppnex ID' in proj.udf:
+            data['uppnex_id']=proj.udf['Uppnex ID']
         data['samples']={}
         samples=lims.get_samples(projectlimsid=proj.id)    
         for sample in samples:
             sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, 'status' : 'NEW', 'analysis_status' : 'TO_ANALYZE', 'total_autosomal_coverage' : "0"}
+            if 'Reads Req' in sample.udf:
+                sampinfo['requested_reads']=sample.udf['Reads Req']
             #even when you want a process, it is easier to use getartifact, because you can filter by sample 
             libstart=lims.get_artifacts(process_type=PREPEND.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
@@ -306,7 +318,8 @@ def prepareData(projname):
                 sampinfo['libs'][chr(alphaindex)]['qc']="PASSED"
                 for art in lib.all_outputs():
                     if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
-                        sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
+                        if art.qc_flag == 'FAILED':
+                            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
                     if 'Comments' in se.udf and se.udf['Comments']=="HiSeq X testrun. /CN":
@@ -434,6 +447,19 @@ def genFakeFroject(number,name,samplesnb, libsnb, seqrunsnb):
     
 
 
+def delSample(ids, options):
+    if options.verbose:
+        logging.info("removing sample{0}".format(ids))
+    session = requests.Session()
+    headers = {'X-Charon-API-token': options.token, 'content-type': 'application/json'}
+  
+    r=session.delete(options.url+'/api/v1/sample/'+ids, headers=headers)
+    if options.verbose:
+        if r.status_code==204:
+            logging.info("delete went ok")
+        else:
+            logging.error(r.status_code)
+            logging.error(r.reason)
 
 def cleanCharon(pid,options):
     if options.verbose:
@@ -452,28 +478,30 @@ def cleanCharon(pid,options):
 if __name__ == '__main__':
     usage = "Usage:       python acheron.py [options]"
     parser = OptionParser(usage=usage)
-    parser.add_option("-t", "--token", dest="token", default=os.environ.get('CHARON_API_TOKEN'), 
-            help="Charon API Token. Will be read from the env variable CHARON_API_TOKEN if not provided")
-    parser.add_option("-u", "--url", dest="url", default=os.environ.get('CHARON_BASE_URL'), 
-            help="Charon base url. Will be read from the env variable CHARON_BASE_URL if not provided")
+    parser.add_option("-a", "--all", dest="all", default=False, action="store_true", 
+            help="Try to upload all IGN projects. This will wipe the current information stored in Charon")
+    parser.add_option("-c", "--clean", dest="clean", default=False, action="store_true", 
+            help="This will erase the current information stored in Charon")
     parser.add_option("-d", "--dummy", dest="dummy", default=False, action="store_true", 
             help="Will load the test project list and upload relevant data.")
     parser.add_option("-f", "--fake", dest="fake", default=False, action="store_true",
             help="don't actually do anything with the db, but print what will be uploaded")
+    parser.add_option("-n", "--new", dest="new", default=False, action="store_true", 
+            help="Try to upload new IGN projects. This will NOT erase the current information stored in Charon")
     parser.add_option("-p", "--project", dest="proj", default=None, 
             help="-p <projectname> will try to upload the given project to charon")
     parser.add_option("-r", "--remove", dest="delproj", default=None, 
-            help="-r <projectname> will try to remove the given project to charon")
-    parser.add_option("-a", "--all", dest="all", default=False, action="store_true", 
-            help="Try to upload all IGN projects. This will wipe the current information stored in Charon")
-    parser.add_option("-n", "--new", dest="new", default=False, action="store_true", 
-            help="Try to upload new IGN projects. This will NOT erase the current information stored in Charon")
-    parser.add_option("-c", "--clean", dest="clean", default=False, action="store_true", 
-            help="This will erase the current information stored in Charon")
-    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", 
-            help="prints results for everything that is going on")
+            help="-r <projectname> will try to remove the given project from charon")
     parser.add_option("-s", "--stress", type="int",dest="stress", default=0,
             help="-s N : stresses charon with N projects")
+    parser.add_option("-t", "--token", dest="token", default=os.environ.get('CHARON_API_TOKEN'), 
+            help="Charon API Token. Will be read from the env variable CHARON_API_TOKEN if not provided")
+    parser.add_option("-u", "--url", dest="url", default=os.environ.get('CHARON_BASE_URL'), 
+            help="Charon base url. Will be read from the env variable CHARON_BASE_URL if not provided")
+    parser.add_option("-v", "--verbose", dest="verbose", default=False, action="store_true", 
+            help="prints results for everything that is going on")
+    parser.add_option("-x", "--remove_sample", dest="delsamp", default=None, 
+            help="-x <projectname>/<samplename> will try to remove the given sample from charon")
     (options, args) = parser.parse_args()
         
     if not options.token :

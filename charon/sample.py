@@ -6,15 +6,14 @@ import json
 import tornado.web
 import couchdb
 
-from . import constants
-from . import settings
-from . import utils
-from .requesthandler import RequestHandler
-from .api import ApiRequestHandler
-from .saver import *
+import charon.constants as cst
+import charon.utils as utls
+import charon.saver as sav
+from charon.requesthandler import RequestHandler
+from charon.api import ApiRequestHandler
 
 
-class SampleidField(IdField):
+class SampleidField(sav.IdField):
     "The unique identifier for the sample within the project."
 
     def check_valid(self, saver, value):
@@ -26,31 +25,37 @@ class SampleidField(IdField):
             raise ValueError('not unique')
 
 
-class SampleSaver(Saver):
+class SampleSaver(sav.Saver):
     "Saver and fields definitions for the sample entity."
 
-    doctype = constants.SAMPLE
+    doctype = cst.SAMPLE
 
     fields = [SampleidField('sampleid', title='Identifier'),
-              SelectField('analysis_status',
+              sav.SelectField('analysis_status',
                           description='The status of the sample\'s analysis .',
-                          options=constants.ANALYSIS_STATUS),
-              SelectField('status', title='status',
-                    description='The internal status of the sample.', options=constants.SEQUENCING_STATUS),
-              SelectField('qc', title='QC',
-                    description='The quality control status of the sample\'s analysis.', options=constants.EXTENDED_STATUS),
-              SelectField('genotyping_status',
-                    description='The genotyping status of the sample.', options=constants.GENO_STATUS),
-              FloatField('total_autosomal_coverage',
+                          options=cst.SAMPLE_ANALYSIS_STATUS.values()),
+              sav.SelectField('delivery_status', title='Delivery status',
+                    description='The delivery status of the sample.', options=cst.DELIVERY_STATUS.values()),
+              sav.SelectField('status', title='status',
+                    description='The internal status of the sample.', options=cst.SEQUENCING_STATUS.values()),
+              sav.SelectField('qc', title='QC',
+                    description='The quality control status of the sample\'s analysis.', options=cst.SEQRUN_ANALYSIS_STATUS.values()),
+              sav.SelectField('genotype_status',
+                    description='The genotyping status of the sample.', options=cst.GENO_STATUS.values()),
+              sav.FloatField('genotype_concordance',
+                    description='The value of the genotyping concordance of the sample.', default=0.0),
+              sav.FloatField('total_autosomal_coverage',
                     description='Total of every autosomal coverage for each seqrun in each libprep.', 
                     default=0.0),
-              FloatField('target_coverage',
+              sav.FloatField('target_coverage',
                     description='Target coverage for the current sample.', 
                     default=30.0),
-              FloatField('total_sequenced_reads',
+              sav.FloatField('total_sequenced_reads',
                     description='Total of all for each seqrun in each libprep.'),
-              SelectField('type', description='Identifies cancer samples.', options=constants.SAMPLE_TYPES),
-              Field('pair', description='Identifies related samples.')
+              sav.FloatField('requested_reads',
+                    description='Number of Million of reads requested by the user.'),
+              sav.SelectField('type', description='Identifies cancer samples.', options=cst.SAMPLE_TYPES),
+              sav.Field('pair', description='Identifies related samples.')
               ]
 
     def __init__(self, doc=None, rqh=None, db=None, project=None):
@@ -82,7 +87,7 @@ class Sample(RequestHandler):
             try:
                 startkey = [projectid, sampleid, libprep['libprepid']]
                 endkey = [projectid, sampleid, libprep['libprepid'],
-                          constants.HIGH_CHAR]
+                          cst.HIGH_CHAR]
                 row = view[startkey:endkey].rows[0]
             except IndexError:
                 libprep['seqruns_count'] = 0
@@ -197,7 +202,7 @@ class ApiSample(ApiRequestHandler):
         Returns HTTP 204 "No Content"."""
         sample= self.get_sample(projectid, sampleid)
         if not sample: return
-        utils.delete_sample(self.db, sample)
+        utls.delete_sample(self.db, sample)
         logging.debug("deleted sample {0}, {1}".format(projectid, sampleid))
         self.set_status(204)
 
@@ -262,6 +267,23 @@ class ApiSamplesNotDone(ApiRequestHandler):
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
 
+class ApiSamplesDone(ApiRequestHandler):
+    "Access to all samples that are not done."
+
+    # Do not use authenticaton decorator; do not send to login page, but fail.
+    def get(self):
+        "Return a list of all done samples."
+        samples= self.get_done_samples()
+        for sample in samples:
+            self.add_sample_links(sample)
+        self.write(dict(samples=samples))
+class SamplesDone(RequestHandler):
+    "displays a list of currently Analyzed samples"
+    def get(self):
+        samples=self.get_done_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples Analyzed successfully")
 
 class ApiSamplesNotDonePerProject(ApiRequestHandler):
     "Access to all samples that are not done."
@@ -273,6 +295,53 @@ class ApiSamplesNotDonePerProject(ApiRequestHandler):
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
+
+class ApiSamplesRunning(ApiRequestHandler):
+    "retuns a list of samples that are currently running"
+    def get(self):
+        self.write(json.dumps(self.get_running_samples(self.get_argument("projectid", None))))
+
+class SamplesRunning(RequestHandler):
+    "displays a list of currently running samples"
+    def get(self):
+        samples=self.get_running_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples Running")
+
+class ApiSamplesFailed(ApiRequestHandler):
+    "retuns a list of samples that are currently failed"
+    def get(self):
+        self.write(json.dumps(self.get_failed_samples(self.get_argument("projectid", None))))
+
+class SamplesFailed(RequestHandler):
+    "displays a list of currently Failed samples"
+    def get(self):
+        samples=self.get_failed_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples with Failed Analysis")
+
+class ApiSamplesDoneFailed(ApiRequestHandler):
+    "retuns a list of samples that are currently failed"
+    def get(self):
+        self.write(json.dumps(self.get_analyzed_failed_samples(self.get_argument("projectid", None))))
+
+class SamplesDoneFailed(RequestHandler):
+    "displays a list of Done and Failed samples"
+    def get(self):
+        samples=self.get_analyzed_failed_samples(self.get_argument("projectid", None))
+        self.render('samples_subset.html',
+                    samples=samples,
+                    identifier="Samples with Failed or Done Analysis")
+
+class ApiProjectsFromSampleIds(ApiRequestHandler):
+    "returns a list of project ids for the given sampleid"
+    def get(self, sampleid):
+        project_ids=self.get_projectids_from_sampleid(sampleid)
+        self.write(json.dumps(project_ids))
+
+
 
 
 class ApiSamplesCustomQuery(ApiRequestHandler):
@@ -317,3 +386,6 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
         for sample in samples:
             self.add_sample_links(sample)
         self.write(dict(samples=samples))
+
+
+

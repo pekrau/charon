@@ -43,6 +43,8 @@ class SeqrunSaver(Saver):
                     description='Number of reads. Cannot be None, Must be at least 0', default=0),
               FloatField('mean_autosomal_coverage',
                     description='mean autosomal coverage', default=0),
+              SelectField('genotype_status',
+                    description='The genotyping status of the sample.', options=constants.GENO_STATUS.values()),
               #RangeFloatField('alignment_coverage', 
               #                minimum=0.0,
               #                description='The coverage of the reference'
@@ -241,10 +243,11 @@ class ApiSeqrun(ApiRequestHandler):
             totalcov=0
             totalreads=0
             for seqrun in seqruns:
-                if seqrun.get('mean_autosomal_coverage'):
-                    totalcov+=float(seqrun['mean_autosomal_coverage'])
-                if seqrun.get('total_reads'):
-                    totalreads+=float(seqrun['total_reads'])
+                if seqrun['alignment_status'] != constants.SEQRUN_ANALYSIS_STATUS['FAILED']:
+                    if seqrun.get('mean_autosomal_coverage'):
+                        totalcov+=float(seqrun['mean_autosomal_coverage'])
+                    if seqrun.get('total_reads'):
+                        totalreads+=float(seqrun['total_reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
@@ -337,10 +340,11 @@ class ApiSeqrunCreate(ApiRequestHandler):
             totalcov=0
             totalreads=0
             for seqrun in seqruns:
-                if seqrun['mean_autosomal_coverage']:
-                    totalcov+=float(seqrun['mean_autosomal_coverage'])
-                if seqrun['total_reads']:
-                    totalreads+=float(seqrun['total_reads'])
+                if seqrun['alignment_status'] != constants.SEQRUN_ANALYSIS_STATUS['FAILED']:
+                    if seqrun['mean_autosomal_coverage']:
+                        totalcov+=float(seqrun['mean_autosomal_coverage'])
+                    if seqrun['total_reads']:
+                        totalreads+=float(seqrun['total_reads'])
             
             doc= self.get_sample(projectid, sampleid)
 
@@ -395,3 +399,16 @@ class ApiLibprepSeqruns(ApiRequestHandler):
         for seqrun in seqruns:
             self.add_seqrun_links(seqrun)
         self.write(dict(seqruns=seqruns))
+
+class ApiSeqrunsDone(ApiRequestHandler):
+    "Accesses all seqruns either failed or analyzed"
+
+    def get(self):
+        seqruns=self.get_seqruns()
+        filtered_seqr=[]
+        for s in seqruns:
+            if s.get('alignment_status') in constants.EXTENDED_STATUS[2:3]:
+                filtered_seqr.append(s)
+
+        self.write(json.dumps(filtered_seqr))
+

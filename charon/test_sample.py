@@ -69,7 +69,7 @@ def test_sample_modify():
     assert sample['sampleid'] == SAMPLEID
     assert sample['status'] == 'NEW'
     sample_url = BASE_URL.rstrip('/') + response.headers['location']
-    data = dict(status='DATA_FAILED')
+    data = dict(status='IGNORED')
     response = session.put(sample_url,
                            data=json.dumps(data),
                            headers=api_token)
@@ -77,7 +77,7 @@ def test_sample_modify():
     response = session.get(sample_url, headers=api_token)
     assert response.status_code == 200, response
     sample = response.json()
-    assert sample['status'] == 'DATA_FAILED'
+    assert sample['status'] == 'IGNORED'
     data = dict(status='no-such-value')
     response = session.put(sample_url,
                            data=json.dumps(data),

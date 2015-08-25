@@ -120,6 +120,56 @@ class RequestHandler(tornado.web.RequestHandler):
 
         return all
 
+    def get_done_samples(self, projectid=None):
+        "Get samples that are not done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/done') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/done')]
+
+        return all
+
+    def get_running_samples(self, projectid=None):
+        "Get samples that are running."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/running') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/running')]
+
+        return all
+
+    def get_failed_samples(self, projectid=None):
+        "Get samples that are failed."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/failed') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/failed')]
+
+        return all
+
+    def get_analyzed_failed_samples(self, projectid=None):
+        "Get samples that are failed or done."
+        if projectid:
+            all = [r.value for r in
+                   self.db.view('sample/analyzed_failed') if r.key[0] == projectid]
+        else:
+            all = [r.value for r in
+                   self.db.view('sample/analyzed_failed')]
+
+        return all
+    def get_projectids_from_sampleid(self, sampleid):
+        pj_ids=[]
+        view1 = self.db.view('internal/sampleids_to_projectids')
+        rows=view1[sampleid]
+        for row in rows:
+            pj_ids.append(row.value)
+            return pj_ids
 
     def get_projects(self):
         "Get all projects."
@@ -160,10 +210,10 @@ class RequestHandler(tornado.web.RequestHandler):
         except KeyError:
             return self.get_and_cache('sample/sampleid', key, self._samples)
 
-    def get_samples(self, projectid):
+    def get_samples(self, projectid=None):
         "Get all samples for the project."
-        startkey = (projectid, '')
-        endkey = (projectid, constants.HIGH_CHAR)
+        startkey = (projectid or '', '')
+        endkey = (projectid or constants.HIGH_CHAR, constants.HIGH_CHAR)
         return [self.get_sample(*r.key) for r in
                 self.db.view('sample/sampleid')[startkey:endkey]]
 
@@ -195,12 +245,12 @@ class RequestHandler(tornado.web.RequestHandler):
         except (ValueError, KeyError):
             return self.get_and_cache('seqrun/seqrunid', key, self._seqruns)
 
-    def get_seqruns(self, projectid, sampleid='', libprepid=''):
+    def get_seqruns(self, projectid='', sampleid='', libprepid=''):
         """Get the seqruns for the libprep if libprepid given.
         For the entire sample if no libprepid.
         For the entire project if no sampleid."""
-        startkey = (projectid, sampleid, libprepid, '')
-        endkey = (projectid,
+        startkey = (projectid  or '', sampleid or '', libprepid or '', '')
+        endkey = (projectid or constants.HIGH_CHAR,
                   sampleid or constants.HIGH_CHAR,
                   libprepid or constants.HIGH_CHAR,
                   constants.HIGH_CHAR)
