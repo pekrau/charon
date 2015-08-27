@@ -350,7 +350,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
     ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'float'}"""
 
     # Do not use authenticaton decorator; do not send to login page, but fail.
-    def get(self):
+    def post(self):
         "Return a list of all samples matching the query."
         try:
             data = json.loads(self.request.body)
