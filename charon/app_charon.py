@@ -63,7 +63,7 @@ handlers = \
      URL(r'/version', Version, name='version'),
      URL(r'/apidoc', ApiDocumentation, name='apidoc'),
      URL(r'/api/v1', ApiHome, name='api_home'),
-     URL(r'/api/summary', SummaryAPI, name='spi_ummary'),
+     URL(r'/api/v1/summary', SummaryAPI, name='api_summary'),
      URL(r'/api/v1/project', ApiProjectCreate, name='api_project_create'),
      URL(r'/api/v1/project/(?P<projectid>[^/]+)',
          ApiProject, name='api_project'),
