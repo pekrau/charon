@@ -379,7 +379,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
                     continue
                 if type(sample.get(data['sampleField'])).__name__ != data['type']:
                     raise TypeError('Given type does not match database type {0}'.format(type(sample.get(data['sampleField'])).__name__))
-                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float, 'unicode':unicode}, 'text':unicode ):
+                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float, 'unicode':unicode, 'text':unicode} ):
                     samples.append(sample)
             except Exception, msg:
                 self.send_error(400, reason=str(msg))
