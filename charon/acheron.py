@@ -130,7 +130,10 @@ def compareOldAndNew(old, new, options):
 
                 for seqrunid in seqruns:
                     seqrun=seqruns[seqrunid]
-                    oldseqrun=oldsamples[sampleid]['libs'][libid]['seqruns'].get(seqrunid)
+                    try:
+                        oldseqrun=oldsamples[sampleid]['libs'][libid]['seqruns'].get(seqrunid)
+                    except KeyError:
+                        oldseqrun=None
                     if autoupdate or not oldseqrun:
                         logging.info("updating {0} {1} {2}".format(sampleid, libid, seqrunid))
                         writeToCharon(json.dumps(seqrun),'{0}/api/v1/seqrun/{1}/{2}/{3}'.format(options.url, new['projectid'], sampleid, libid), options)
