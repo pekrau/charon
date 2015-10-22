@@ -34,8 +34,7 @@ PREPSTART = {    '117' : 'Applications Generic Process',
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
-    '666' : 'Library Pooling (Finished Libraries) 4.0',
-    '716':'Library Pooling (HiSeq X) 1.0'
+    '666' : 'Library Pooling (Finished Libraries) 4.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
@@ -68,7 +67,7 @@ def main(options):
             data=prepareData(pname)
             writeProjectData(data, options)
     elif options.new:
-        projs=findprojs('all')
+        projs=findprojs('new')
         for pname, pid in projs:
             newdata=prepareData(pname)
             olddata=getCompleteProject(newdata['projectid'], options)
@@ -188,6 +187,18 @@ def findprojs(key):
         udf={'Sequencing platform':'HiSeq X'}
         projects.update(lims.get_projects(udf=udf))
         return [(p.name, p.id) for p in projects]
+    elif key == 'new':
+        ret=set()
+        udf={'Bioinformatic QC':'WG re-seq (IGN)'}
+        projects.update(lims.get_projects(udf=udf))
+        udf={'Sequencing platform':'HiSeq X'}
+        projects.update(lims.get_projects(udf=udf))
+        delta=datetime.timedelta(hours=240)
+        time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
+        for p in projects:
+            if (not p.close_date) and lims.get_processes(project_name=p.name, last_modified=time_string_pc):
+                ret.add(p))
+        return [(p.name, p.id) for p in ret]
     else:
         projects=lims.get_projects(name=key)
         return [(p.name, p.id) for p in projects]
