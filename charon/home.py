@@ -21,17 +21,16 @@ def sampleStats(handler, projectid=None):
         passed=projectid+"_ANALYZED"
         failed=projectid+"_FAILED"
         running=projectid+"_UNDER_ANALYSIS"
-        sequenced=projectid+"_SEQUENCED"
         coverage=projectid+"_TOTAL_COV"
     else:
         total="TOTAL"
         passed="ANALYZED"
         failed="FAILED"
         running="UNDER_ANALYSIS"
-        sequenced="SEQUENCED"
         coverage="TOTAL_COV"
 
     view = handler.db.view('sample/summary_count')
+    seqview = handler.db.view('sample/sequenced', group=True)
     try:
         data['tot'] = view[total].rows[0].value
     except (KeyError, IndexError):
@@ -50,7 +49,15 @@ def sampleStats(handler, projectid=None):
     except (KeyError, IndexError):
         data['runn']=0
     try:
-        data['seq'] = view[sequenced].rows[0].value
+        seq=0
+        if projectid:
+            for row in seqview[[projectid, '']:[projectid, constants.HIGH_CHAR]]:
+                seq+=1
+        else:
+            for row in seqview:
+                seq+=1
+
+        data['seq'] = seq
     except (KeyError, IndexError):
         data['seq']=0
     try:

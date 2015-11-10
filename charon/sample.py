@@ -350,7 +350,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
     ex : {'projectid':'P567', 'sampleField':'total_sequenced_reads', 'operator':'>=' , 'value':10, 'type':'float'}"""
 
     # Do not use authenticaton decorator; do not send to login page, but fail.
-    def get(self):
+    def post(self):
         "Return a list of all samples matching the query."
         try:
             data = json.loads(self.request.body)
@@ -368,7 +368,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
                 raise ValueError('Unallowed operator : {0}'.format(data['operator']))
             allsamples= self.get_samples(data['projectid'])
             samples=[]
-            query="sample.get('"+data['sampleField']+"') "+data['operator']+" "+data['type']+"("+data['value']+")"
+            query="sample.get('{0}') {1} {2}('{3}')".format(data['sampleField'], data['operator'], data['type'], data['value'])
         except Exception, msg:
             self.send_error(400, reason=str(msg))
 
@@ -379,7 +379,7 @@ class ApiSamplesCustomQuery(ApiRequestHandler):
                     continue
                 if type(sample.get(data['sampleField'])).__name__ != data['type']:
                     raise TypeError('Given type does not match database type {0}'.format(type(sample.get(data['sampleField'])).__name__))
-                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float} ):
+                if eval(query, {"__builtins__":None}, {'sample':sample, 'int':int, 'str':str, 'float':float, 'unicode':unicode, 'text':unicode} ):
                     samples.append(sample)
             except Exception, msg:
                 self.send_error(400, reason=str(msg))
