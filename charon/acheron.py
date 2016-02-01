@@ -34,15 +34,18 @@ PREPSTART = {    '117' : 'Applications Generic Process',
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
-    '666' : 'Library Pooling (Finished Libraries) 4.0'
+    '666' : 'Library Pooling (Finished Libraries) 4.0',
+    '805' : 'NeoPrep Library Prep v1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
     '67' : 'Qubit QC (Library Validation) 4.0',
     '20' : 'CaliperGX QC (DNA)',
+    '806' : 'NeoPrep Library QC v1.0',
     '17' : 'Bioanalyzer QC (Library Validation) 4.0'}
 SEQSTART = {'23':'Cluster Generation (Illumina SBS) 4.0',
-    '26':'Denature, Dilute and Load Sample (MiSeq) 4.0'}
+    '26':'Denature, Dilute and Load Sample (MiSeq) 4.0',
+    '710':'Cluster Generation (HiSeq X) 1.0'}
 DILSTART = {'40' : 'Library Normalization (MiSeq) 4.0',
     '39' : 'Library Normalization (Illumina SBS) 4.0'}
 SEQUENCING = {'38' : 'Illumina Sequencing (Illumina SBS) 4.0',

@@ -47,7 +47,7 @@ def my_teardown():
 @nose.with_setup(my_setup, my_teardown)
 def test_create_seqrun():
     "Create a seqrun in a libprep and manipulate it."
-    data = dict(sequencing_status='NEW', mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
+    data = dict(sequencing_status='NEW', alignment_status="RUNNING", mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
                             headers=api_token)
@@ -94,7 +94,7 @@ def test_create_seqrun():
 @nose.with_setup(my_setup, my_teardown)
 def test_delete_seqrun():
 
-    data = dict(sequencing_status='NEW', mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
+    data = dict(sequencing_status='NEW', alignment_status="RUNNING", mean_autosomal_coverage=0.0, seqrunid=SEQRUNID)
     response = session.post(url('seqrun', PROJECTID, SAMPLEID, LIBPREPID),
                             data=json.dumps(data),
                             headers=api_token)
