@@ -30,11 +30,13 @@ POOLING = {
     '506': "Pre-Pooling (MiSeq) 4.0"
     }
 PREPSTART = {    '117' : 'Applications Generic Process',
-    '33' : 'Fragment DNA (TruSeq DNA) 4.0'
+    '33' : 'Fragment DNA (TruSeq DNA) 4.0',
+    '603' : 'Tagmentation, Strand displacement and AMPure purification'
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
     '666' : 'Library Pooling (Finished Libraries) 4.0',
+    '610' : 'Enrich DNA fragments (Nextera) 4.0',
     '805' : 'NeoPrep Library Prep v1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
