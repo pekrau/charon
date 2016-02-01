@@ -199,7 +199,7 @@ def findprojs(key):
         delta=datetime.timedelta(hours=240)
         time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
         for p in projects:
-            if (not p.close_date) and lims.get_processes(project_name=p.name, last_modified=time_string_pc):
+            if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
                 ret.add(p)
         return [(p.name, p.id) for p in ret]
     else:
