@@ -170,3 +170,7 @@ table.params td {text-align: left;
 		}
 
 table.logs tr th {text-align: left; }
+
+tfoot {
+        display: table-header-group;
+    }

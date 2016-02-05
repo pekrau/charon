@@ -178,6 +178,7 @@ class RequestHandler(tornado.web.RequestHandler):
         view1 = self.db.view('sample/count')
         view2 = self.db.view('sample/count_done')
         view3 = self.db.view('libprep/count', group_level=1)
+        view4 = self.db.view('sample/count_delivered')
         for project in all:
             try:
                 row = view1[project['projectid']].rows[0]
@@ -191,6 +192,12 @@ class RequestHandler(tornado.web.RequestHandler):
                 project['sample_count_done'] = 0
             else:
                 project['sample_count_done'] = row.value
+            try:
+                row = view4[project['projectid']].rows[0]
+            except IndexError:
+                project['sample_count_delivered'] = 0
+            else:
+                project['sample_count_delivered'] = row.value
             startkey = [project['projectid']]
             endkey = [project['projectid'], constants.HIGH_CHAR]
             try:

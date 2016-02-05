@@ -313,6 +313,8 @@ def prepareData(projname):
             sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, 'status' : 'NEW', 'analysis_status' : 'TO_ANALYZE', 'total_autosomal_coverage' : "0"}
             if 'Reads Req' in sample.udf:
                 sampinfo['requested_reads']=sample.udf['Reads Req']
+            if 'Status (manual)' in sample.udf and sample.udf['Status (manual)'] == "Aborted":
+                sampinfo['status']='ABORTED'
             #even when you want a process, it is easier to use getartifact, because you can filter by sample 
             libstart=lims.get_artifacts(process_type=PREPEND.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
@@ -327,8 +329,6 @@ def prepareData(projname):
             sampinfo['libs']={}
             #get pools
             seqevents=lims.get_processes(type=SEQUENCING.values(), projectname=proj.name)
-            if seqevents:
-                sampinfo['status']='NEW'
             alphaindex=65
             for lib in libs: 
                 sampinfo['libs'][chr(alphaindex)]={}
