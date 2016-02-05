@@ -61,7 +61,7 @@ Project {{ project['projectid'] }}
 
 {% block content %}
 
-<table class="fields">
+<table class="fields" style="margin-bottom:20px;">
 
   {% for field in fields %}
   <tr>
@@ -70,42 +70,59 @@ Project {{ project['projectid'] }}
   </tr>
   {% end %}
 
-  <tr>
-    <th>Samples</th>
-    <td>
-      <table class="list">
+  </table>
+  <table id="sp_table" class="list sortable">
+    <thead>
 	<tr class="list">
-	  <th>Identifier</th>
-	  <th>Status</th>
-	  <th>Analysis Status</th>
-	  <th>Genotyping status</th>
-	  <th>Delivery Status</th>
-	  <th>Total autosomal coverage</th>
-	  <th>Target coverage</th>
-	  <th>Total sequenced reads</th>
-	  <th># libpreps</th>
-	  <th># seqruns</th>
-	  <th>Modified</th>
+	  <th class="sort" data-sort="identifier">Identifier</th>
+	  <th class="sort" data-sort="status">Status</th>
+	  <th class="sort" data-sort="an_status">Analysis Status</th>
+	  <th class="sort" data-sort="ge_status">Genotyping status</th>
+	  <th class="sort" data-sort="de_status">Delivery Status</th>
+	  <th class="sort" data-sort="coverage">Total autosomal coverage</th>
+	  <th class="sort" data-sort="target_coverage">Target coverage</th>
+	  <th class="sort" data-sort="reads">Total sequenced reads</th>
+	  <th class="sort" data-sort="nb_libpreps"># libpreps</th>
+	  <th class="sort" data-sort="nb_seqruns"># seqruns</th>
+	  <th class="sort" data-sort="modified">Modified</th>
+	  <th class="sort" data-sort="edit">Edit</th>
 	</tr>
+    </thead>
+    <tfoot>
+	<tr class="list">
+	  <th class="sort" data-sort="identifier">Identifier</th>
+	  <th class="sort" data-sort="status">Status</th>
+	  <th class="sort" data-sort="an_status">Analysis Status</th>
+	  <th class="sort" data-sort="ge_status">Genotyping status</th>
+	  <th class="sort" data-sort="de_status">Delivery Status</th>
+	  <th class="sort" data-sort="coverage">Total autosomal coverage</th>
+	  <th class="sort" data-sort="target_coverage">Target coverage</th>
+	  <th class="sort" data-sort="reads">Total sequenced reads</th>
+	  <th class="sort" data-sort="nb_libpreps"># libpreps</th>
+	  <th class="sort" data-sort="nb_seqruns"># seqruns</th>
+	  <th class="sort" data-sort="modified">Modified</th>
+	  <th class="sort" data-sort="edit">Edit</th>
+	</tr>
+    </tfoot>
 
 	{% if samples %}
 	{% for sample in samples %}
 	<tr>
-	  <td>
+	  <td class="identifier">
 	    <a href="{{ reverse_url('sample', project['projectid'], sample['sampleid']) }}">
 	      {{ sample['sampleid'] }}
 	    </a>
 	  </td>
-	  <td>{{ sample.get('status') or '-' }}</td>
-	  <td>{{ sample.get('analysis_status') or '-' }}</td>
-	  <td>{{ sample.get('genotyping_status') or '-' }}</td>
-	  <td>{{ sample.get('delivery_status') or '-' }}</td>
-	  <td >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
-	  <td>{{ sample.get('target_coverage') or '-' }}</td>
-	  <td>{{ sample.get('total_sequenced_reads') or '-' }}</td>
-	  <td class="number">{{ sample['libpreps_count'] }}</td>
-	  <td class="number">{{ sample['seqruns_count'] }}</td>
-	  <td class="localtime">{{ sample['modified'] }}</td>
+	  <td class="status">{{ sample.get('status') or '-' }}</td>
+	  <td class="an_status">{{ sample.get('analysis_status') or '-' }}</td>
+	  <td class="ge_status">{{ sample.get('genotyping_status') or '-' }}</td>
+	  <td class="de_status">{{ sample.get('delivery_status') or '-' }}</td>
+	  <td class="coverage" >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
+	  <td class="target_coverage">{{ sample.get('target_coverage') or '-' }}</td>
+	  <td class="reads">{{ sample.get('total_sequenced_reads') or '-' }}</td>
+	  <td class="nb_libpreps number">{{ sample['libpreps_count'] }}</td>
+	  <td class="nb_seqruns number">{{ sample['seqruns_count'] }}</td>
+	  <td class="modified localtime">{{ sample['modified'] }}</td>
 	  <td>
 	    <form action="{{ reverse_url('sample_edit', sample['projectid'], sample['sampleid']) }}">
 	      {% module Submit('edit', slim=True) %}
@@ -114,18 +131,47 @@ Project {{ project['projectid'] }}
 	</tr>
 	{% end %}
 
-	{% else %}
-	<tr>
-	  <td>[none]</td>
-	</tr>
 	{% end %}
       </table>
-    </td>
-  </tr>
 
+      <table>
   {% set entity = project %}
   {% include 'output_events_fields.html' %}
+  </table>
 
-</table>
+<script src="/static/js/jquery-1.11.1.min.js"></script>
+<script src="/static/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript">
+function init_listjs() {
+    // Setup - add a text input to each footer cell
+    $('#sp_table tfoot th').each( function () {
+    var title = $('#sp_table thead th').eq( $(this).index() ).text();
+    $(this).html( '<input size=10 type="text" placeholder="Search '+title+'" />' );
+    } );
+
+    var table = $('#sp_table').DataTable({
+        "paging":false,
+        "info":false,
+        "order": [[ 0, "desc" ]]
+        });
+    //Add the bootstrap classes to the search thingy
+    $('div.dataTables_filter input').addClass('form-control search search-query');
+    $('#sp_table_filter').addClass('form-inline pull-right');
+    $("#sp_table_filter").appendTo("h1");
+    $('#sp_table_filter label input').appendTo($('#sp_table_filter'));
+    $('#sp_table_filter label').remove();
+    $("#sp_table_filter input").attr("placeholder", "Search..");
+    // Apply the search
+    table.columns().every( function () {
+        var that = this;
+        $( 'input', this.footer() ).on( 'keyup change', function () {
+            that
+            .search( this.value )
+            .draw();
+        } );
+    } );
+}
+init_listjs();
+</script>
 
 {% end %}

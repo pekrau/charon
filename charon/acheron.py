@@ -30,19 +30,24 @@ POOLING = {
     '506': "Pre-Pooling (MiSeq) 4.0"
     }
 PREPSTART = {    '117' : 'Applications Generic Process',
-    '33' : 'Fragment DNA (TruSeq DNA) 4.0'
+    '33' : 'Fragment DNA (TruSeq DNA) 4.0',
+    '603' : 'Tagmentation, Strand displacement and AMPure purification'
             }
 PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
-    '666' : 'Library Pooling (Finished Libraries) 4.0'
+    '666' : 'Library Pooling (Finished Libraries) 4.0',
+    '610' : 'Enrich DNA fragments (Nextera) 4.0',
+    '805' : 'NeoPrep Library Prep v1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
     '64' : 'Quant-iT QC (Library Validation) 4.0',
     '67' : 'Qubit QC (Library Validation) 4.0',
     '20' : 'CaliperGX QC (DNA)',
+    '806' : 'NeoPrep Library QC v1.0',
     '17' : 'Bioanalyzer QC (Library Validation) 4.0'}
 SEQSTART = {'23':'Cluster Generation (Illumina SBS) 4.0',
-    '26':'Denature, Dilute and Load Sample (MiSeq) 4.0'}
+    '26':'Denature, Dilute and Load Sample (MiSeq) 4.0',
+    '710':'Cluster Generation (HiSeq X) 1.0'}
 DILSTART = {'40' : 'Library Normalization (MiSeq) 4.0',
     '39' : 'Library Normalization (Illumina SBS) 4.0'}
 SEQUENCING = {'38' : 'Illumina Sequencing (Illumina SBS) 4.0',
@@ -196,7 +201,7 @@ def findprojs(key):
         delta=datetime.timedelta(hours=240)
         time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
         for p in projects:
-            if (not p.close_date) and lims.get_processes(project_name=p.name, last_modified=time_string_pc):
+            if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
                 ret.add(p)
         return [(p.name, p.id) for p in ret]
     else:
@@ -308,6 +313,8 @@ def prepareData(projname):
             sampinfo={ 'sampleid' : sample.name, 'received' : sample.date_received, 'status' : 'NEW', 'analysis_status' : 'TO_ANALYZE', 'total_autosomal_coverage' : "0"}
             if 'Reads Req' in sample.udf:
                 sampinfo['requested_reads']=sample.udf['Reads Req']
+            if 'Status (manual)' in sample.udf and sample.udf['Status (manual)'] == "Aborted":
+                sampinfo['status']='ABORTED'
             #even when you want a process, it is easier to use getartifact, because you can filter by sample 
             libstart=lims.get_artifacts(process_type=PREPEND.values(), sample_name=sample.name)
             #libstart=lims.get_processes(type=PREPSTART.values(), projectname=proj.name)
@@ -322,8 +329,6 @@ def prepareData(projname):
             sampinfo['libs']={}
             #get pools
             seqevents=lims.get_processes(type=SEQUENCING.values(), projectname=proj.name)
-            if seqevents:
-                sampinfo['status']='NEW'
             alphaindex=65
             for lib in libs: 
                 sampinfo['libs'][chr(alphaindex)]={}

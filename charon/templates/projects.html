@@ -27,7 +27,7 @@ Projects
     <th>Status</th>
     <th># samples</th>
     <th># samples done</th>
-    <th># libpreps</th>
+    <th># samples deliv.</th>
     <th>Created</th>
     <th>Modified</th>
   </tr>
@@ -43,7 +43,7 @@ Projects
     <td>{{ project.get('status') or '-' }}</td>
     <td class="number">{{ project['sample_count'] }}</td>
     <td class="number">{{ project['sample_count_done'] }}</td>
-    <td class="number">{{ project['libprep_count'] }}</td>
+    <td class="number">{{ project['sample_count_delivered'] }}</td>
     <td class="localtime">{{ project['created'] }}</td>
     <td class="localtime">{{ project['modified'] }}</td>
   </tr>
