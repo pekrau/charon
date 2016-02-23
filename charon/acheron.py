@@ -14,7 +14,6 @@ import requests
 import json
 from types import *
 import logging
-import pdb
 import datetime
 
 lims = Lims(BASEURI, USERNAME, PASSWORD)
@@ -81,9 +80,11 @@ def main(options):
     elif options.proj:
         projs=findprojs(options.proj)
         for pname, pid in projs:
-            cleanCharon(pid, options)
-            data=prepareData(pname)
-            writeProjectData(data, options)
+            #cleanCharon(pid, options)
+            newdata=prepareData(pname)
+            olddata=getCompleteProject(newdata['projectid'], options)
+            compareOldAndNew(olddata, newdata, options)
+            #writeProjectData(data, options)
 
     elif options.clean:
         session = requests.Session()
@@ -117,11 +118,17 @@ def compareOldAndNew(old, new, options):
         for sampleid in newsamples:
             sample=newsamples[sampleid]
             libs=sample.pop('libs')
+            
 
             if sampleid not in oldsamples:
                 logging.info("updating {0}".format(sampleid))
                 writeToCharon(json.dumps(sample),'{0}/api/v1/sample/{1}'.format(options.url, new['projectid']), options)
                 autoupdate=True
+            else:
+                if sample['status']!= oldsamples[sampleid]['status']:
+                    newsample=oldsamples[sampleid]
+                    newsample['status']=sample['status']
+                    updateCharon(json.dumps(newsample),'{0}/api/v1/sample/{1}/{2}'.format(options.url, new['projectid'], sampleid), options)
                 
             for libid in libs:
                 lib=libs[libid]
