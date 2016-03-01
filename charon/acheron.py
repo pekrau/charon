@@ -1,20 +1,22 @@
 
 from __future__ import print_function
-import sys
-import os
-import codecs
 from optparse import OptionParser
 from pprint import pprint
 from genologics.entities import *
 from genologics.lims import *
 from genologics.config import BASEURI, USERNAME, PASSWORD
 from datetime import date
+
+import sys
+import os
+import codecs
 import yaml
 import requests
 import json
 from types import *
 import logging
 import datetime
+
 
 lims = Lims(BASEURI, USERNAME, PASSWORD)
 INITIALQC ={'63' : 'Quant-iT QC (DNA) 4.0',
@@ -57,7 +59,7 @@ WORKSET = {'204' : 'Setup Workset/Plate'}
 SUMMARY = {'356' : 'Project Summary 1.3'}
 DEMULTIPLEX={'13' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
 
-def main(options):
+def maon(options):
     if options.dummy:
         projs=['A.Wedell_13_03', 'G.Grigelioniene_14_01']
         for p in projs:
@@ -205,11 +207,22 @@ def findprojs(key):
         projects.update(lims.get_projects(udf=udf))
         udf={'Sequencing platform':'HiSeq X'}
         projects.update(lims.get_projects(udf=udf))
-        delta=datetime.timedelta(hours=240)
-        time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
-        for p in projects:
-            if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
-                ret.add(p)
+        try:
+            from genologics_sql.queries import get_last_modified_projectids
+            from genologics_sql.utils import get_session
+            session=get_session()
+            valid_pids=get_last_modified_projectids(session)
+            ret=[x for x in projects if x.project_id in valid_pids]
+        except ImportError:
+            logging.info("direct sql query did not work")
+            valid_pids=[]
+            delta=datetime.timedelta(hours=240)
+            time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
+            for p in projects:
+                if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
+                    ret.add(p)
+
+
         return [(p.name, p.id) for p in ret]
     else:
         projects=lims.get_projects(name=key)
