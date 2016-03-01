@@ -59,7 +59,7 @@ WORKSET = {'204' : 'Setup Workset/Plate'}
 SUMMARY = {'356' : 'Project Summary 1.3'}
 DEMULTIPLEX={'13' : 'Bcl Conversion & Demultiplexing (Illumina SBS) 4.0'}
 
-def maon(options):
+def main(options):
     if options.dummy:
         projs=['A.Wedell_13_03', 'G.Grigelioniene_14_01']
         for p in projs:
