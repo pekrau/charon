@@ -342,10 +342,10 @@ def prepareData(projname):
                 sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
                 sampinfo['libs'][chr(alphaindex)]['limsid']=lib.id
                 sampinfo['libs'][chr(alphaindex)]['qc']="PASSED"
-                for art in lib.all_outputs():
-                    if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
-                        if art.qc_flag == 'FAILED':
-                            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
+                #for art in lib.all_outputs():
+                #    if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
+                #        if art.qc_flag == 'FAILED':
+                #            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
                     if 'Comments' in se.udf and se.udf['Comments']=="HiSeq X testrun. /CN":
