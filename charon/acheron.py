@@ -14,7 +14,6 @@ import requests
 import json
 from types import *
 import logging
-import pdb
 import datetime
 
 lims = Lims(BASEURI, USERNAME, PASSWORD)
@@ -81,9 +80,11 @@ def main(options):
     elif options.proj:
         projs=findprojs(options.proj)
         for pname, pid in projs:
-            cleanCharon(pid, options)
-            data=prepareData(pname)
-            writeProjectData(data, options)
+            #cleanCharon(pid, options)
+            newdata=prepareData(pname)
+            olddata=getCompleteProject(newdata['projectid'], options)
+            compareOldAndNew(olddata, newdata, options)
+            #writeProjectData(data, options)
 
     elif options.clean:
         session = requests.Session()
@@ -117,11 +118,17 @@ def compareOldAndNew(old, new, options):
         for sampleid in newsamples:
             sample=newsamples[sampleid]
             libs=sample.pop('libs')
+            
 
             if sampleid not in oldsamples:
                 logging.info("updating {0}".format(sampleid))
                 writeToCharon(json.dumps(sample),'{0}/api/v1/sample/{1}'.format(options.url, new['projectid']), options)
                 autoupdate=True
+            else:
+                if sample['status']!= oldsamples[sampleid]['status']:
+                    newsample=oldsamples[sampleid]
+                    newsample['status']=sample['status']
+                    updateCharon(json.dumps(newsample),'{0}/api/v1/sample/{1}/{2}'.format(options.url, new['projectid'], sampleid), options)
                 
             for libid in libs:
                 lib=libs[libid]
@@ -335,10 +342,10 @@ def prepareData(projname):
                 sampinfo['libs'][chr(alphaindex)]['libprepid']=chr(alphaindex)
                 sampinfo['libs'][chr(alphaindex)]['limsid']=lib.id
                 sampinfo['libs'][chr(alphaindex)]['qc']="PASSED"
-                for art in lib.all_outputs():
-                    if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
-                        if art.qc_flag == 'FAILED':
-                            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
+                #for art in lib.all_outputs():
+                #    if sample.name in [s.name for s in art.samples] and len(art.samples)==1:
+                #        if art.qc_flag == 'FAILED':
+                #            sampinfo['libs'][chr(alphaindex)]['qc']=art.qc_flag
                 sampinfo['libs'][chr(alphaindex)]['seqruns']={}
                 for se in seqevents:
                     if 'Comments' in se.udf and se.udf['Comments']=="HiSeq X testrun. /CN":
