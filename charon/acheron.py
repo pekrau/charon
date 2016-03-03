@@ -1,20 +1,22 @@
 
 from __future__ import print_function
-import sys
-import os
-import codecs
 from optparse import OptionParser
 from pprint import pprint
 from genologics.entities import *
 from genologics.lims import *
 from genologics.config import BASEURI, USERNAME, PASSWORD
 from datetime import date
+
+import sys
+import os
+import codecs
 import yaml
 import requests
 import json
 from types import *
 import logging
 import datetime
+
 
 lims = Lims(BASEURI, USERNAME, PASSWORD)
 INITIALQC ={'63' : 'Quant-iT QC (DNA) 4.0',
@@ -36,6 +38,7 @@ PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
     '666' : 'Library Pooling (Finished Libraries) 4.0',
     '610' : 'Enrich DNA fragments (Nextera) 4.0',
+    '456' : 'Purification (ThruPlex)',
     '805' : 'NeoPrep Library Prep v1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
@@ -205,11 +208,22 @@ def findprojs(key):
         projects.update(lims.get_projects(udf=udf))
         udf={'Sequencing platform':'HiSeq X'}
         projects.update(lims.get_projects(udf=udf))
-        delta=datetime.timedelta(hours=240)
-        time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
-        for p in projects:
-            if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
-                ret.add(p)
+        try:
+            from genologics_sql.queries import get_last_modified_projectids
+            from genologics_sql.utils import get_session
+            session=get_session()
+            valid_pids=get_last_modified_projectids(session)
+            ret=[x for x in projects if x.project_id in valid_pids]
+        except ImportError:
+            logging.info("direct sql query did not work")
+            valid_pids=[]
+            delta=datetime.timedelta(hours=240)
+            time_string_pc=(datetime.datetime.now()-delta).strftime('%Y-%m-%dT%H:%M:%SZ')
+            for p in projects:
+                if (not p.close_date) and lims.get_processes(projectname=p.name, last_modified=time_string_pc):
+                    ret.add(p)
+
+
         return [(p.name, p.id) for p in ret]
     else:
         projects=lims.get_projects(name=key)
