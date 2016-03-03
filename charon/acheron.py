@@ -38,6 +38,7 @@ PREPEND = {'157': 'Applications Finish Prep',
     '406' : 'End repair, size selection, A-tailing and adapter ligation (TruSeq PCR-free DNA) 4.0',
     '666' : 'Library Pooling (Finished Libraries) 4.0',
     '610' : 'Enrich DNA fragments (Nextera) 4.0',
+    '456' : 'Purification (ThruPlex)',
     '805' : 'NeoPrep Library Prep v1.0'
         }
 LIBVAL = {'62' : 'qPCR QC (Library Validation) 4.0',
