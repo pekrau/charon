@@ -115,7 +115,7 @@ Project {{ project['projectid'] }}
 	  </td>
 	  <td class="status">{{ sample.get('status') or '-' }}</td>
 	  <td class="an_status">{{ sample.get('analysis_status') or '-' }}</td>
-	  <td class="ge_status">{{ sample.get('genotyping_status') or '-' }}</td>
+	  <td class="ge_status">{{ sample.get('genotype_status') or '-' }}</td>
 	  <td class="de_status">{{ sample.get('delivery_status') or '-' }}</td>
 	  <td class="coverage" >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
 	  <td class="target_coverage">{{ sample.get('target_coverage') or '-' }}</td>
