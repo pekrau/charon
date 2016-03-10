@@ -213,7 +213,7 @@ def findprojs(key):
             from genologics_sql.utils import get_session
             session=get_session()
             valid_pids=get_last_modified_projectids(session)
-            ret=[x for x in projects if x.project_id in valid_pids]
+            ret=[x for x in projects if x.id in valid_pids]
         except ImportError:
             logging.info("direct sql query did not work")
             valid_pids=[]
