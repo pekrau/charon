@@ -82,6 +82,7 @@ Project {{ project['projectid'] }}
 	  <th class="sort" data-sort="coverage">Total autosomal coverage</th>
 	  <th class="sort" data-sort="target_coverage">Target coverage</th>
 	  <th class="sort" data-sort="reads">Total sequenced reads</th>
+	  <th class="sort" data-sort="duplication_pc">Duplication percentage</th>
 	  <th class="sort" data-sort="nb_libpreps"># libpreps</th>
 	  <th class="sort" data-sort="nb_seqruns"># seqruns</th>
 	  <th class="sort" data-sort="modified">Modified</th>
@@ -98,6 +99,7 @@ Project {{ project['projectid'] }}
 	  <th class="sort" data-sort="coverage">Total autosomal coverage</th>
 	  <th class="sort" data-sort="target_coverage">Target coverage</th>
 	  <th class="sort" data-sort="reads">Total sequenced reads</th>
+	  <th class="sort" data-sort="duplication_pc">Duplication percentage</th>
 	  <th class="sort" data-sort="nb_libpreps"># libpreps</th>
 	  <th class="sort" data-sort="nb_seqruns"># seqruns</th>
 	  <th class="sort" data-sort="modified">Modified</th>
@@ -120,6 +122,7 @@ Project {{ project['projectid'] }}
 	  <td class="coverage" >{{ sample['total_autosomal_coverage'] if sample.get('total_autosomal_coverage') else '-'}}</td>
 	  <td class="target_coverage">{{ sample.get('target_coverage') or '-' }}</td>
 	  <td class="reads">{{ sample.get('total_sequenced_reads') or '-' }}</td>
+	  <td class="duplication_pc">{{ sample.get('duplication_pc') or '-' }}</td>
 	  <td class="nb_libpreps number">{{ sample['libpreps_count'] }}</td>
 	  <td class="nb_seqruns number">{{ sample['seqruns_count'] }}</td>
 	  <td class="modified localtime">{{ sample['modified'] }}</td>
