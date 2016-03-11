@@ -54,6 +54,9 @@ class SampleSaver(sav.Saver):
                     description='Total of all for each seqrun in each libprep.'),
               sav.FloatField('requested_reads',
                     description='Number of Million of reads requested by the user.'),
+              sav.FloatField('duplication_pc',
+                    description='Picard\'s duplication rate percentage taken from the .metrics file.', 
+                    default=0.0),
               sav.SelectField('type', description='Identifies cancer samples.', options=cst.SAMPLE_TYPES),
               sav.Field('pair', description='Identifies related samples.')
               ]
