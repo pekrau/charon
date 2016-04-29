@@ -194,7 +194,6 @@ class ApiSeqrun(ApiRequestHandler):
                 self.send_error(409, reason=str(msg))
             else:
                 self.set_status(204)
-                self.update_sample_cov(projectid,sampleid) 
                 self.update_sample_analysis_status(projectid,sampleid)
 
     def delete(self, projectid, sampleid, libprepid, seqrunid):
@@ -302,7 +301,6 @@ class ApiSeqrunCreate(ApiRequestHandler):
                                        sampleid,
                                        libprepid,
                                        seqrun['seqrunid'])
-                self.update_sample_cov(projectid, sampleid)
                 self.update_sample_analysis_status(projectid, sampleid)
                 self.set_header('Location', url)
                 self.set_status(201)
