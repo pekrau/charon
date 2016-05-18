@@ -76,7 +76,7 @@ def generate_project_doc(project):
                 doc['best_practice_analysis']='whole_genome_reseq'
             else:
                 doc['best_practice_analysis']=udf.udfvalue
-        if udf.udfname=='Uppnex ID':
+        if udf.udfname=='Uppnex ID' and udf.udfvalue:
             doc['uppnex_id']=udf.udfvalue.strip()
 
 
