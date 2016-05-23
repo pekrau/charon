@@ -33,7 +33,7 @@ def main(args):
         main_log.info("Project list : {0}".format(", ".join([x.luid for x in project_list])))
         masterProcess(args, project_list, main_log)
     elif args.test:
-        print "\n".join(obtain_recent_projects(db_session))
+        print "\n".join(x.__str__() for x in obtain_recent_projects(db_session))
         print "##########"
         print "\n".join(x.__str__() for x in obtain_valid_projects(db_session))
 
