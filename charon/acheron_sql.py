@@ -14,6 +14,7 @@ from genologics_sql.queries import *
 from sqlalchemy import text
 from charon.utils import QueueHandler
 
+VALID_BIOINFO_QC=['WG re-seq (IGN)', 'RNA-seq']
 
 def main(args):
     main_log=setup_logging("acheron_logger", args)
@@ -24,9 +25,17 @@ def main(args):
         docs=generate_data(args.proj, db_session)
         update_charon(docs, args, main_log)
     elif args.new:
+        project_list=obtain_recent_projects(db_session)
+        main_log.info("Project list : {0}".format(", ".join([x.luid for x in project_list])))
+        masterProcess(args, project_list, main_log)
+    elif args.all:
         project_list=obtain_valid_projects(db_session)
         main_log.info("Project list : {0}".format(", ".join([x.luid for x in project_list])))
         masterProcess(args, project_list, main_log)
+    elif args.test:
+        print "\n".join(obtain_recent_projects(db_session))
+        print "##########"
+        print "\n".join(x.__str__() for x in obtain_valid_projects(db_session))
 
 def setup_logging(name, args):
     mainlog = logging.getLogger(name)
@@ -40,10 +49,24 @@ def setup_logging(name, args):
 def obtain_valid_projects(session):
     query="select pj.* from project pj \
             inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
-            where euv.attachtoclassid=83 and euv.udfname like 'Bioinformatic QC' and euv.udfvalue in ('WG re-seq (IGN)', 'RNA-seq')  and pj.createddate > date '2016-01-01';"
-    #Change this if you want to scale.
+            where euv.attachtoclassid=83 and \
+            euv.udfname like 'Bioinformatic QC' and \
+            euv.udfvalue in ({0}) and \
+            pj.createddate > date '2016-01-01';".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]))
     return session.query(Project).from_statement(text(query)).all()
 
+def obtain_recent_projects(session):
+    recent_projectids=get_last_modified_projectids(session)
+    if recent_projectids:
+        query="select pj.* from project pj \
+            inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
+            where euv.attachtoclassid=83 and \
+            euv.udfname like 'Bioinformatic QC' and \
+            euv.udfvalue in ({0}) and \
+            pj.luid in ({1});".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in recent_projectids]))
+        return session.query(Project).from_statement(text(query)).all()
+    else:
+        return []
 
 def generate_data(project_id, session):
     docs=[]
@@ -339,6 +362,8 @@ if __name__=="__main__":
             help="prints results for everything that is going on")
     parser.add_argument("-l", "--log", dest="logfile", default=os.path.expanduser("~/acheron.log"), 
             help="location of the log file")
+    parser.add_argument("-z", "--test", dest="test", default=False, action="store_true", 
+            help="Testing option")
     args = parser.parse_args()
         
     if not args.token :
