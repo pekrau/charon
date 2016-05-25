@@ -14,7 +14,7 @@ from genologics_sql.queries import *
 from sqlalchemy import text
 from charon.utils import QueueHandler
 
-VALID_BIOINFO_QC=['WG re-seq (IGN)', 'RNA-seq']
+VALID_BIOINFO_QC=['WG re-seq (IGN)','WG re-seq', 'RNA-seq']
 
 def main(args):
     main_log=setup_logging("acheron_logger", args)
