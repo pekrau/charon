@@ -15,6 +15,7 @@ from sqlalchemy import text
 from charon.utils import QueueHandler
 
 VALID_BIOINFO_QC=['WG re-seq (IGN)','WG re-seq', 'RNA-seq']
+VALID_SEQUENCING_PLATFORMS=['HiSeq X']
 
 def main(args):
     main_log=setup_logging("acheron_logger", args)
@@ -50,9 +51,11 @@ def obtain_valid_projects(session):
     query="select pj.* from project pj \
             inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
             where euv.attachtoclassid=83 and \
-            euv.udfname like 'Bioinformatic QC' and \
-            euv.udfvalue in ({0}) and \
-            pj.createddate > date '2016-01-01';".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]))
+            ((euv.udfname like 'Bioinformatic QC' and \
+            euv.udfvalue in ({0})) or\
+            (euv.udfname like 'Sequencing platform' and \
+            euv.udfvalue in ({1}))) and\
+            pj.createddate > date '2016-01-01';".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in VALID_SEQUENCING_PLATFORMS]))
     return session.query(Project).from_statement(text(query)).all()
 
 def obtain_recent_projects(session):
@@ -61,9 +64,11 @@ def obtain_recent_projects(session):
         query="select pj.* from project pj \
             inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
             where euv.attachtoclassid=83 and \
-            euv.udfname like 'Bioinformatic QC' and \
-            euv.udfvalue in ({0}) and \
-            pj.luid in ({1});".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in recent_projectids]))
+            ((euv.udfname like 'Bioinformatic QC' and \
+            euv.udfvalue in ({0})) or\
+            (euv.udfname like 'Sequencing platform' and \
+            euv.udfvalue in ({1}))) and\
+            pj.luid in ({2});".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in VALID_SEQUENCING_PLATFORMS]), ",".join(["'{0}'".format(x) for x in recent_projectids]))
         return session.query(Project).from_statement(text(query)).all()
     else:
         return []
