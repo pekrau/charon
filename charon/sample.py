@@ -45,7 +45,7 @@ class SampleSaver(sav.Saver):
               sav.FloatField('genotype_concordance',
                     description='The value of the genotyping concordance of the sample.', default=0.0),
               sav.FloatField('total_autosomal_coverage',
-                    description='Total of every autosomal coverage for each seqrun in each libprep.', 
+                    description='Coverage calculated in the last analysis steps.', 
                     default=0.0),
               sav.FloatField('target_coverage',
                     description='Target coverage for the current sample.', 
