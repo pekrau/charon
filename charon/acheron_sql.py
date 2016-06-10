@@ -140,6 +140,10 @@ def generate_samples_docs(project):
             if udf.udfname=='Status (Manual)':
                 if udf.udfvalue == 'Aborted':
                     doc['status']='ABORTED'
+            if udf.udfname=='Sample Links':
+                doc['Pair']=udf.udfvalue
+            if udf.udfname=='Sample Link Type':
+                doc['Type']=udf.udfvalue
 
         docs.append(doc)
 
