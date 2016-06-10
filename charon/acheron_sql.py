@@ -114,7 +114,7 @@ def generate_project_doc(project):
             matches=REFERENCE_GENOME_PATTERN.search(udf.udfvalue)
             if matches:
                 doc['reference']=matches.group(1)
-            else
+            else:
                 doc['reference']='other'
 
     return doc
