@@ -6,6 +6,7 @@ import multiprocessing as mp
 import Queue
 import requests
 import time
+import re
 
 from datetime import datetime
 from genologics_sql.tables import *
@@ -16,6 +17,7 @@ from charon.utils import QueueHandler
 
 VALID_BIOINFO_QC=['WG re-seq (IGN)','WG re-seq', 'RNA-seq']
 VALID_SEQUENCING_PLATFORMS=['HiSeq X']
+REFERENCE_GENOME_PATTERN=re.compile("\,\s+([0-9A-z\._-]+)\)")
 
 def main(args):
     main_log=setup_logging("acheron_logger", args)
@@ -96,8 +98,10 @@ def generate_project_doc(project):
     doc['pipeline']='NGI'
     doc['projectid']=project.luid
     doc['status']='OPEN'
-
     doc['name']=project.name
+
+
+
     for udf in project.udfs:
         if udf.udfname=='Bioinformatic QC':
             if udf.udfvalue == 'WG re-seq':
@@ -106,7 +110,12 @@ def generate_project_doc(project):
                 doc['best_practice_analysis']=udf.udfvalue
         if udf.udfname=='Uppnex ID' and udf.udfvalue:
             doc['uppnex_id']=udf.udfvalue.strip()
-
+        if udf.udfname=='Reference genome' and udf.udfvalue:
+            matches=REFERENCE_GENOME_PATTERN.search(udf.udfvalue)
+            if matches:
+                doc['reference']=matches.group(1)
+            else
+                doc['reference']='other'
 
     return doc
 
