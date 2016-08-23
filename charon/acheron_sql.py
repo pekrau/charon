@@ -114,7 +114,7 @@ def generate_project_doc(project):
             matches=REFERENCE_GENOME_PATTERN.search(udf.udfvalue)
             if matches:
                 doc['reference']=matches.group(1)
-            else
+            else:
                 doc['reference']='other'
 
     return doc
@@ -140,6 +140,10 @@ def generate_samples_docs(project):
             if udf.udfname=='Status (Manual)':
                 if udf.udfvalue == 'Aborted':
                     doc['status']='ABORTED'
+            if udf.udfname=='Sample Links':
+                doc['Pair']=udf.udfvalue
+            if udf.udfname=='Sample Link Type':
+                doc['Type']=udf.udfvalue
 
         docs.append(doc)
 
@@ -201,79 +205,86 @@ def update_charon(docs, args, logger):
     session=requests.Session()
     headers = {'X-Charon-API-token': args.token, 'content-type': 'application/json'}
     for doc in docs:
-        if doc['charon_doctype']=='project':
-            logger.info("trying to update doc {0}".format(doc['projectid']))
-            url="{0}/api/v1/project/{1}".format(args.url, doc['projectid'])
-            r=session.get(url, headers=headers)
-            if r.status_code==404:
-                url="{0}/api/v1/project".format(args.url)
-                rq=session.post(url, headers=headers, data=json.dumps(doc))
-                if rq.status_code == requests.codes.created:
-                    logger.info("project {0} successfully updated".format(doc['projectid']))
+        try:
+            if doc['charon_doctype']=='project':
+                logger.info("trying to update doc {0}".format(doc['projectid']))
+                url="{0}/api/v1/project/{1}".format(args.url, doc['projectid'])
+                r=session.get(url, headers=headers)
+                if r.status_code==404:
+                    url="{0}/api/v1/project".format(args.url)
+                    rq=session.post(url, headers=headers, data=json.dumps(doc))
+                    if rq.status_code == requests.codes.created:
+                        logger.info("project {0} successfully updated".format(doc['projectid']))
+                    else:
+                        logger.error("project {0} failed to be updated : {1}".format(doc['projectid'], rq.text))
                 else:
-                    logger.error("project {0} failed to be updated : {1}".format(doc['projectid'], rq.text))
-            else:
-                pj=r.json()
-                merged=merge(pj, doc)
-                rq=session.put(url, headers=headers, data=json.dumps(merged))
-                if rq.status_code == requests.codes.no_content:
-                    logger.info("project {0} successfully updated".format(doc['projectid']))
+                    pj=r.json()
+                    merged=merge(pj, doc)
+                    if merged != pj:
+                        rq=session.put(url, headers=headers, data=json.dumps(merged))
+                        if rq.status_code == requests.codes.no_content:
+                            logger.info("project {0} successfully updated".format(doc['projectid']))
+                        else:
+                            logger.error("project {0} failed to be updated : {1}".format(doc['projectid'], rq.text))
+            elif doc['charon_doctype']=='sample':
+                url="{0}/api/v1/sample/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid'])
+                r=session.get(url, headers=headers)
+                if r.status_code==404:
+                    url="{0}/api/v1/sample/{1}".format(args.url, doc['projectid']) 
+                    rq=session.post(url, headers=headers, data=json.dumps(doc))
+                    if rq.status_code == requests.codes.created:
+                        logger.info("sample {0}/{1} successfully updated".format(doc['projectid'], doc['sampleid']))
+                    else:
+                        logger.error("sample {0}/{1} failed to be updated : {2}".format(doc['projectid'], doc['sampleid'], rq.text))
                 else:
-                    logger.error("project {0} failed to be updated : {1}".format(doc['projectid'], rq.text))
-        elif doc['charon_doctype']=='sample':
-            url="{0}/api/v1/sample/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid'])
-            r=session.get(url, headers=headers)
-            if r.status_code==404:
-                url="{0}/api/v1/sample/{1}".format(args.url, doc['projectid']) 
-                rq=session.post(url, headers=headers, data=json.dumps(doc))
-                if rq.status_code == requests.codes.created:
-                    logger.info("sample {0}/{1} successfully updated".format(doc['projectid'], doc['sampleid']))
+                    pj=r.json()
+                    merged=merge(pj, doc)
+                    if merged != pj:
+                        rq=session.put(url, headers=headers, data=json.dumps(merged))
+                        if rq.status_code == requests.codes.no_content:
+                            logger.info("sample {0}/{1} successfully updated".format(doc['projectid'], doc['sampleid']))
+                        else:
+                            logger.error("sample {0}/{1} failed to be updated : {2}".format(doc['projectid'], doc['sampleid'], rq.text))
+            elif doc['charon_doctype']=='libprep':
+                url="{0}/api/v1/libprep/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'])
+                r=session.get(url, headers=headers)
+                if r.status_code==404:
+                    url="{0}/api/v1/libprep/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid']) 
+                    rq=session.post(url, headers=headers, data=json.dumps(doc))
+                    if rq.status_code == requests.codes.created:
+                        logger.info("libprep {0}/{1}/{2} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid']))
+                    else:
+                        logger.error("libprep {0}/{1}/{2} failed to be updated : {3}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], rq.text))
                 else:
-                    logger.error("sample {0}/{1} failed to be updated : {2}".format(doc['projectid'], doc['sampleid'], rq.text))
-            else:
-                pj=r.json()
-                merged=merge(pj, doc)
-                rq=session.put(url, headers=headers, data=json.dumps(merged))
-                if rq.status_code == requests.codes.no_content:
-                    logger.info("sample {0}/{1} successfully updated".format(doc['projectid'], doc['sampleid']))
+                    pj=r.json()
+                    merged=merge(pj, doc)
+                    if merged != pj:
+                        rq=session.put(url, headers=headers, data=json.dumps(merged))
+                        if rq.status_code == requests.codes.no_content:
+                            logger.info("libprep {0}/{1}/{2} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid']))
+                        else:
+                            logger.error("libprep {0}/{1}/{2} failed to be updated : {3}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], rq.text))
+            elif doc['charon_doctype']=='seqrun':
+                url="{0}/api/v1/seqrun/{1}/{2}/{3}/{4}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'])
+                r=session.get(url, headers=headers)
+                if r.status_code==404:
+                    url="{0}/api/v1/seqrun/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid']) 
+                    rq=session.post(url, headers=headers, data=json.dumps(doc))
+                    if rq.status_code == requests.codes.created:
+                        logger.info("seqrun {0}/{1}/{2}/{3} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid']))
+                    else:
+                        logger.error("seqrun {0}/{1}/{2}/{3} failed to be updated : {4}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'], rq.text))
                 else:
-                    logger.error("sample {0}/{1} failed to be updated : {2}".format(doc['projectid'], doc['sampleid'], rq.text))
-        elif doc['charon_doctype']=='libprep':
-            url="{0}/api/v1/libprep/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'])
-            r=session.get(url, headers=headers)
-            if r.status_code==404:
-                url="{0}/api/v1/libprep/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid']) 
-                rq=session.post(url, headers=headers, data=json.dumps(doc))
-                if rq.status_code == requests.codes.created:
-                    logger.info("libprep {0}/{1}/{2} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid']))
-                else:
-                    logger.error("libprep {0}/{1}/{2} failed to be updated : {3}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], rq.text))
-            else:
-                pj=r.json()
-                merged=merge(pj, doc)
-                rq=session.put(url, headers=headers, data=json.dumps(merged))
-                if rq.status_code == requests.codes.no_content:
-                    logger.info("libprep {0}/{1}/{2} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid']))
-                else:
-                    logger.error("libprep {0}/{1}/{2} failed to be updated : {3}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], rq.text))
-        elif doc['charon_doctype']=='seqrun':
-            url="{0}/api/v1/seqrun/{1}/{2}/{3}/{4}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'])
-            r=session.get(url, headers=headers)
-            if r.status_code==404:
-                url="{0}/api/v1/seqrun/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid']) 
-                rq=session.post(url, headers=headers, data=json.dumps(doc))
-                if rq.status_code == requests.codes.created:
-                    logger.info("seqrun {0}/{1}/{2}/{3} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid']))
-                else:
-                    logger.error("seqrun {0}/{1}/{2}/{3} failed to be updated : {4}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'], rq.text))
-            else:
-                pj=r.json()
-                merged=merge(pj, doc)
-                rq=session.put(url, headers=headers, data=json.dumps(merged))
-                if rq.status_code == requests.codes.no_content:
-                    logger.info("seqrun {0}/{1}/{2}/{3} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid']))
-                else:
-                    logger.error("seqrun {0}/{1}/{2}/{3} failed to be updated : {4}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'], rq.text))
+                    pj=r.json()
+                    merged=merge(pj, doc)
+                    if merged != pj:
+                        rq=session.put(url, headers=headers, data=json.dumps(merged))
+                        if rq.status_code == requests.codes.no_content:
+                            logger.info("seqrun {0}/{1}/{2}/{3} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid']))
+                        else:
+                            logger.error("seqrun {0}/{1}/{2}/{3} failed to be updated : {4}".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'], rq.text))
+        except Exception as e:
+            logger.error("Error handling document \n{} \n\n{}".format(doc, e))
 
 def merge(d1, d2):
     """ Will merge dictionary d2 into dictionary d1.
@@ -324,7 +335,7 @@ def stillRunning(processList):
     return ret
 
 def processCharon(args, queue, logqueue):
-    session=get_session()
+    db_session=get_session()
     work=True
     procName=mp.current_process().name
     proclog=logging.getLogger(procName)
@@ -351,7 +362,7 @@ def processCharon(args, queue, logqueue):
         else:
             #locks the project : cannot be updated more than once.
             proclog.info("Handling {}".format(proj_id))
-            docs=generate_data(proj_id, session)
+            docs=generate_data(proj_id, db_session)
             update_charon(docs, args, proclog)
 
             #signals to queue job is done
