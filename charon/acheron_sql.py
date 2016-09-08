@@ -32,7 +32,7 @@ def main(args):
         main_log.info("Project list : {0}".format(", ".join([x.luid for x in project_list])))
         masterProcess(args, project_list, main_log)
     elif args.all:
-        project_list=obtain_valid_projects(db_session)
+        project_list=obtain_all_projects(db_session)
         main_log.info("Project list : {0}".format(", ".join([x.luid for x in project_list])))
         masterProcess(args, project_list, main_log)
     elif args.test:
@@ -49,6 +49,10 @@ def setup_logging(name, args):
     mainlog.addHandler(mfh)
     return mainlog
 
+def obtain_all_projects(session):
+    query="select pj.* from project pj \
+            where pj.createddate > date '2016-01-01';";
+    return session.query(Project).from_statement(text(query)).all()
 def obtain_valid_projects(session):
     query="select pj.* from project pj \
             inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
