@@ -51,7 +51,7 @@ def setup_logging(name, args):
 
 def obtain_all_projects(session):
     query="select pj.* from project pj \
-            where pj.createddate > date '2016-01-01';";
+            where pj.createddate > date '2016-01-01';"
     return session.query(Project).from_statement(text(query)).all()
 def obtain_valid_projects(session):
     query="select pj.* from project pj \
