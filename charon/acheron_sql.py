@@ -111,7 +111,7 @@ def generate_project_doc(project):
         if udf.udfname == 'Bioinformatic QC':
             if udf.udfvalue == 'WG re-seq':
                 doc['best_practice_analysis'] = 'whole_genome_reseq'
-            else: 
+            else:
                 doc['best_practice_analysis'] = udf.udfvalue
         if udf.udfname == 'Uppnex ID' and udf.udfvalue:
             doc['uppnex_id'] = udf.udfvalue.strip()
@@ -236,7 +236,7 @@ def update_charon(docs, args, logger):
                 url = "{0}/api/v1/sample/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid'])
                 r = session.get(url, headers=headers)
                 if r.status_code == 404:
-                    url = "{0}/api/v1/sample/{1}".format(args.url, doc['projectid']) 
+                    url = "{0}/api/v1/sample/{1}".format(args.url, doc['projectid'])
                     rq = session.post(url, headers=headers, data=json.dumps(doc))
                     if rq.status_code == requests.codes.created:
                         logger.info("sample {0}/{1} successfully updated".format(doc['projectid'], doc['sampleid']))
@@ -255,7 +255,7 @@ def update_charon(docs, args, logger):
                 url = "{0}/api/v1/libprep/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'])
                 r = session.get(url, headers=headers)
                 if r.status_code == 404:
-                    url = "{0}/api/v1/libprep/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid']) 
+                    url = "{0}/api/v1/libprep/{1}/{2}".format(args.url, doc['projectid'], doc['sampleid'])
                     rq=session.post(url, headers=headers, data=json.dumps(doc))
                     if rq.status_code == requests.codes.created:
                         logger.info("libprep {0}/{1}/{2} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid']))
@@ -274,7 +274,7 @@ def update_charon(docs, args, logger):
                 url = "{0}/api/v1/seqrun/{1}/{2}/{3}/{4}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid'])
                 r = session.get(url, headers=headers)
                 if r.status_code == 404:
-                    url = "{0}/api/v1/seqrun/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid']) 
+                    url = "{0}/api/v1/seqrun/{1}/{2}/{3}".format(args.url, doc['projectid'], doc['sampleid'], doc['libprepid'])
                     rq = session.post(url, headers=headers, data=json.dumps(doc))
                     if rq.status_code == requests.codes.created:
                         logger.info("seqrun {0}/{1}/{2}/{3} successfully updated".format(doc['projectid'], doc['sampleid'], doc['libprepid'], doc['seqrunid']))
@@ -317,16 +317,16 @@ def masterProcess(args, projectList, logger):
     projectsQueue = mp.JoinableQueue()
     logQueue = mp.Queue()
     childs = []
-    #spawn a pool of processes, and pass them queue instance 
+    #spawn a pool of processes, and pass them queue instance
     for i in range(args.processes):
         p = mp.Process(target=processCharon, args=(args, projectsQueue, logQueue))
         p.start()
         childs.append(p)
-    #populate queue with data   
+    #populate queue with data
     for proj in projectList:
         projectsQueue.put(proj.luid)
 
-    #wait on the queue until everything has been processed     
+    #wait on the queue until everything has been processed
     notDone = True
     while notDone:
         try:
@@ -382,27 +382,27 @@ def processCharon(args, queue, logqueue):
 if __name__=="__main__":
     usage = "Usage:       python acheron_sql.py [options]"
     parser = argparse.ArgumentParser(usage=usage)
-    parser.add_argument("-k", "--processes", dest="processes", default=12, type=int, 
+    parser.add_argument("-k", "--processes", dest="processes", default=12, type=int,
             help="Number of child processes to start")
-    parser.add_argument("-a", "--all", dest="all", default=False, action="store_true", 
+    parser.add_argument("-a", "--all", dest="all", default=False, action="store_true",
             help="Try to upload all IGN projects. This will wipe the current information stored in Charon")
-    parser.add_argument("-n", "--new", dest="new", default=False, action="store_true", 
+    parser.add_argument("-n", "--new", dest="new", default=False, action="store_true",
             help="Try to upload new IGN projects. This will NOT erase the current information stored in Charon")
-    parser.add_argument("-p", "--project", dest="proj", default=None, 
+    parser.add_argument("-p", "--project", dest="proj", default=None,
             help="-p <projectname> will try to upload the given project to charon")
-    parser.add_argument("-t", "--token", dest="token", default=os.environ.get('CHARON_API_TOKEN'), 
+    parser.add_argument("-t", "--token", dest="token", default=os.environ.get('CHARON_API_TOKEN'),
             help="Charon API Token. Will be read from the env variable CHARON_API_TOKEN if not provided")
-    parser.add_argument("-u", "--url", dest="url", default=os.environ.get('CHARON_BASE_URL'), 
+    parser.add_argument("-u", "--url", dest="url", default=os.environ.get('CHARON_BASE_URL'),
             help="Charon base url. Will be read from the env variable CHARON_BASE_URL if not provided")
-    parser.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true", 
+    parser.add_argument("-v", "--verbose", dest="verbose", default=False, action="store_true",
             help="prints results for everything that is going on")
-    parser.add_argument("-l", "--log", dest="logfile", default=os.path.expanduser("~/acheron.log"), 
+    parser.add_argument("-l", "--log", dest="logfile", default=os.path.expanduser("~/acheron.log"),
             help="location of the log file")
-    parser.add_argument("-z", "--test", dest="test", default=False, action="store_true", 
+    parser.add_argument("-z", "--test", dest="test", default=False, action="store_true",
             help="Testing option")
     args = parser.parse_args()
-        
-    if not args.token :
+
+ not args.token :
         print( "No valid token found in arg or in environment. Exiting.")
     if not args.url:
         print( "No valid url found in arg or in environment. Exiting.")
