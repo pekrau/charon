@@ -1,5 +1,6 @@
 
 import argparse
+import copy
 import json
 import logging
 import multiprocessing as mp
@@ -138,10 +139,11 @@ def generate_samples_docs(project):
         doc['total_autosomal_coverage']=0
         doc['status']='NEW'
         doc['analysis_status']='TO_ANALYZE'
+
         for udf in sample.udfs:
             if udf.udfname=='Reads Req':
                 doc['requested_reads']=udf.udfvalue
-            if udf.udfname=='Status (Manual)':
+            if udf.udfname=='Status (manual)':
                 if udf.udfvalue == 'Aborted':
                     doc['status']='ABORTED'
             if udf.udfname=='Sample Links':
@@ -296,15 +298,20 @@ def merge(d1, d2):
     :param d1: Dictionary object
     :param s2: Dictionary object
     """
+    d3=copy.deepcopy(d1)
     for key in d2:
-        if key in d1:
-            if isinstance(d1[key], dict) and isinstance(d2[key], dict):
-                merge(d1[key], d2[key])
-            elif d1[key] == d2[key]:
-                pass # same leaf value
+        if key in d3:
+            if isinstance(d3[key], dict) and isinstance(d2[key], dict):
+                d3[key]=merge(d3[key], d2[key])
+            elif d3[key] != d2[key]:
+                #special weird cases
+                if key == 'status' and d3.get('charon_doctype') == 'sample':
+                    d3[key] = d2[key]
+            elif d3[key] == d2[key]:
+                pass #same value, nothing to do
         else:
-            d1[key] = d2[key]
-    return d1
+            d3[key] = d2[key]
+    return d3
 
 def masterProcess(args, projectList, logger):
     projectsQueue=mp.JoinableQueue()
