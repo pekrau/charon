@@ -16,8 +16,6 @@ from genologics_sql.queries import *
 from sqlalchemy import text
 from charon.utils import QueueHandler
 
-VALID_BIOINFO_QC = ['WG re-seq (IGN)', 'WG re-seq', 'RNA-seq']
-VALID_SEQUENCING_PLATFORMS = ['HiSeq X']
 REFERENCE_GENOME_PATTERN = re.compile("\,\s+([0-9A-z\._-]+)\)")
 
 
