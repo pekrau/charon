@@ -39,8 +39,6 @@ def main(args):
         masterProcess(args, project_list, main_log)
     elif args.test:
         print "\n".join(x.__str__() for x in obtain_recent_projects(db_session))
-        print "##########"
-        print "\n".join(x.__str__() for x in obtain_valid_projects(db_session))
 
 
 def setup_logging(name, args):
@@ -59,29 +57,11 @@ def obtain_all_projects(session):
     return session.query(Project).from_statement(text(query)).all()
 
 
-def obtain_valid_projects(session):
-    query = "select pj.* from project pj \
-            inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
-            where euv.attachtoclassid=83 and \
-            ((euv.udfname like 'Bioinformatic QC' and \
-            euv.udfvalue in ({0})) or\
-            (euv.udfname like 'Sequencing platform' and \
-            euv.udfvalue in ({1}))) and\
-            pj.createddate > date '2016-01-01';".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in VALID_SEQUENCING_PLATFORMS]))
-    return session.query(Project).from_statement(text(query)).all()
-
-
 def obtain_recent_projects(session):
     recent_projectids = get_last_modified_projectids(session)
     if recent_projectids:
         query = "select pj.* from project pj \
-            inner join entity_udf_view euv on pj.projectid=euv.attachtoid \
-            where euv.attachtoclassid=83 and \
-            ((euv.udfname like 'Bioinformatic QC' and \
-            euv.udfvalue in ({0})) or\
-            (euv.udfname like 'Sequencing platform' and \
-            euv.udfvalue in ({1}))) and\
-            pj.luid in ({2});".format(",".join(["'{0}'".format(x) for x in VALID_BIOINFO_QC]), ",".join(["'{0}'".format(x) for x in VALID_SEQUENCING_PLATFORMS]), ",".join(["'{0}'".format(x) for x in recent_projectids]))
+            where pj.luid in ({0});".format(",".join(["'{0}'".format(x) for x in recent_projectids]))
         return session.query(Project).from_statement(text(query)).all()
     else:
         return []
@@ -415,9 +395,9 @@ if __name__ == "__main__":
                         help="Testing option")
     args = parser.parse_args()
 
-    if not args.token :
-        print( "No valid token found in arg or in environment. Exiting.")
+    if not args.token:
+        print("No valid token found in arg or in environment. Exiting.")
     if not args.url:
-        print( "No valid url found in arg or in environment. Exiting.")
+        print("No valid url found in arg or in environment. Exiting.")
         sys.exit(-1)
     main(args)
