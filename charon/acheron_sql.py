@@ -25,7 +25,7 @@ def main(args):
     db_session = get_session()
     if args.proj:
         main_log.info("Updating {0}".format(args.proj))
-        project = obtain_project(project_id, db_session)
+        project = obtain_project(args.proj, db_session)
         cdt = CharonDocumentTracker(db_session, project, main_log, args)
         cdt.run()
     elif args.new:
@@ -156,8 +156,8 @@ def processCharon(args, queue, logqueue):
         else:
             # locks the project : cannot be updated more than once.
             proclog.info("Handling {}".format(proj_id))
-            project = obtain_project(project_id, db_session)
-            cdt = CharonDocumentTracker(db_session, project, prolog, args)
+            project = obtain_project(proj_id, db_session)
+            cdt = CharonDocumentTracker(db_session, project, proclog, args)
             cdt.run()
 
             # signals to queue job is done
