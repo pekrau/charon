@@ -18,13 +18,17 @@ def sampleStats(handler, projectid=None):
     data={}
     if projectid:
         total=projectid+"_TOTAL"
+        aborted=projectid+"_ABORTED"
         passed=projectid+"_ANALYZED"
+        passed_unab=projectid+"_ANALYZED_UNAB"
         failed=projectid+"_FAILED"
         running=projectid+"_UNDER_ANALYSIS"
         coverage=projectid+"_TOTAL_COV"
     else:
         total="TOTAL"
+        aborted="ABORTED"
         passed="ANALYZED"
+        passed_unab="ANALYZED_UNAB"
         failed="FAILED"
         running="UNDER_ANALYSIS"
         coverage="TOTAL_COV"
@@ -36,9 +40,17 @@ def sampleStats(handler, projectid=None):
     except (KeyError, IndexError):
         data['tot']=0
     try:
+        data['ab'] = view[aborted].rows[0].value
+    except (KeyError, IndexError):
+        data['ab']=0
+    try:
         data['passed'] = view[passed].rows[0].value
     except (KeyError, IndexError):
         data['passed']=0
+    try:
+        data['passed_unab'] = view[passed_unab].rows[0].value
+    except (KeyError, IndexError):
+        data['passed_unab']=0
     try:
         data['failed'] = view[failed].rows[0].value
     except (KeyError, IndexError):
@@ -83,9 +95,7 @@ class Summary(RequestHandler):
     def get(self):
         project_id=self.get_argument("projectid", default=None)
         data=sampleStats(self, project_id)
-        self.render('summary.html',samples_total=data['tot'], samples_analyzed=data['ana'],
-                samples_passed=data['passed'], samples_failed=data['failed'], 
-                samples_running=data['runn'], samples_sequenced=data['seq'], hge=data['hge'])
+        self.render('summary.html', data=data)
 
 
 
