@@ -225,7 +225,8 @@ class CharonDocumentTracker:
             doc['status'] = 'FRESH'
             doc['analysis_status'] = 'TO_ANALYZE'
 
-            if self.seqruns_for_sample(sample.name) == self.remote_seqruns_for_sample(sample.name):
+            remote_sample=self.get_charon_sample(sample.name)
+            if remote_sample and remote_sample['status'] == 'STALE' and self.seqruns_for_sample(sample.name) == self.remote_seqruns_for_sample(sample.name):
                 doc['status'] = 'STALE'
 
             for udf in sample.udfs:
@@ -243,7 +244,6 @@ class CharonDocumentTracker:
 
     def generate_libprep_seqrun_docs(self):
         curtime = datetime.now().isoformat()
-        docs = []
         for sample in self.project.samples:
             query = "select pc.* from process pc \
             inner join processiotracker piot on piot.processid=pc.processid \
@@ -260,7 +260,7 @@ class CharonDocumentTracker:
                 doc['sampleid'] = sample.name
                 doc['libprepid'] = chr(alphaindex)
                 doc['qc'] = "PASSED"
-                docs.append(doc)
+                self.docs.append(doc)
                 query = "select distinct pro.* from process pro \
                 inner join processiotracker pio on pio.processid=pro.processid \
                 inner join artifact_sample_map asm on pio.inputartifactid=asm.artifactid \
@@ -286,11 +286,10 @@ class CharonDocumentTracker:
                             seqdoc['seqrunid'] = udf.udfvalue
                             break
                     if 'seqrunid' in seqdoc:
-                        docs.append(seqdoc)
+                        self.docs.append(seqdoc)
 
                 alphaindex += 1
 
-        return docs
 
     def seqruns_for_sample(self, sampleid):
         seqruns = set()
@@ -306,10 +305,21 @@ class CharonDocumentTracker:
         headers = {'X-Charon-API-token': self.charon_token, 'content-type': 'application/json'}
         url = "{0}/api/v1/seqruns/{1}/{2}".format(self.charon_url, self.project.luid, sampleid)
         r = session.get(url, headers=headers)
-        for sr in r.json()['seqruns']:
-            seqruns.add(sr['seqrunid'])
+        if r.status_code == requests.codes.ok:
+            for sr in r.json()['seqruns']:
+                seqruns.add(sr['seqrunid'])
 
         return seqruns
+
+    def get_charon_sample(self, sampleid):
+        session = requests.Session()
+        headers = {'X-Charon-API-token': self.charon_token, 'content-type': 'application/json'}
+        url = "{0}/api/v1/sample/{1}/{2}".format(self.charon_url, self.project.luid, sampleid)
+        r = session.get(url, headers=headers)
+        if r.status_code == requests.codes.ok:
+            return r.json()
+        else:
+            return None
 
     def update_charon(self):
         session = requests.Session()
