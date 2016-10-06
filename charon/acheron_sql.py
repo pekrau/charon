@@ -175,11 +175,18 @@ class CharonDocumentTracker:
         self.docs = []
 
     def run(self):
+
+        def _compare_doctype(doc):
+            order=["project", "sample", "libprep", "seqrun"]
+            return order.index(doc['charon_doctype'])
+
         # order matters because samples depend on seqruns.
+        self.generate_project_doc()
         self.generate_libprep_seqrun_docs()
         self.generate_samples_docs()
-        self.generate_project_doc()
+        self.docs=sorted(self.docs, key=_compare_doctype)
         self.update_charon()
+
 
     def generate_project_doc(self):
         curtime = datetime.now().isoformat()
@@ -230,8 +237,6 @@ class CharonDocumentTracker:
                 doc['status'] = 'STALE'
 
             for udf in sample.udfs:
-                if udf.udfname == 'Reads Req':
-                    doc['requested_reads'] = udf.udfvalue
                 if udf.udfname == 'Status (manual)':
                     if udf.udfvalue == 'Aborted':
                         doc['status'] = 'ABORTED'
