@@ -45,7 +45,7 @@ class SampleSaver(sav.Saver):
               sav.FloatField('genotype_concordance',
                     description='The value of the genotyping concordance of the sample.', default=0.0),
               sav.FloatField('total_autosomal_coverage',
-                    description='Total of every autosomal coverage for each seqrun in each libprep.', 
+                    description='Coverage calculated in the last analysis steps.', 
                     default=0.0),
               sav.FloatField('target_coverage',
                     description='Target coverage for the current sample.', 
@@ -54,6 +54,9 @@ class SampleSaver(sav.Saver):
                     description='Total of all for each seqrun in each libprep.'),
               sav.FloatField('requested_reads',
                     description='Number of Million of reads requested by the user.'),
+              sav.FloatField('duplication_pc',
+                    description='Picard\'s duplication rate percentage taken from the .metrics file.', 
+                    default=0.0),
               sav.SelectField('type', description='Identifies cancer samples.', options=cst.SAMPLE_TYPES),
               sav.Field('pair', description='Identifies related samples.')
               ]
